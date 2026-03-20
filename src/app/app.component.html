@@ -2,23 +2,24 @@
   <div class="ambient ambient-left"></div>
   <div class="ambient ambient-right"></div>
 
-  <section class="resume-canvas">
+  <section class="resume-canvas" #resumeCanvas>
     <header class="top-bar">
       <div>
         <h1 class="name">{{ content().profile.name }}</h1>
         <p class="headline">{{ content().profile.title }}</p>
       </div>
 
-      <div class="lang-switch" aria-label="language selector">
-        @for (option of languageOptions; track option.code) {
-          <p-button
-            [label]="option.label"
-            [outlined]="activeLang() !== option.code"
-            severity="secondary"
-            size="small"
-            (onClick)="setLanguage(option.code)"
-          />
-        }
+      <div class="action-panel">
+        <div class="lang-switch" aria-label="language selector">
+          @for (option of languageOptions; track option.code) {
+          <p-button [label]="option.label" [outlined]="activeLang() !== option.code" severity="secondary" size="small"
+            (onClick)="setLanguage(option.code)" />
+          }
+          <p-button icon="pi pi-download" size="small" [loading]="isExporting()" [disabled]="isExporting()"
+            (onClick)="exportResumePdf()" />
+        </div>
+
+
       </div>
     </header>
 
@@ -29,7 +30,7 @@
 
         <div class="badge-row">
           @for (badge of profileBadges(); track badge) {
-            <p-chip [label]="badge" icon="pi pi-user" />
+          <p-chip [label]="badge" icon="pi pi-user" />
           }
         </div>
       </p-card>
@@ -66,10 +67,10 @@
 
         <ul class="detail-list">
           @for (item of experiences(); track item) {
-            <li>
-              <i class="pi pi-briefcase"></i>
-              <span>{{ item }}</span>
-            </li>
+          <li>
+            <i class="pi pi-briefcase"></i>
+            <span>{{ item }}</span>
+          </li>
           }
         </ul>
       </p-card>
@@ -79,10 +80,10 @@
 
         <div class="stack-grid">
           @for (item of techStack(); track item.label) {
-            <div class="stack-item">
-              <span class="stack-label">{{ item.label }}</span>
-              <p-tag [value]="item.value" [severity]="item.severity" />
-            </div>
+          <div class="stack-item">
+            <span class="stack-label">{{ item.label }}</span>
+            <p-tag [value]="item.value" [severity]="item.severity" />
+          </div>
           }
         </div>
       </p-card>
@@ -92,7 +93,7 @@
 
         <div class="badge-row">
           @for (skill of skillChips(); track skill) {
-            <p-chip [label]="skill" icon="pi pi-sparkles" />
+          <p-chip [label]="skill" icon="pi pi-sparkles" />
           }
         </div>
       </p-card>
@@ -102,10 +103,10 @@
 
         <ul class="detail-list">
           @for (project of uiCopy().projects; track project) {
-            <li>
-              <i class="pi pi-check-circle"></i>
-              <span>{{ project }}</span>
-            </li>
+          <li>
+            <i class="pi pi-check-circle"></i>
+            <span>{{ project }}</span>
+          </li>
           }
         </ul>
       </p-card>

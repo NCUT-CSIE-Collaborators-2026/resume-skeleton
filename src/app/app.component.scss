@@ -36,9 +36,34 @@
 
 .resume-canvas {
 	position: relative;
-	max-width: 1120px;
+	width: min(100%, 920px);
+	aspect-ratio: 210 / 297;
+	padding: clamp(1.6rem, 2.8vw, 2.4rem);
+	border-radius: 20px;
+	border: 1px solid rgba(148, 163, 184, 0.35);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 251, 255, 0.8) 100%);
+	box-shadow: 0 28px 70px rgba(15, 23, 42, 0.2);
+	box-sizing: border-box;
 	margin: 0 auto;
 	backdrop-filter: blur(4px);
+}
+
+.resume-canvas.pdf-capture-mode {
+	background: #ffffff;
+	backdrop-filter: none;
+}
+
+.resume-canvas.pdf-capture-mode .action-panel {
+	visibility: hidden;
+}
+
+.resume-canvas.pdf-capture-mode .lang-switch {
+	background: #ffffff;
+	backdrop-filter: none;
+}
+
+.resume-canvas.pdf-capture-mode .resume-grid {
+	isolation: isolate;
 }
 
 .top-bar {
@@ -47,6 +72,13 @@
 	align-items: flex-start;
 	gap: 1rem;
 	margin-bottom: 1.5rem;
+}
+
+.action-panel {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.6rem;
 }
 
 .name {
@@ -98,6 +130,12 @@
 	background: linear-gradient(140deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.56));
 	box-shadow: 0 20px 40px rgba(37, 99, 235, 0.14);
 	animation: reveal 560ms ease both;
+}
+
+:host ::ng-deep .resume-canvas.pdf-capture-mode .glass-card {
+	animation: none !important;
+	background: #ffffff !important;
+	box-shadow: none;
 }
 
 :host ::ng-deep .glass-card .p-card-title {
@@ -210,11 +248,22 @@
 @media (max-width: 768px) {
 	.resume-shell {
 		padding-top: 1.3rem;
+		display: block;
+	}
+
+	.resume-canvas {
+		aspect-ratio: auto;
 	}
 
 	.top-bar {
 		flex-direction: column;
 		align-items: stretch;
+	}
+
+	.action-panel {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
 	}
 
 	.lang-switch {

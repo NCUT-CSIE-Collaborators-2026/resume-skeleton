@@ -1,7 +1,7 @@
 {
     "en": {
         "profile": {
-            "name": "Haolun, Wang",
+            "name": "Haolun Wang",
             "title": "Software Engineer / IT Intern",
             "gender": "Male",
             "age": "34",
@@ -28,8 +28,8 @@
             "devops": "Docker, Nginx, Git"
         },
         "introductions": {
-            "pitch_30s": "Hi, I'm Haolun. I'm a Software Engineer specializing in TypeScript, Angular, and NestJS. With a background as a volunteer soldier, I bring strong discipline and execution to every project. Currently, I'm an IT Intern completing my CS degree at NCUT, focused on building efficient and scalable web applications.",
-            "pitch_1min": "Hi, I'm Haolun Wang. My background is a mix of high-intensity military service and modern software engineering. After serving as a volunteer soldier, I decided to dive into technology and am now a CS senior at NCUT while working as an IT Intern. I specialize in Angular Standalone architecture and NestJS backends. My military experience taught me the value of precision and grit, which I now channel into solving complex coding challenges and optimizing DevOps workflows with Docker and Nginx."
+            "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
+            "pitch_1min": "Hi, I'm Haolun Wang. My experience includes a military background and hands-on software engineering work. At this stage, I am studying Computer Science at NCUT while working as an IT Intern. On the technical side, I mainly work with Angular Standalone architecture and NestJS backend development, and I use Docker to support deployment and development workflows. Most of my daily work centers on feature development, debugging, and system maintenance, where I continue building practical project experience."
         }
     },
     "zh_TW": {
@@ -61,8 +61,8 @@
             "devops": "Docker, Nginx, Git"
         },
         "introductions": {
-            "pitch_30s": "你好，我是顥倫。我是一名專注於 TypeScript 全端開發的軟體工程師，擅長使用 Angular 與 NestJS。身為志願役士兵出身，我擁有極強的執行力與穩定性，目前正在勤益資工深造並擔任 IT 實習生，致力於開發高效能的 Web 系統。",
-            "pitch_1min": "你好，我是王顥倫。我擁有相對獨特的職涯轉換經歷，從志願役士兵轉戰資訊工程領域。目前我在勤益資工就讀，同時擔任 IT 實習生。技術層面我精進於 Angular 獨立元件架構與 NestJS 後端開發，並熟練運用 Docker 進行部署。軍旅生活培養了我高度的紀律與面對壓力的韌性，這讓我能以更嚴謹的態度面對程式除錯與架構設計，並確切達成專案目標。"
+            "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",
+            "pitch_1min": "你好，我是王顥倫。我的經歷包含軍旅背景與資訊工程實務，現階段在勤益資工就讀並擔任 IT 實習生。技術上以 Angular 獨立元件架構與 NestJS 後端開發為主，也使用 Docker 支援部署與開發流程。平時主要投入在功能開發、除錯與系統維護，累積可落地的專案經驗。"
         }
     }
 }

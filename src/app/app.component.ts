@@ -1,4 +1,4 @@
-import { Component, HostListener, computed, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ChipModule } from 'primeng/chip';
@@ -48,6 +48,7 @@ interface UiCopy {
   stackTitle: string;
   skillsTitle: string;
   projectTitle: string;
+  exportPdfLabel: string;
   projects: string[];
   labels: {
     language: string;
@@ -67,11 +68,14 @@ const RESUME_I18N = i18n as Record<LangCode, ResumeLocale>;
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  @ViewChild('resumeCanvas') resumeCanvas?: ElementRef<HTMLElement>;
+
   readonly activeLang = signal<LangCode>('zh_TW');
   readonly introMode = signal<'30' | '60'>(this.getIntroModeFromHash());
+  readonly isExporting = signal(false);
 
   readonly languageOptions: Array<{ label: string; code: LangCode }> = [
-    { label: 'ZH', code: 'zh_TW' },
+    { label: 'TW', code: 'zh_TW' },
     { label: 'EN', code: 'en' }
   ];
 
@@ -86,6 +90,7 @@ export class AppComponent {
         stackTitle: '技術堆疊',
         skillsTitle: this.content().experience.skills_label,
         projectTitle: this.content().experience.projects_label,
+        exportPdfLabel: '匯出 PDF',
         projects: [
           '履歷網站樣板：完成中英切換、響應式版面與元件化設計。',
           'Angular + NestJS 全端專案：實作 API 串接、部署流程與版本控管。'
@@ -107,6 +112,7 @@ export class AppComponent {
       stackTitle: 'Tech Stack',
       skillsTitle: this.content().experience.skills_label,
       projectTitle: this.content().experience.projects_label,
+      exportPdfLabel: 'Export PDF',
       projects: [
         'Resume website template with bilingual switch, responsive layout, and componentized design.',
         'Angular + NestJS full-stack work including API integration, deployment flow, and version control.'
@@ -158,6 +164,54 @@ export class AppComponent {
 
   setLanguage(lang: LangCode): void {
     this.activeLang.set(lang);
+  }
+
+  async exportResumePdf(): Promise<void> {
+    if (this.isExporting()) {
+      return;
+    }
+
+    if (!this.resumeCanvas?.nativeElement || typeof window === 'undefined') {
+      return;
+    }
+
+    this.isExporting.set(true);
+
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf')
+      ]);
+
+      const source = this.resumeCanvas.nativeElement;
+      const canvas = await html2canvas(source, {
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        onclone: (clonedDocument: Document) => {
+          const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
+          if (clonedCanvas instanceof HTMLElement) {
+            clonedCanvas.classList.add('pdf-capture-mode');
+          }
+        }
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imageData = canvas.toDataURL('image/png');
+
+      pdf.addImage(imageData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+      pdf.save(this.activeLang() === 'zh_TW' ? 'resume-zh.pdf' : 'resume-en.pdf');
+    } finally {
+      this.isExporting.set(false);
+    }
   }
 
   @HostListener('window:hashchange')
