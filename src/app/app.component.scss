@@ -1,0 +1,231 @@
+:host {
+	display: block;
+	min-height: 100dvh;
+}
+
+.resume-shell {
+	min-height: 100dvh;
+	position: relative;
+	overflow: hidden;
+	padding: 2rem 1rem 2.5rem;
+}
+
+.ambient {
+	position: absolute;
+	width: 20rem;
+	height: 20rem;
+	filter: blur(10px);
+	opacity: 0.48;
+	border-radius: 9999px;
+	animation: drift 9s ease-in-out infinite;
+	pointer-events: none;
+}
+
+.ambient-left {
+	left: -4rem;
+	top: -5rem;
+	background: radial-gradient(circle, rgba(252, 211, 77, 0.7) 0%, rgba(251, 113, 133, 0.1) 70%);
+}
+
+.ambient-right {
+	right: -6rem;
+	bottom: -6rem;
+	background: radial-gradient(circle, rgba(56, 189, 248, 0.72) 0%, rgba(14, 116, 144, 0.1) 70%);
+	animation-delay: 0.8s;
+}
+
+.resume-canvas {
+	position: relative;
+	max-width: 1120px;
+	margin: 0 auto;
+	backdrop-filter: blur(4px);
+}
+
+.top-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.name {
+	margin: 0.4rem 0 0;
+	font-size: clamp(2rem, 6.4vw, 3.35rem);
+	line-height: 1;
+	color: #102a43;
+	font-weight: 800;
+}
+
+.headline {
+	margin: 0.6rem 0 0;
+	color: #334e68;
+	font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.lang-switch {
+	display: inline-flex;
+	gap: 0.5rem;
+	padding: 0.45rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.55);
+	backdrop-filter: blur(8px);
+}
+
+.resume-grid {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.resume-grid :is(.identity-card, .education-card, .experience-card) {
+	grid-column: span 4;
+}
+
+.intro-card,
+.stack-card {
+	grid-column: span 6;
+}
+
+.skills-card,
+.project-card {
+	grid-column: span 6;
+}
+
+:host ::ng-deep .glass-card {
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.75);
+	background: linear-gradient(140deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.56));
+	box-shadow: 0 20px 40px rgba(37, 99, 235, 0.14);
+	animation: reveal 560ms ease both;
+}
+
+:host ::ng-deep .glass-card .p-card-title {
+	color: #102a43;
+	font-size: 1.15rem;
+}
+
+:host ::ng-deep .glass-card .p-card-subtitle {
+	margin-top: -0.2rem;
+}
+
+.badge-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.intro-block p {
+	margin: 0.5rem 0 0;
+	color: #243b53;
+	line-height: 1.7;
+}
+
+.detail-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.72rem;
+}
+
+.detail-list li {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	color: #243b53;
+	line-height: 1.45;
+}
+
+.detail-list i {
+	color: #0369a1;
+	font-size: 0.95rem;
+}
+
+.stack-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.8rem;
+}
+
+.stack-item {
+	padding: 0.7rem;
+	border-radius: 12px;
+	background: rgba(236, 253, 245, 0.7);
+	border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.stack-label {
+	display: block;
+	margin-bottom: 0.4rem;
+	color: #134e4a;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-weight: 700;
+}
+
+.skills-card .badge-row {
+	gap: 0.65rem;
+}
+
+.project-card .detail-list li {
+	align-items: flex-start;
+}
+
+@keyframes reveal {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes drift {
+	0%,
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+
+	50% {
+		transform: translate3d(0, -18px, 0);
+	}
+}
+
+@media (max-width: 1024px) {
+	.resume-grid :is(.identity-card, .education-card, .experience-card),
+	.intro-card,
+	.stack-card,
+	.skills-card,
+	.project-card {
+		grid-column: span 6;
+	}
+}
+
+@media (max-width: 768px) {
+	.resume-shell {
+		padding-top: 1.3rem;
+	}
+
+	.top-bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.lang-switch {
+		align-self: flex-start;
+	}
+
+	.resume-grid > * {
+		grid-column: span 12 !important;
+	}
+
+	.stack-grid {
+		grid-template-columns: 1fr;
+	}
+}

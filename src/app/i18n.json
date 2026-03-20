@@ -1,22 +1,68 @@
 {
-  "en": {
-    "profile": { "name": "Hao-Lun, Wang", "title": "Software Engineer / IT Intern", "gender": "Male", "age": "34", "status": "Employed" },
-    "education": { "school": "National Chin-Yi University of Technology", "department": "Computer Science and Information Engineering", "degree": "Bachelor's Degree", "graduation_status": "Graduated (2026) " },
-    "experience": { "intern_title": "IT Intern", "assistant_title": "Administrative Assistant", "military_title": "Volunteer Enlisted Soldier", "skills_label": "Technical Skills", "projects_label": "Project Achievements" },
-    "tech_stack": { "language": "TypeScript", "frontend": "Angular (Standalone)", "backend": "NestJS, Prisma", "database": "MariaDB", "devops": "Docker, Nginx, Git" },
-    "introductions": {
-      "pitch_30s": "Hi, I'm Hao-Lun. I'm a Software Engineer specializing in TypeScript, Angular, and NestJS. With a background as a volunteer soldier, I bring strong discipline and execution to every project. Currently, I'm an IT Intern completing my CS degree at NCUT, focused on building efficient and scalable web applications.",
-      "pitch_1min": "Hi, I'm Hao-Lun Wang. My background is a mix of high-intensity military service and modern software engineering. After serving as a volunteer soldier, I decided to dive into technology and am now a CS senior at NCUT while working as an IT Intern. I specialize in Angular Standalone architecture and NestJS backends. My military experience taught me the value of precision and grit, which I now channel into solving complex coding challenges and optimizing DevOps workflows with Docker and Nginx."
+    "en": {
+        "profile": {
+            "name": "Haolun, Wang",
+            "title": "Software Engineer / IT Intern",
+            "gender": "Male",
+            "age": "34",
+            "status": "Employed"
+        },
+        "education": {
+            "school": "National Chin-Yi University of Technology",
+            "department": "Computer Science and Information Engineering",
+            "degree": "Bachelor's Degree",
+            "graduation_status": "Graduated (2026) "
+        },
+        "experience": {
+            "intern_title": "IT Intern",
+            "assistant_title": "Administrative Assistant",
+            "military_title": "Volunteer Enlisted Soldier",
+            "skills_label": "Technical Skills",
+            "projects_label": "Project Achievements"
+        },
+        "tech_stack": {
+            "language": "TypeScript",
+            "frontend": "Angular (Standalone)",
+            "backend": "NestJS, Prisma",
+            "database": "MariaDB",
+            "devops": "Docker, Nginx, Git"
+        },
+        "introductions": {
+            "pitch_30s": "Hi, I'm Haolun. I'm a Software Engineer specializing in TypeScript, Angular, and NestJS. With a background as a volunteer soldier, I bring strong discipline and execution to every project. Currently, I'm an IT Intern completing my CS degree at NCUT, focused on building efficient and scalable web applications.",
+            "pitch_1min": "Hi, I'm Haolun Wang. My background is a mix of high-intensity military service and modern software engineering. After serving as a volunteer soldier, I decided to dive into technology and am now a CS senior at NCUT while working as an IT Intern. I specialize in Angular Standalone architecture and NestJS backends. My military experience taught me the value of precision and grit, which I now channel into solving complex coding challenges and optimizing DevOps workflows with Docker and Nginx."
+        }
+    },
+    "zh_TW": {
+        "profile": {
+            "name": "王顥倫",
+            "title": "軟體工程師 / IT 實習生",
+            "gender": "男",
+            "age": "34 歲",
+            "status": "在職中"
+        },
+        "education": {
+            "school": "國立勤益科技大學",
+            "department": "資訊工程學系",
+            "degree": "大學部",
+            "graduation_status": "2026 年畢業 "
+        },
+        "experience": {
+            "intern_title": "IT 實習生",
+            "assistant_title": "行政助理",
+            "military_title": "志願役士兵",
+            "skills_label": "專業技能",
+            "projects_label": "專案成就"
+        },
+        "tech_stack": {
+            "language": "TypeScript",
+            "frontend": "Angular (獨立元件架構)",
+            "backend": "NestJS, Prisma",
+            "database": "MariaDB",
+            "devops": "Docker, Nginx, Git"
+        },
+        "introductions": {
+            "pitch_30s": "你好，我是顥倫。我是一名專注於 TypeScript 全端開發的軟體工程師，擅長使用 Angular 與 NestJS。身為志願役士兵出身，我擁有極強的執行力與穩定性，目前正在勤益資工深造並擔任 IT 實習生，致力於開發高效能的 Web 系統。",
+            "pitch_1min": "你好，我是王顥倫。我擁有相對獨特的職涯轉換經歷，從志願役士兵轉戰資訊工程領域。目前我在勤益資工就讀，同時擔任 IT 實習生。技術層面我精進於 Angular 獨立元件架構與 NestJS 後端開發，並熟練運用 Docker 進行部署。軍旅生活培養了我高度的紀律與面對壓力的韌性，這讓我能以更嚴謹的態度面對程式除錯與架構設計，並確切達成專案目標。"
+        }
     }
-  },
-  "zh_TW": {
-    "profile": { "name": "王顥倫", "title": "軟體工程師 / IT 實習生", "gender": "男", "age": "34 歲", "status": "在職中" },
-    "education": { "school": "國立勤益科技大學", "department": "資訊工程學系", "degree": "大學部", "graduation_status": "2026 年畢業 " },
-    "experience": { "intern_title": "IT 實習生", "assistant_title": "行政助理", "military_title": "志願役士兵", "skills_label": "專業技能", "projects_label": "專案成就" },
-    "tech_stack": { "language": "TypeScript", "frontend": "Angular (獨立元件架構)", "backend": "NestJS, Prisma", "database": "MariaDB", "devops": "Docker, Nginx, Git" },
-    "introductions": {
-      "pitch_30s": "你好，我是顥倫。我是一名專注於 TypeScript 全端開發的軟體工程師，擅長使用 Angular 與 NestJS。身為志願役士兵出身，我擁有極強的執行力與穩定性，目前正在勤益資工深造並擔任 IT 實習生，致力於開發高效能的 Web 系統。",
-      "pitch_1min": "你好，我是王顥倫。我擁有相對獨特的職涯轉換經歷，從志願役士兵轉戰資訊工程領域。目前我在勤益資工就讀，同時擔任 IT 實習生。技術層面我精進於 Angular 獨立元件架構與 NestJS 後端開發，並熟練運用 Docker 進行部署。軍旅生活培養了我高度的紀律與面對壓力的韌性，這讓我能以更嚴謹的態度面對程式除錯與架構設計，並確切達成專案目標。"
-    }
-  }
 }
