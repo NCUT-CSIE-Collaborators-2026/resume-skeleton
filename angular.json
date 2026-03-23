@@ -39,7 +39,13 @@
           },
           "configurations": {
             "cf": {
-              "outputPath": "dist/resume"
+              "outputPath": "dist/resume",
+              "baseHref": "/resume/",
+              "outputHashing": "all",
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true,
+              "namedChunks": false
             },
             "production": {
               "budgets": [
