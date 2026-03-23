@@ -38,6 +38,9 @@
             "scripts": []
           },
           "configurations": {
+            "cf": {
+              "outputPath": "dist/resume"
+            },
             "production": {
               "budgets": [
                 {
