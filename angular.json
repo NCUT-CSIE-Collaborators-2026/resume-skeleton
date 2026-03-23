@@ -17,7 +17,8 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/resume-skeleton",
+            "baseHref": "/resume/",
+            "outputPath": "/opt/dist/resume",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [

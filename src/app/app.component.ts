@@ -39,6 +39,21 @@ interface ResumeLocale {
     pitch_30s: string;
     pitch_1min: string;
   };
+  ui: {
+    introTitle: string;
+    educationTitle: string;
+    expTitle: string;
+    stackTitle: string;
+    exportPdfLabel: string;
+    projects: string[];
+    labels: {
+      language: string;
+      frontend: string;
+      backend: string;
+      database: string;
+      devops: string;
+    };
+  };
 }
 
 interface UiCopy {
@@ -75,55 +90,24 @@ export class AppComponent {
   readonly isExporting = signal(false);
 
   readonly languageOptions: Array<{ label: string; code: LangCode }> = [
-    { label: 'TW', code: 'zh_TW' },
+    { label: '繁', code: 'zh_TW' },
     { label: 'EN', code: 'en' }
   ];
 
   readonly content = computed(() => RESUME_I18N[this.activeLang()]);
 
   readonly uiCopy = computed<UiCopy>(() => {
-    if (this.activeLang() === 'zh_TW') {
-      return {
-        introTitle: '自我介紹',
-        educationTitle: '學歷背景',
-        expTitle: '經歷概覽',
-        stackTitle: '技術堆疊',
-        skillsTitle: this.content().experience.skills_label,
-        projectTitle: this.content().experience.projects_label,
-        exportPdfLabel: '匯出 PDF',
-        projects: [
-          '履歷網站樣板：完成中英切換、響應式版面與元件化設計。',
-          'Angular + NestJS 全端專案：實作 API 串接、部署流程與版本控管。'
-        ],
-        labels: {
-          language: '語言',
-          frontend: 'Frontend',
-          backend: 'Backend',
-          database: '資料庫',
-          devops: 'DevOps'
-        }
-      };
-    }
-
+    const content = this.content();
     return {
-      introTitle: 'Self Introduction',
-      educationTitle: 'Education',
-      expTitle: 'Experience',
-      stackTitle: 'Tech Stack',
-      skillsTitle: this.content().experience.skills_label,
-      projectTitle: this.content().experience.projects_label,
-      exportPdfLabel: 'Export PDF',
-      projects: [
-        'Resume website template with bilingual switch, responsive layout, and componentized design.',
-        'Angular + NestJS full-stack work including API integration, deployment flow, and version control.'
-      ],
-      labels: {
-        language: 'Language',
-        frontend: 'Frontend',
-        backend: 'Backend',
-        database: 'Database',
-        devops: 'DevOps'
-      }
+      introTitle: content.ui.introTitle,
+      educationTitle: content.ui.educationTitle,
+      expTitle: content.ui.expTitle,
+      stackTitle: content.ui.stackTitle,
+      skillsTitle: content.experience.skills_label,
+      projectTitle: content.experience.projects_label,
+      exportPdfLabel: content.ui.exportPdfLabel,
+      projects: content.ui.projects,
+      labels: content.ui.labels
     };
   });
 

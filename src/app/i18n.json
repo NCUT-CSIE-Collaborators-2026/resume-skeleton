@@ -5,6 +5,7 @@
             "title": "Software Engineer / IT Intern",
             "gender": "Male",
             "age": "34",
+            "MBTI": "INTP",
             "status": "Employed"
         },
         "education": {
@@ -30,6 +31,24 @@
         "introductions": {
             "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
             "pitch_1min": "Hi, I'm Haolun Wang. My experience includes a military background and hands-on software engineering work. At this stage, I am studying Computer Science at NCUT while working as an IT Intern. On the technical side, I mainly work with Angular Standalone architecture and NestJS backend development, and I use Docker to support deployment and development workflows. Most of my daily work centers on feature development, debugging, and system maintenance, where I continue building practical project experience."
+        },
+        "ui": {
+            "introTitle": "Self Introduction",
+            "educationTitle": "Education",
+            "expTitle": "Experience",
+            "stackTitle": "Tech Stack",
+            "exportPdfLabel": "Export PDF",
+            "projects": [
+                "Resume website template with bilingual switch, responsive layout, and componentized design.",
+                "Angular + NestJS full-stack work including API integration, deployment flow, and version control."
+            ],
+            "labels": {
+                "language": "Language",
+                "frontend": "Frontend",
+                "backend": "Backend",
+                "database": "Database",
+                "devops": "DevOps"
+            }
         }
     },
     "zh_TW": {
@@ -38,6 +57,7 @@
             "title": "軟體工程師 / IT 實習生",
             "gender": "男",
             "age": "34 歲",
+            "MBTI": "INTP",
             "status": "在職中"
         },
         "education": {
@@ -63,6 +83,24 @@
         "introductions": {
             "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",
             "pitch_1min": "你好，我是王顥倫。我的經歷包含軍旅背景與資訊工程實務，現階段在勤益資工就讀並擔任 IT 實習生。技術上以 Angular 獨立元件架構與 NestJS 後端開發為主，也使用 Docker 支援部署與開發流程。平時主要投入在功能開發、除錯與系統維護，累積可落地的專案經驗。"
+        },
+        "ui": {
+            "introTitle": "自我介紹",
+            "educationTitle": "學歷背景",
+            "expTitle": "經歷概覽",
+            "stackTitle": "技術堆疊",
+            "exportPdfLabel": "匯出 PDF",
+            "projects": [
+                "履歷網站樣板：完成中英切換、響應式版面與元件化設計。",
+                "Angular + NestJS 全端專案：實作 API 串接、部署流程與版本控管。"
+            ],
+            "labels": {
+                "language": "語言",
+                "frontend": "Frontend",
+                "backend": "Backend",
+                "database": "資料庫",
+                "devops": "DevOps"
+            }
         }
     }
 }
