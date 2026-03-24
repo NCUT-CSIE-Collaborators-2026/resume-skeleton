@@ -31,7 +31,7 @@
 
     <div class="resume-grid">
       <!-- Profile Card -->
-      <div class="card glass-card identity-card">
+      <div class="card identity-card">
         <h3 class="card-title">Profile</h3>
         <p class="card-subtitle">{{ content().profile.status }}</p>
         <div class="badge-row">
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Intro Card -->
-      <div class="card glass-card intro-card">
+      <div class="card intro-card">
         <h3 class="card-title">{{ uiCopy().introTitle }}</h3>
         <div class="intro-block">
           <p>{{ introText() }}</p>
@@ -50,7 +50,7 @@
       </div>
 
       <!-- Education Card -->
-      <div class="card glass-card education-card">
+      <div class="card education-card">
         <h3 class="card-title">{{ uiCopy().educationTitle }}</h3>
         <ul class="detail-list">
           <li>
@@ -69,7 +69,7 @@
       </div>
 
       <!-- Experience Card -->
-      <div class="card glass-card experience-card">
+      <div class="card experience-card">
         <h3 class="card-title">{{ uiCopy().expTitle }}</h3>
         <ul class="detail-list">
           @for (item of experiences(); track item) {
@@ -82,7 +82,7 @@
       </div>
 
       <!-- Tech Stack Card -->
-      <div class="card glass-card stack-card">
+      <div class="card stack-card">
         <h3 class="card-title">{{ uiCopy().stackTitle }}</h3>
         <div class="stack-grid">
           @for (item of techStack(); track item.label) {
@@ -95,7 +95,7 @@
       </div>
 
       <!-- Skills Card -->
-      <div class="card glass-card skills-card">
+      <div class="card skills-card">
         <h3 class="card-title">{{ uiCopy().skillsTitle }}</h3>
         <div class="badge-row">
           @for (skill of skillChips(); track skill) {
@@ -105,7 +105,7 @@
       </div>
 
       <!-- Projects Card -->
-      <div class="card glass-card project-card">
+      <div class="card project-card">
         <h3 class="card-title">{{ uiCopy().projectTitle }}</h3>
         <ul class="detail-list">
           @for (project of uiCopy().projects; track project) {
