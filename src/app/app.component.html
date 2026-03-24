@@ -11,15 +11,13 @@
 
       <div class="action-panel">
         <div class="lang-switch" aria-label="language selector">
-          @for (option of languageOptions; track option.code) {
+          @for (option of languageOptions(); track option.code) {
           <p-button [label]="option.label" [outlined]="activeLang() !== option.code" severity="secondary" size="small"
             (onClick)="setLanguage(option.code)" />
           }
           <p-button icon="pi pi-download" size="small" [loading]="isExporting()" [disabled]="isExporting()"
             (onClick)="exportResumePdf()" />
         </div>
-
-
       </div>
     </header>
 

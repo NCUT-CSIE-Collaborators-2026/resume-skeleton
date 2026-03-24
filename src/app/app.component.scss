@@ -48,6 +48,42 @@
 	backdrop-filter: blur(4px);
 }
 
+/* PDF export mode - pure white, no transparency */
+.resume-canvas--pdf {
+	background: #ffffff !important;
+	background-image: none !important;
+	backdrop-filter: none !important;
+	box-shadow: none !important;
+	border: 1px solid #d1d5db !important;
+}
+
+.resume-canvas--pdf .ambient {
+	display: none !important;
+	visibility: hidden !important;
+	height: 0 !important;
+	width: 0 !important;
+}
+
+.resume-canvas--pdf .action-panel {
+	display: none !important;
+	visibility: hidden !important;
+	height: 0 !important;
+	width: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.resume-canvas--pdf .lang-switch {
+	display: none !important;
+	visibility: hidden !important;
+}
+
+.resume-canvas--pdf .resume-grid {
+	background: #ffffff !important;
+	background-image: none !important;
+}
+
+/* Legacy support for pdf-capture-mode class */
 .resume-canvas.pdf-capture-mode {
 	background: #ffffff;
 	backdrop-filter: none;
@@ -130,6 +166,20 @@
 	background: linear-gradient(140deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.56));
 	box-shadow: 0 20px 40px rgba(37, 99, 235, 0.14);
 	animation: reveal 560ms ease both;
+}
+
+/* PDF mode - force white background on cards */
+.resume-canvas--pdf :host ::ng-deep .glass-card {
+	background: #ffffff !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	border: 1px solid #d1d5db !important;
+	animation: none !important;
+}
+
+.resume-canvas--pdf :host ::ng-deep .p-card {
+	background: #ffffff !important;
+	box-shadow: none !important;
 }
 
 :host ::ng-deep .resume-canvas.pdf-capture-mode .glass-card {

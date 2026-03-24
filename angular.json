@@ -40,7 +40,6 @@
           "configurations": {
             "cf": {
               "outputPath": "dist/resume",
-              "baseHref": "/resume/",
               "outputHashing": "all",
               "optimization": true,
               "sourceMap": false,
