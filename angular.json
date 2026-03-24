@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "baseHref": "/resume/",
+            "baseHref": "/resume",
             "outputPath": "/opt/dist/resume",
             "index": "src/index.html",
             "browser": "src/main.ts",
@@ -39,6 +39,7 @@
           },
           "configurations": {
             "cf": {
+              "baseHref": "/",
               "outputPath": "dist/resume",
               "outputHashing": "all",
               "optimization": true,
