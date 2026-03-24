@@ -1,15 +1,11 @@
 import { Component, ElementRef, HostListener, ViewChild, computed, signal } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { ChipModule } from 'primeng/chip';
-import { TagModule } from 'primeng/tag';
-import i18n from './i18n.json';
+import i18nData from './i18n.json';
 
 type LangCode = 'en' | 'zh_TW';
 
 interface ResumeLocale {
   config: {
-    code: LangCode;
+    code: 'en' | 'zh_TW';
     label: string;
   };
   profile: {
@@ -79,11 +75,11 @@ interface UiCopy {
   };
 }
 
-const RESUME_I18N = i18n as Record<LangCode, ResumeLocale>;
+const RESUME_I18N = i18nData as Record<LangCode, ResumeLocale>;
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonModule, CardModule, ChipModule, TagModule],
+  imports: [],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -95,9 +91,9 @@ export class AppComponent {
   readonly isExporting = signal(false);
 
   readonly languageOptions = computed(() =>
-    Object.values(RESUME_I18N).map(locale => ({
+    Object.entries(RESUME_I18N).map(([code, locale]) => ({
       label: locale.config.label,
-      code: locale.config.code
+      code: code as LangCode
     }))
   );
 
@@ -148,15 +144,17 @@ export class AppComponent {
     return [
       { label: labels.language, value: stack.language, severity: 'info' as const },
       { label: labels.frontend, value: stack.frontend, severity: 'success' as const },
-      { label: labels.backend, value: stack.backend, severity: 'warn' as const },
-      { label: labels.database, value: stack.database, severity: 'contrast' as const },
+      { label: labels.backend, value: stack.backend, severity: 'warning' as const },
+      { label: labels.database, value: stack.database, severity: 'danger' as const },
       { label: labels.devops, value: stack.devops, severity: 'secondary' as const }
     ];
   });
 
-  setLanguage(lang: LangCode): void {
-    this.activeLang.set(lang);
-    this.saveLanguageToLocalStorage(lang);
+  setLanguage(lang: string | LangCode): void {
+    if (lang === 'en' || lang === 'zh_TW') {
+      this.activeLang.set(lang);
+      this.saveLanguageToLocalStorage(lang);
+    }
   }
 
   private getInitialLanguage(): LangCode {
@@ -172,7 +170,7 @@ export class AppComponent {
     return 'zh_TW';
   }
 
-  private saveLanguageToLocalStorage(lang: LangCode): void {
+  private saveLanguageToLocalStorage(lang: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('resume-language', lang);
     }
@@ -204,9 +202,19 @@ export class AppComponent {
         onclone: (clonedDocument: Document) => {
           const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
           if (clonedCanvas instanceof HTMLElement) {
-            // Apply PDF-specific styling through CSS class
+            // 添加 PDF 模式类
             clonedCanvas.classList.add('resume-canvas--pdf');
-            clonedCanvas.classList.add('pdf-capture-mode');
+
+            // 移除 action-panel（语言选择和下载按钮）
+            const actionPanel = clonedCanvas.querySelector('.action-panel');
+            if (actionPanel?.parentNode) {
+              actionPanel.parentNode.removeChild(actionPanel);
+            }
+
+            // 移除 ambient 背景装饰元素
+            clonedCanvas.querySelectorAll('.ambient').forEach((ambient) => {
+              ambient.parentNode?.removeChild(ambient);
+            });
           }
         }
       });
@@ -217,30 +225,26 @@ export class AppComponent {
         format: 'a4'
       });
 
-      const pageWidth = pdf.internal.pageSize.getWidth();   // 210mm
-      const pageHeight = pdf.internal.pageSize.getHeight();  // 297mm
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const imageData = canvas.toDataURL('image/png');
 
-      // 根据 A4 比例调整图像尺寸（确保完整显示且不超出）
       const topMargin = 5;
-      const maxWidth = pageWidth - 10; // 左右边距
-      const maxHeight = pageHeight - 10; // 上下边距
-      
-      // 计算 canvas 的宽高比
+      const maxWidth = pageWidth - 10;
+      const maxHeight = pageHeight - 10;
+
       const canvasAspect = canvas.height / canvas.width;
-      
-      // 计算合适的尺寸（保持宽高比，不超出页面）
+
       let imgWidth = maxWidth;
       let imgHeight = maxWidth * canvasAspect;
-      
+
       if (imgHeight > maxHeight) {
         imgHeight = maxHeight;
         imgWidth = maxHeight / canvasAspect;
       }
-      
-      // 计算左边距以使图像居中
+
       const leftMargin = (pageWidth - imgWidth) / 2;
-      
+
       pdf.addImage(imageData, 'PNG', leftMargin, topMargin, imgWidth, imgHeight);
       pdf.save(this.activeLang() === 'zh_TW' ? 'resume-zh.pdf' : 'resume-en.pdf');
     } finally {

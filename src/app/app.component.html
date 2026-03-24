@@ -12,38 +12,46 @@
       <div class="action-panel">
         <div class="lang-switch" aria-label="language selector">
           @for (option of languageOptions(); track option.code) {
-          <p-button [label]="option.label" [outlined]="activeLang() !== option.code" severity="secondary" size="small"
-            (onClick)="setLanguage(option.code)" />
+          <button 
+            class="lang-btn"
+            [class.active]="activeLang() === option.code"
+            (click)="setLanguage(option.code)">
+            {{ option.label }}
+          </button>
           }
-          <p-button icon="pi pi-download" size="small" [loading]="isExporting()" [disabled]="isExporting()"
-            (onClick)="exportResumePdf()" />
+          <button 
+            class="download-btn"
+            [disabled]="isExporting()"
+            (click)="exportResumePdf()">
+            {{ isExporting() ? '导出中...' : '下载 PDF' }}
+          </button>
         </div>
       </div>
     </header>
 
     <div class="resume-grid">
-      <p-card styleClass="glass-card identity-card">
-        <ng-template pTemplate="title">Profile</ng-template>
-        <ng-template pTemplate="subtitle">{{ content().profile.status }}</ng-template>
-
+      <!-- Profile Card -->
+      <div class="card glass-card identity-card">
+        <h3 class="card-title">Profile</h3>
+        <p class="card-subtitle">{{ content().profile.status }}</p>
         <div class="badge-row">
           @for (badge of profileBadges(); track badge) {
-          <p-chip [label]="badge" icon="pi pi-user" />
+          <span class="badge">{{ badge }}</span>
           }
         </div>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card intro-card">
-        <ng-template pTemplate="title">{{ uiCopy().introTitle }}</ng-template>
-
+      <!-- Intro Card -->
+      <div class="card glass-card intro-card">
+        <h3 class="card-title">{{ uiCopy().introTitle }}</h3>
         <div class="intro-block">
           <p>{{ introText() }}</p>
         </div>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card education-card">
-        <ng-template pTemplate="title">{{ uiCopy().educationTitle }}</ng-template>
-
+      <!-- Education Card -->
+      <div class="card glass-card education-card">
+        <h3 class="card-title">{{ uiCopy().educationTitle }}</h3>
         <ul class="detail-list">
           <li>
             <i class="pi pi-building-columns"></i>
@@ -58,11 +66,11 @@
             <span>{{ content().education.degree }} | {{ content().education.graduation_status }}</span>
           </li>
         </ul>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card experience-card">
-        <ng-template pTemplate="title">{{ uiCopy().expTitle }}</ng-template>
-
+      <!-- Experience Card -->
+      <div class="card glass-card experience-card">
+        <h3 class="card-title">{{ uiCopy().expTitle }}</h3>
         <ul class="detail-list">
           @for (item of experiences(); track item) {
           <li>
@@ -71,34 +79,34 @@
           </li>
           }
         </ul>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card stack-card">
-        <ng-template pTemplate="title">{{ uiCopy().stackTitle }}</ng-template>
-
+      <!-- Tech Stack Card -->
+      <div class="card glass-card stack-card">
+        <h3 class="card-title">{{ uiCopy().stackTitle }}</h3>
         <div class="stack-grid">
           @for (item of techStack(); track item.label) {
           <div class="stack-item">
             <span class="stack-label">{{ item.label }}</span>
-            <p-tag [value]="item.value" [severity]="item.severity" />
+            <span class="tag" [class]="'tag-' + item.severity">{{ item.value }}</span>
           </div>
           }
         </div>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card skills-card">
-        <ng-template pTemplate="title">{{ uiCopy().skillsTitle }}</ng-template>
-
+      <!-- Skills Card -->
+      <div class="card glass-card skills-card">
+        <h3 class="card-title">{{ uiCopy().skillsTitle }}</h3>
         <div class="badge-row">
           @for (skill of skillChips(); track skill) {
-          <p-chip [label]="skill" icon="pi pi-sparkles" />
+          <span class="chip">{{ skill }}</span>
           }
         </div>
-      </p-card>
+      </div>
 
-      <p-card styleClass="glass-card project-card">
-        <ng-template pTemplate="title">{{ uiCopy().projectTitle }}</ng-template>
-
+      <!-- Projects Card -->
+      <div class="card glass-card project-card">
+        <h3 class="card-title">{{ uiCopy().projectTitle }}</h3>
         <ul class="detail-list">
           @for (project of uiCopy().projects; track project) {
           <li>
@@ -107,7 +115,7 @@
           </li>
           }
         </ul>
-      </p-card>
+      </div>
     </div>
   </section>
 </main>
