@@ -1,13 +1,35 @@
-import { Component, ElementRef, HostListener, ViewChild, computed, signal } from '@angular/core';
-import i18nData from './i18n.json';
+import { Component, ElementRef, HostListener, ViewChild, computed, effect, signal } from '@angular/core';
+import i18nData from './ui.i18n.json';
+import contentData from './content.i18n.json';
 
 type LangCode = 'en' | 'zh_TW';
 
-interface ResumeLocale {
+interface I18nLocale {
   config: {
     code: 'en' | 'zh_TW';
     label: string;
+    lang: string;
   };
+  'content-ui': {
+    introTitle: string;
+    educationTitle: string;
+    expTitle: string;
+    stackTitle: string;
+    labels: {
+      language: string;
+      frontend: string;
+      backend: string;
+      database: string;
+      devops: string;
+    };
+  };
+  'bar-ui': {
+    exportPdfLabel: string;
+    exportingLabel: string;
+  };
+}
+
+interface ContentLocale {
   profile: {
     name: string;
     title: string;
@@ -40,25 +62,12 @@ interface ResumeLocale {
     pitch_30s: string;
     pitch_1min: string;
   };
-  'content-ui': {
-    introTitle: string;
-    educationTitle: string;
-    expTitle: string;
-    stackTitle: string;
-    projects: string[];
-    labels: {
-      language: string;
-      frontend: string;
-      backend: string;
-      database: string;
-      devops: string;
-    };
-  };
-  'bar-ui': {
-    exportPdfLabel: string;
-    exportingLabel: string;
+  projects: {
+    items: string[];
   };
 }
+
+type ResumeLocale = I18nLocale & ContentLocale;
 
 interface UiCopy {
   introTitle: string;
@@ -67,7 +76,6 @@ interface UiCopy {
   stackTitle: string;
   skillsTitle: string;
   projectTitle: string;
-  projects: string[];
   labels: {
     language: string;
     frontend: string;
@@ -82,7 +90,16 @@ interface BarUi {
   exportingLabel: string;
 }
 
-const RESUME_I18N = i18nData as Record<LangCode, ResumeLocale>;
+const RESUME_I18N = Object.entries(i18nData as Record<LangCode, I18nLocale>).reduce(
+  (acc, [lang, i18n]) => {
+    acc[lang as LangCode] = {
+      ...i18n,
+      ...(contentData as Record<LangCode, ContentLocale>)[lang as LangCode]
+    } as ResumeLocale;
+    return acc;
+  },
+  {} as Record<LangCode, ResumeLocale>
+);
 
 @Component({
   selector: 'app-root',
@@ -96,6 +113,14 @@ export class AppComponent {
   readonly activeLang = signal<LangCode>(this.getInitialLanguage());
   readonly introMode = signal<'30' | '60'>(this.getIntroModeFromHash());
   readonly isExporting = signal(false);
+
+  constructor() {
+    // 同步文档语言属性
+    effect(() => {
+      const lang = this.content().config.lang;
+      document.documentElement.lang = lang;
+    });
+  }
 
   readonly languageOptions = computed(() =>
     Object.entries(RESUME_I18N).map(([code, locale]) => ({
@@ -115,10 +140,11 @@ export class AppComponent {
       stackTitle: content['content-ui'].stackTitle,
       skillsTitle: content.experience.skills_label,
       projectTitle: content.experience.projects_label,
-      projects: content['content-ui'].projects,
       labels: content['content-ui'].labels
     };
   });
+
+  readonly projectItems = computed(() => this.content().projects.items);
 
   readonly barUi = computed<BarUi>(() => {
     const content = this.content();

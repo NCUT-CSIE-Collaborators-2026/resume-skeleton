@@ -12,17 +12,11 @@
       <div class="action-panel">
         <div class="lang-switch" aria-label="language selector">
           @for (option of languageOptions(); track option.code) {
-          <button 
-            class="lang-btn"
-            [class.active]="activeLang() === option.code"
-            (click)="setLanguage(option.code)">
+          <button class="lang-btn" [class.active]="activeLang() === option.code" (click)="setLanguage(option.code)">
             {{ option.label }}
           </button>
           }
-          <button 
-            class="download-btn"
-            [disabled]="isExporting()"
-            (click)="exportResumePdf()"
+          <button class="download-btn" [disabled]="isExporting()" (click)="exportResumePdf()"
             [title]="isExporting() ? barUi().exportingLabel : barUi().exportPdfLabel">
             <i [class]="isExporting() ? 'pi pi-spinner pi-spin' : 'pi pi-download'"></i>
           </button>
@@ -109,7 +103,7 @@
       <div class="card project-card">
         <h3 class="card-title">{{ uiCopy().projectTitle }}</h3>
         <ul class="detail-list">
-          @for (project of uiCopy().projects; track project) {
+          @for (project of projectItems(); track project) {
           <li>
             <i class="pi pi-check-circle"></i>
             <span>{{ project }}</span>

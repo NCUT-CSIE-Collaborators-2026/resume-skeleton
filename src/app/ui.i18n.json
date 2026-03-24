@@ -1,0 +1,50 @@
+{
+    "en": {
+        "config": {
+            "code": "en",
+            "label":  "EN",
+            "lang": "en"
+        },
+        "content-ui": {
+            "introTitle": "Self Introduction",
+            "educationTitle": "Education",
+            "expTitle": "Experience",
+            "stackTitle": "Tech Stack",
+            "labels": {
+                "language": "Language",
+                "frontend": "Frontend",
+                "backend": "Backend",
+                "database": "Database",
+                "devops": "DevOps"
+            }
+        },
+        "bar-ui": {
+            "exportPdfLabel": "Export PDF",
+            "exportingLabel": "Exporting"
+        }
+    },
+    "zh_TW": {
+        "config":{
+            "code": "zh_TW",
+            "label": "繁",
+            "lang": "zh-TW"
+        },
+        "content-ui": {
+            "introTitle": "自我介紹",
+            "educationTitle": "學歷背景",
+            "expTitle": "經歷概覽",
+            "stackTitle": "技術堆疊",
+            "labels": {
+                "language": "語言",
+                "frontend": "Frontend",
+                "backend": "Backend",
+                "database": "資料庫",
+                "devops": "DevOps"
+            }
+        },
+        "bar-ui": {
+            "exportPdfLabel": "匯出 PDF",
+            "exportingLabel": "匯出中"
+        }
+    }
+}
