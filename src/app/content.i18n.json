@@ -24,7 +24,7 @@
             "frontend": ["Angular (Standalone)"],
             "backend": ["NestJS", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
-            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions"]
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions", "Swagger"]
         },
         "introductions": {
             "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
@@ -62,7 +62,7 @@
             "frontend": ["Angular (獨立元件架構)"],
             "backend": ["NestJS", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
-            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions"]
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions", "Swagger"]
         },
         "introductions": {
             "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",

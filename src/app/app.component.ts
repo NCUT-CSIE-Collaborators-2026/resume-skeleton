@@ -16,7 +16,6 @@ interface I18nLocale {
     educationTitle: string;
     expTitle: string;
     stackTitle: string;
-    skillsTitle: string;
     projectsTitle: string;
     labels: {
       language: string;
@@ -75,7 +74,6 @@ interface UiCopy {
   educationTitle: string;
   expTitle: string;
   stackTitle: string;
-  skillsTitle: string;
   projectTitle: string;
   labels: {
     language: string;
@@ -145,7 +143,6 @@ export class AppComponent {
       educationTitle: content['content-ui'].educationTitle,
       expTitle: content['content-ui'].expTitle,
       stackTitle: content['content-ui'].stackTitle,
-      skillsTitle: content['content-ui'].skillsTitle,
       projectTitle: content['content-ui'].projectsTitle,
       labels: content['content-ui'].labels
     };
@@ -178,11 +175,6 @@ export class AppComponent {
       ? this.content().introductions.pitch_30s
       : this.content().introductions.pitch_1min
   );
-
-  readonly skillChips = computed(() => {
-    const stack = this.content().tech_stack;
-    return [stack.language, stack.frontend, stack.backend, stack.database, stack.devops];
-  });
 
   readonly techStack = computed(() => {
     const stack = this.content().tech_stack;
