@@ -9,6 +9,7 @@ interface I18nLocale {
     code: 'en' | 'zh_TW';
     label: string;
     lang: string;
+    title: string;
   };
   'content-ui': {
     introTitle: string;
@@ -119,6 +120,12 @@ export class AppComponent {
     effect(() => {
       const lang = this.content().config.lang;
       document.documentElement.lang = lang;
+    });
+    
+    // 同步文档标题
+    effect(() => {
+      const title = this.content().config.title;
+      document.title = title;
     });
   }
 

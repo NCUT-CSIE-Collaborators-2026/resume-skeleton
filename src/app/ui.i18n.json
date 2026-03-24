@@ -3,7 +3,8 @@
         "config": {
             "code": "en",
             "label":  "EN",
-            "lang": "en"
+            "lang": "en",
+            "title": "Haolun Wang | Resume"
         },
         "content-ui": {
             "introTitle": "Self Introduction",
@@ -27,7 +28,8 @@
         "config":{
             "code": "zh_TW",
             "label": "繁",
-            "lang": "zh-TW"
+            "lang": "zh-TW",
+            "title": "王顥倫 | 簡歷"
         },
         "content-ui": {
             "introTitle": "自我介紹",
