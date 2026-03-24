@@ -11,6 +11,8 @@
             "educationTitle": "Education",
             "expTitle": "Experience",
             "stackTitle": "Tech Stack",
+            "skillsTitle": "Technical Skills",
+            "projectsTitle": "Project Achievements",
             "labels": {
                 "language": "Language",
                 "frontend": "Frontend",
@@ -36,6 +38,8 @@
             "educationTitle": "學歷背景",
             "expTitle": "經歷概覽",
             "stackTitle": "技術堆疊",
+            "skillsTitle": "專業技能",
+            "projectsTitle": "專案成就",
             "labels": {
                 "language": "語言",
                 "frontend": "Frontend",

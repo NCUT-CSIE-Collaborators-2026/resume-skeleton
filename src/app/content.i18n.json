@@ -17,16 +17,14 @@
         "experience": {
             "intern_title": "IT Intern",
             "assistant_title": "Administrative Assistant",
-            "military_title": "Volunteer Enlisted Soldier",
-            "skills_label": "Technical Skills",
-            "projects_label": "Project Achievements"
+            "military_title": "Volunteer Enlisted Soldier"
         },
         "tech_stack": {
-            "language": "TypeScript",
-            "frontend": "Angular (Standalone)",
-            "backend": "NestJS, Prisma",
-            "database": "MariaDB",
-            "devops": "Docker, Nginx, Git"
+            "language": ["TypeScript"],
+            "frontend": ["Angular (Standalone)"],
+            "backend": ["NestJS", "Mikro-ORM"],
+            "database": ["MariaDB", "SQL Server"],
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git"]
         },
         "introductions": {
             "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
@@ -34,7 +32,7 @@
         },
         "projects": {
             "items": [
-                "Resume website built with Angular Standalone architecture, featuring bilingual (EN/ZH) switching and responsive layout. Version controlled via GitHub Repository and deployed using Cloudflare Pages & Workers.",
+                "Resume website built with Angular Standalone architecture, featuring bilingual (EN/ZH) switching and responsive layout. Version controlled via GitHub Repository and deployed via Cloudflare Pages with global CDN and Cloudflare Workers serverless functions.",
                 "Angular + NestJS full-stack development including API integration, deployment workflows, Git-based version control, and Docker containerization."
             ]
         }
@@ -57,16 +55,14 @@
         "experience": {
             "intern_title": "IT 實習生",
             "assistant_title": "行政助理",
-            "military_title": "志願役士兵",
-            "skills_label": "專業技能",
-            "projects_label": "專案成就"
+            "military_title": "志願役士兵"
         },
         "tech_stack": {
-            "language": "TypeScript",
-            "frontend": "Angular (獨立元件架構)",
-            "backend": "NestJS, Prisma",
-            "database": "MariaDB",
-            "devops": "Docker, Nginx, Git"
+            "language": ["TypeScript"],
+            "frontend": ["Angular (獨立元件架構)"],
+            "backend": ["NestJS", "Mikro-ORM"],
+            "database": ["MariaDB", "SQL Server"],
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git"]
         },
         "introductions": {
             "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",
@@ -74,7 +70,7 @@
         },
         "projects": {
             "items": [
-                "履歷網站：使用 Angular Standalone 架構，實現中英切換、響應式設計；搭配 GitHub Repository 版控，透過 Cloudflare Pages & Workers 進行自動化部署。",
+                "履歷網站：使用 Angular Standalone 架構，實現中英切換、響應式設計；搭配 GitHub Repository 版控，透過 Cloudflare Pages 全球 CDN 部署和 Cloudflare Workers Serverless 函式進行部署。",
                 "Angular + NestJS 全端專案：實作 API 串接、Docker 容器化、Git 版本控管與完整的部署流程。"
             ]
         }
