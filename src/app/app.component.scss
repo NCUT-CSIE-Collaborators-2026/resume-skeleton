@@ -355,7 +355,7 @@ $pdf-border: 1.5px solid #bcbfc78c;
 	background-image: none !important;
 	backdrop-filter: none !important;
 	box-shadow: none !important;
-	border: $pdf-border !important;
+	border: none !important;
 }
 
 .resume-canvas--pdf .card {
@@ -374,7 +374,6 @@ $pdf-border: 1.5px solid #bcbfc78c;
 
 .resume-canvas--pdf .stack-item {
 	background: #f0fdf4 !important;
-	border: $pdf-border !important;
 }
 
 .resume-canvas--pdf .tag-success {
