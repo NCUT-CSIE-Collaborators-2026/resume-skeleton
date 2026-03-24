@@ -189,11 +189,11 @@ export class AppComponent {
     const labels = this.uiCopy().labels;
 
     return [
-      { label: labels.language, value: stack.language.join(', '), severity: 'info' as const },
-      { label: labels.frontend, value: stack.frontend.join(', '), severity: 'success' as const },
-      { label: labels.backend, value: stack.backend.join(', '), severity: 'warning' as const },
-      { label: labels.database, value: stack.database.join(', '), severity: 'danger' as const },
-      { label: labels.devops, value: stack.devops.join(', '), severity: 'secondary' as const }
+      { label: labels.language, value: stack.language, severity: 'info' as const },
+      { label: labels.frontend, value: stack.frontend, severity: 'success' as const },
+      { label: labels.backend, value: stack.backend, severity: 'warning' as const },
+      { label: labels.database, value: stack.database, severity: 'danger' as const },
+      { label: labels.devops, value: stack.devops, severity: 'secondary' as const }
     ];
   });
 

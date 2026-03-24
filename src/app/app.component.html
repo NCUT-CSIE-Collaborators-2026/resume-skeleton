@@ -83,7 +83,11 @@
           @for (item of techStack(); track item.label) {
           <div class="stack-item">
             <span class="stack-label">{{ item.label }}</span>
-            <span class="tag" [class]="'tag-' + item.severity">{{ item.value }}</span>
+            <div class="stack-tags">
+              @for (tech of item.value; track tech) {
+              <span class="tag" [class]="'tag-' + item.severity">{{ tech }}</span>
+              }
+            </div>
           </div>
           }
         </div>

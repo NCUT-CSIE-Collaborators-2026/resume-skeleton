@@ -24,7 +24,7 @@
             "frontend": ["Angular (Standalone)"],
             "backend": ["NestJS", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
-            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git"]
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions"]
         },
         "introductions": {
             "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
@@ -32,8 +32,8 @@
         },
         "projects": {
             "items": [
-                "Resume website built with Angular Standalone architecture, featuring bilingual (EN/ZH) switching and responsive layout. Version controlled via GitHub Repository and deployed via Cloudflare Pages with global CDN and Cloudflare Workers serverless functions.",
-                "Angular + NestJS full-stack development including API integration, deployment workflows, Git-based version control, and Docker containerization."
+                "Resume website: Developed using Angular framework, featuring bilingual (EN/ZH) switching and responsive design. Version controlled via GitHub Repository and deployed via Cloudflare Pages & Workers for global distribution.",
+                "Angular + NestJS full-stack development including API integration, deployment workflows, Git-based version control, Docker containerization, and GitHub Actions CI/CD automation."
             ]
         }
     },
@@ -49,7 +49,7 @@
         "education": {
             "school": "國立勤益科技大學",
             "department": "資訊工程學系",
-            "degree": "大學部",
+            "degree": "學士",
             "graduation_status": "2026 年畢業 "
         },
         "experience": {
@@ -62,7 +62,7 @@
             "frontend": ["Angular (獨立元件架構)"],
             "backend": ["NestJS", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
-            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git"]
+            "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions"]
         },
         "introductions": {
             "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",
@@ -70,8 +70,8 @@
         },
         "projects": {
             "items": [
-                "履歷網站：使用 Angular Standalone 架構，實現中英切換、響應式設計；搭配 GitHub Repository 版控，透過 Cloudflare Pages 全球 CDN 部署和 Cloudflare Workers Serverless 函式進行部署。",
-                "Angular + NestJS 全端專案：實作 API 串接、Docker 容器化、Git 版本控管與完整的部署流程。"
+                "履歷網站：使用 Angular 框架開發，實現中英切換、響應式設計；使用 GitHub Repository 版控，使用 Cloudflare Pages & Workers 進行全球部署。",
+                "Angular + NestJS 全端專案：實作 API 串接、Docker 容器化、Git 版本控管、GitHub Actions CI/CD 自動化佈署與完整的部署流程。"
             ]
         }
     }

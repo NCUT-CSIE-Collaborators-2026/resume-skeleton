@@ -290,6 +290,12 @@ $pdf-border: 1.5px solid #bcbfc78c;
 	font-weight: 700;
 }
 
+.stack-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
 .skills-card .badge-row {
 	gap: 0.65rem;
 }
