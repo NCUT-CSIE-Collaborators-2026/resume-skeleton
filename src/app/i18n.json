@@ -41,7 +41,6 @@
             "educationTitle": "Education",
             "expTitle": "Experience",
             "stackTitle": "Tech Stack",
-            "exportPdfLabel": "Export PDF",
             "projects": [
                 "Resume website template with bilingual switch, responsive layout, and componentized design.",
                 "Angular + NestJS full-stack work including API integration, deployment flow, and version control."
@@ -53,6 +52,10 @@
                 "database": "Database",
                 "devops": "DevOps"
             }
+        },
+        "bar-ui": {
+            "exportPdfLabel": "Export PDF",
+            "exportingLabel": "Exporting"
         }
     },
     "zh_TW": {
@@ -97,7 +100,6 @@
             "educationTitle": "學歷背景",
             "expTitle": "經歷概覽",
             "stackTitle": "技術堆疊",
-            "exportPdfLabel": "匯出 PDF",
             "projects": [
                 "履歷網站樣板：完成中英切換、響應式版面與元件化設計。",
                 "Angular + NestJS 全端專案：實作 API 串接、部署流程與版本控管。"
@@ -109,6 +111,10 @@
                 "database": "資料庫",
                 "devops": "DevOps"
             }
+        },
+        "bar-ui": {
+            "exportPdfLabel": "匯出 PDF",
+            "exportingLabel": "匯出中"
         }
     }
 }

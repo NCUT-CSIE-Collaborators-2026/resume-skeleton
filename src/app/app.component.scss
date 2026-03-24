@@ -112,6 +112,22 @@ $pdf-border: 1.5px solid #bcbfc78c;
 	color: white;
 }
 
+.download-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.2rem;
+	height: 2.2rem;
+	padding: 0;
+	border-radius: 50%;
+	font-size: 1rem;
+}
+
+.download-btn:hover:not(:disabled) {
+	background-color: rgba(0, 166, 81, 0.15);
+	color: #00a651;
+}
+
 .download-btn:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;

@@ -22,8 +22,9 @@
           <button 
             class="download-btn"
             [disabled]="isExporting()"
-            (click)="exportResumePdf()">
-            {{ isExporting() ? '导出中...' : '下载 PDF' }}
+            (click)="exportResumePdf()"
+            [title]="isExporting() ? barUi().exportingLabel : barUi().exportPdfLabel">
+            <i [class]="isExporting() ? 'pi pi-spinner pi-spin' : 'pi pi-download'"></i>
           </button>
         </div>
       </div>

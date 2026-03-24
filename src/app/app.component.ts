@@ -45,7 +45,6 @@ interface ResumeLocale {
     educationTitle: string;
     expTitle: string;
     stackTitle: string;
-    exportPdfLabel: string;
     projects: string[];
     labels: {
       language: string;
@@ -54,6 +53,10 @@ interface ResumeLocale {
       database: string;
       devops: string;
     };
+  };
+  'bar-ui': {
+    exportPdfLabel: string;
+    exportingLabel: string;
   };
 }
 
@@ -64,7 +67,6 @@ interface UiCopy {
   stackTitle: string;
   skillsTitle: string;
   projectTitle: string;
-  exportPdfLabel: string;
   projects: string[];
   labels: {
     language: string;
@@ -73,6 +75,11 @@ interface UiCopy {
     database: string;
     devops: string;
   };
+}
+
+interface BarUi {
+  exportPdfLabel: string;
+  exportingLabel: string;
 }
 
 const RESUME_I18N = i18nData as Record<LangCode, ResumeLocale>;
@@ -108,9 +115,16 @@ export class AppComponent {
       stackTitle: content['content-ui'].stackTitle,
       skillsTitle: content.experience.skills_label,
       projectTitle: content.experience.projects_label,
-      exportPdfLabel: content['content-ui'].exportPdfLabel,
       projects: content['content-ui'].projects,
       labels: content['content-ui'].labels
+    };
+  });
+
+  readonly barUi = computed<BarUi>(() => {
+    const content = this.content();
+    return {
+      exportPdfLabel: content['bar-ui'].exportPdfLabel,
+      exportingLabel: content['bar-ui'].exportingLabel
     };
   });
 
@@ -202,16 +216,16 @@ export class AppComponent {
         onclone: (clonedDocument: Document) => {
           const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
           if (clonedCanvas instanceof HTMLElement) {
-            // 添加 PDF 模式类
+            // 新增 PDF 模式類
             clonedCanvas.classList.add('resume-canvas--pdf');
 
-            // 移除 action-panel（语言选择和下载按钮）
+            // 移除 action-panel（語言選擇和下載按鈕）
             const actionPanel = clonedCanvas.querySelector('.action-panel');
             if (actionPanel?.parentNode) {
               actionPanel.parentNode.removeChild(actionPanel);
             }
 
-            // 移除 ambient 背景装饰元素
+            // 移除 ambient 背景裝飾元素
             clonedCanvas.querySelectorAll('.ambient').forEach((ambient) => {
               ambient.parentNode?.removeChild(ambient);
             });
