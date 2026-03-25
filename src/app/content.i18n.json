@@ -28,7 +28,7 @@
         },
         "introductions": {
             "pitch_30s": "Hi, I'm Haolun. I focus on TypeScript full-stack development, mainly using Angular and NestJS. I am currently studying Computer Science at NCUT while working as an IT Intern and participating in web system development.",
-            "pitch_1min": "Hi, I'm Haolun Wang. I'm currently studying Computer Science at NCUT while working as an IT Intern. On the technical side, I mainly focus on Angular Standalone architecture and NestJS backend development, and I use Docker to support deployment and development workflows. Most of my daily work centers on feature development, debugging, and system maintenance, where I continue building practical project experience."
+            "pitch_1min": "Hi, I am a IT Intern and a Computer Science student at National Chin-Yi University of Technology. With two years of experience in TypeScript, I specialize in full-stack development using Angular (Standalone Components) and NestJS. I am proficient in leveraging Docker to optimize deployment and development workflows. My expertise lies in independent feature development, debugging, and system maintenance, with a strong focus on delivering high-quality, production-ready solutions."
         },
         "projects": {
             "items": [
@@ -66,7 +66,7 @@
         },
         "introductions": {
             "pitch_30s": "你好，我是顥倫，專注於 TypeScript 全端開發，主要使用 Angular 與 NestJS。目前在勤益資工就讀，同時擔任 IT 實習生，持續參與 Web 系統開發。",
-            "pitch_1min": "你好，我是王顥倫。現階段在勤益資工就讀並擔任 IT 實習生。技術上以 Angular 獨立元件架構與 NestJS 後端開發為主，也使用 Docker 支援部署與開發流程。平時主要投入在功能開發、除錯與系統維護，累積可落地的專案經驗。"
+            "pitch_1min": "你好，我是王顥倫，目前就讀於勤益科技大學資訊工程系，並擔任 IT 實習生。擁有 兩年 TypeScript 開發經驗，深耕於 Angular（獨立元件架構） 與 NestJS 框架的完整開發流程。我擅長利用 Docker 優化部署與開發環境，並具備獨立處理功能開發、系統除錯與維護的能力，致力於打造高品質、可落地的技術解決方案。"
         },
         "projects": {
             "items": [

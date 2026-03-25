@@ -1,0 +1,77 @@
+<main class="resume-shell">
+    <section class="resume-canvas" #resumeCanvas>
+        <header class="top-bar">
+            <div>
+                <h1 class="name">{{ content().profile.name }}</h1>
+                <p class="headline">{{ content().profile.title }}</p>
+            </div>
+
+            <div class="action-panel">
+                <div class="lang-switch" aria-label="language selector">
+                    @for (option of languageOptions(); track option.code) {
+                    <button class="lang-btn" [class.active]="activeLang() === option.code"
+                        (click)="setLanguage(option.code)">
+                        {{ option.label }}
+                    </button>
+                    }
+                    <button class="download-btn" [disabled]="isExporting()" (click)="exportResumePdf()"
+                        [title]="isExporting() ? barUi().exportingLabel : barUi().exportPdfLabel">
+                        <i [class]="isExporting() ? 'pi pi-spinner pi-spin' : 'pi pi-download'"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="resume-grid">
+            @for (card of cards(); track card.id) {
+            <div class="card" [style.grid-column]="'span ' + card.layout">
+                <h3 class="card-title">{{ card.title }}</h3>
+                @if (card.subtitle) {
+                <p class="card-subtitle">{{ card.subtitle }}</p>
+                }
+
+                @for (element of card.elements; track $index) {
+                @switch (element.type) {
+                @case ('text') {
+                <div class="intro-block">
+                    <p>{{ element.text }}</p>
+                </div>
+                }
+                @case ('badges') {
+                <div class="badge-row">
+                    @for (badge of element.items; track badge) {
+                    <span class="badge">{{ badge }}</span>
+                    }
+                </div>
+                }
+                @case ('icon-list') {
+                <ul class="detail-list">
+                    @for (item of element.items; track item) {
+                    <li>
+                        <i [class]="element.icon"></i>
+                        <span>{{ item }}</span>
+                    </li>
+                    }
+                </ul>
+                }
+                @case ('grid') {
+                <div class="stack-grid">
+                    @for (gridItem of element.items; track gridItem.label) {
+                    <div class="stack-item">
+                        <span class="stack-label">{{ gridItem.label }}</span>
+                        <div class="stack-tags">
+                            @for (tech of gridItem.value; track tech) {
+                            <span class="tag" [class]="'tag-' + gridItem.severity">{{ tech }}</span>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+                }
+                }
+            </div>
+            }
+        </div>
+    </section>
+</main>
