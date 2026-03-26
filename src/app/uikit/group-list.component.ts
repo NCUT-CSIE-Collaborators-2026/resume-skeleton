@@ -34,7 +34,6 @@ interface Group {
     .group-list-container {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
     }
 
     .group-list {

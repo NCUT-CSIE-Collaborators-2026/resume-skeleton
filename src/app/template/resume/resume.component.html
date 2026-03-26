@@ -1,4 +1,4 @@
-<main class="resume-shell">
+<main class="resume-shell" [class.a4-mode]="isA4Mode()">
   <section class="resume-canvas" #resumeCanvas>
     <header class="top-bar">
       <div>
@@ -17,6 +17,15 @@
               {{ option.label }}
             </button>
           }
+          <button
+            class="a4-btn"
+            [class.active]="isA4Mode()"
+            (click)="isA4Mode.set(!isA4Mode())"
+            title="Toggle A4 aspect ratio"
+          >
+            <i class="pi pi-rectangle" style="font-size: 0.8rem; margin-right: 0.25rem;"></i>
+            A4
+          </button>
           <button
             class="download-btn"
             [disabled]="isExporting()"

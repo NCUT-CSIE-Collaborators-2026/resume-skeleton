@@ -148,6 +148,7 @@ export class ResumeComponent {
   readonly activeLang = signal<LangCode>(this.getInitialLanguage());
   readonly introMode = signal<'30' | '60'>(this.getIntroModeFromHash());
   readonly isExporting = signal(false);
+  readonly isA4Mode = signal(true);  // 預設啟用 A4 模式
 
   constructor() {
     // 同步文件語言屬性

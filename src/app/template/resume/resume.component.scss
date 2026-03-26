@@ -3,12 +3,45 @@ $pdf-border: 1.5px solid #bcbfc78c;
 
 :host {
     display: block;
+    // CSS 變數用於尺寸統一管理
+    --unit-xs: 0.25rem;
+    --unit-sm: 0.5rem;
+    --unit-md: 1rem;
+    --unit-lg: 1.5rem;
+    --unit-xl: 2rem;
 }
 
 .resume-shell {
     position: relative;
     overflow: hidden;
     padding: 1rem;
+
+    // A4 模式：保持 A4 比例（寬:高 = 210:297 = 1:1.414）
+    &.a4-mode {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        padding: 1rem;
+        
+        // 基於螢幕寬度計算最大寬度
+        // A4 寬高比例：210mm / 297mm ≈ 0.707
+        max-width: 70vw;
+        margin: 0 auto;
+        
+        @media (max-width: 1200px) {
+            max-width: 80vw;
+        }
+        
+        @media (max-width: 768px) {
+            max-width: 90vw;
+        }
+        
+        @media (max-width: 480px) {
+            max-width: 100%;
+            padding: 0.5rem;
+        }
+    }
 }
 
 .resume-canvas {
@@ -23,6 +56,11 @@ $pdf-border: 1.5px solid #bcbfc78c;
     box-sizing: border-box;
     margin: 0 auto;
     backdrop-filter: blur(4px);
+    
+    // A4 模式：固定 font-size 來鎖定所有 rem 單位
+    .a4-mode & {
+        font-size: 14px;  // 所有子元素的 rem 都相對於 14px，確保內容大小固定
+    }
 }
 
 .top-bar {
@@ -65,7 +103,8 @@ $pdf-border: 1.5px solid #bcbfc78c;
 
 /* Button styles */
 .lang-btn,
-.download-btn {
+.download-btn,
+.a4-btn {
     padding: 0.4rem 0.75rem;
     border: none;
     border-radius: 6px;
@@ -83,6 +122,23 @@ $pdf-border: 1.5px solid #bcbfc78c;
 
 .lang-btn.active {
     background-color: #00a651;
+    color: white;
+}
+
+.a4-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.6rem;
+}
+
+.a4-btn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.a4-btn.active {
+    background-color: #3b82f6;
     color: white;
 }
 
