@@ -1,4 +1,6 @@
 import { Component, ElementRef, HostListener, ViewChild, computed, effect, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { GroupListComponent } from '../../uikit/group-list.component';
 import i18nData from '../../ui.i18n.json';
 import contentData from '../../content.i18n.json';
 
@@ -89,11 +91,31 @@ interface BarUi {
   exportingLabel: string;
 }
 
-type CardElement = 
+type CardElement =
   | { type: 'text'; text: string }
   | { type: 'badges'; items: string[] }
   | { type: 'icon-list'; icon: string; items: string[] }
-  | { type: 'grid'; items: Array<{ label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' }> };
+  | { 
+      type: 'grid-tech'; 
+      items: Array<{ label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' }>;
+      gridLayout?: 'compact' | 'single';
+    }
+  | { 
+      type: 'grid-education'; 
+      groups: Array<{
+        name: string;
+        items: Array<{ label: string; value: string; icon: string }>;
+      }>;
+      gridLayout?: 'compact' | 'single';
+    }
+  | { 
+      type: 'grid-groups'; 
+      groups: Array<{
+        name: string;
+        items: Array<{ label: string; value: string; icon: string }>;
+      }>;
+      gridLayout?: 'compact' | 'single';
+    };
 
 interface Card {
   id: string;
@@ -116,7 +138,7 @@ const RESUME_I18N = Object.entries(i18nData as Record<LangCode, I18nLocale>).red
 
 @Component({
   selector: 'resume',
-  imports: [],
+  imports: [CommonModule, GroupListComponent],
   templateUrl: './resume.component.html',
   styleUrl: './resume.component.scss',
 })
@@ -128,13 +150,13 @@ export class ResumeComponent {
   readonly isExporting = signal(false);
 
   constructor() {
-    // 同步文档语言属性
+    // 同步文件語言屬性
     effect(() => {
       const lang = this.content().config.lang;
       document.documentElement.lang = lang;
     });
-    
-    // 同步文档标题
+
+    // 同步文件標題
     effect(() => {
       const title = this.content().config.title;
       document.title = title;
@@ -184,23 +206,31 @@ export class ResumeComponent {
     this.content().experience.military_title
   ]);
 
+  // 經驗資料轉換為groups格式（3個GROUP，各有1筆資料）
+  readonly experienceGroups = computed(() => {
+    const exps = this.experiences();
+    return exps.map(exp => ({
+      name: 'Experience',
+      items: [{
+        label: 'experience',
+        value: exp,
+        icon: 'pi pi-briefcase'
+      }]
+    }));
+  });
+
   readonly introText = computed(() =>
     this.introMode() === '30'
       ? this.content().introductions.pitch_30s
       : this.content().introductions.pitch_1min
   );
 
-  readonly techStack = computed(() => {
-    const stack = this.content().tech_stack;
-    const labels = this.uiCopy().labels;
-
-    return [
-      { label: labels.language, value: stack.language, severity: 'info' as const },
-      { label: labels.frontend, value: stack.frontend, severity: 'success' as const },
-      { label: labels.backend, value: stack.backend, severity: 'warning' as const },
-      { label: labels.database, value: stack.database, severity: 'danger' as const },
-      { label: labels.devops, value: stack.devops, severity: 'secondary' as const }
-    ];
+  // 技術堆疊卡片的動態寬度：根據項目數量自動調整
+  readonly stackCardLayout = computed(() => {
+    const stackItems = this.getTechStackData();
+    if (stackItems.length > 6) return 8;  // 超過6項，用8列
+    if (stackItems.length > 4) return 6;  // 5-6項，用6列
+    return 4;  // 4項以下，用4列
   });
 
   readonly cards = computed<Card[]>(() => {
@@ -208,7 +238,7 @@ export class ResumeComponent {
     const ui = this.uiCopy();
 
     return [
-      // Profile Card
+      // 個人資料卡
       {
         id: 'profile',
         title: 'Profile',
@@ -218,7 +248,7 @@ export class ResumeComponent {
           { type: 'badges', items: this.profileBadges() }
         ]
       },
-      // Intro Card
+      // 介紹卡
       {
         id: 'intro',
         title: ui.introTitle,
@@ -227,55 +257,46 @@ export class ResumeComponent {
           { type: 'text', text: this.introText() }
         ]
       },
-      // Education Card
+      // 教育卡
       {
         id: 'education',
         title: ui.educationTitle,
-        layout: 4,
+        layout: 6,
         elements: [
           {
-            type: 'icon-list',
-            icon: 'pi pi-building-columns',
-            items: [content.education.school]
-          },
-          {
-            type: 'icon-list',
-            icon: 'pi pi-book',
-            items: [content.education.department]
-          },
-          {
-            type: 'icon-list',
-            icon: 'pi pi-graduation-cap',
-            items: [`${content.education.degree} | ${content.education.graduation_status}`]
+            type: 'grid-education',
+            groups: this.getEducationData(),
+            gridLayout: 'compact'
           }
         ]
       },
-      // Experience Card
+      // 經驗卡
       {
         id: 'experience',
         title: ui.expTitle,
         layout: 4,
         elements: [
           {
-            type: 'icon-list',
-            icon: 'pi pi-briefcase',
-            items: this.experiences()
+            type: 'grid-groups',
+            groups: this.experienceGroups(),
+            gridLayout: 'compact'
           }
         ]
       },
-      // Tech Stack Card
+      // 技術堆疊卡
       {
         id: 'stack',
         title: ui.stackTitle,
-        layout: 6,
+        layout: this.stackCardLayout(),
         elements: [
           {
-            type: 'grid',
-            items: this.techStack()
+            type: 'grid-tech',
+            items: this.getTechStackData(),
+            gridLayout: 'compact'
           }
         ]
       },
-      // Projects Card
+      // 專案卡
       {
         id: 'projects',
         title: ui.projectTitle,
@@ -289,6 +310,50 @@ export class ResumeComponent {
         ]
       }
     ];
+  });
+
+  // 自動填滿列的計算
+  readonly cardsWithAutoFill = computed<Card[]>(() => {
+    const baseCards = this.cards();
+    const adjusted: Card[] = [];
+    let rowSpan = 0;
+    let rowStartIndex = 0;
+
+    for (let i = 0; i < baseCards.length; i++) {
+      const card = { ...baseCards[i] };
+      const nextRowSpan = rowSpan + card.layout;
+
+      if (i === 0) {
+        adjusted.push(card);
+        rowSpan = card.layout;
+        rowStartIndex = 0;
+      } else if (nextRowSpan <= 12) {
+        adjusted.push(card);
+        rowSpan = nextRowSpan;
+      } else {
+        // 調整當前行的最後一張卡片來填滿12列
+        if (rowSpan < 12 && adjusted.length > rowStartIndex) {
+          adjusted[adjusted.length - 1] = {
+            ...adjusted[adjusted.length - 1],
+            layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan)
+          };
+        }
+        // 開始新的一行
+        adjusted.push(card);
+        rowSpan = card.layout;
+        rowStartIndex = adjusted.length - 1;
+      }
+    }
+
+    // 處理最後一行
+    if (rowSpan < 12 && adjusted.length > 0) {
+      adjusted[adjusted.length - 1] = {
+        ...adjusted[adjusted.length - 1],
+        layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan)
+      };
+    }
+
+    return adjusted;
   });
 
   setLanguage(lang: string | LangCode): void {
@@ -404,5 +469,35 @@ export class ResumeComponent {
     }
 
     return '60';
+  }
+
+  // 技術堆疊資料驅動
+  getTechStackData() {
+    const stack = this.content().tech_stack;
+    const labels = this.uiCopy().labels;
+
+    return [
+      { label: labels.language, value: stack.language, severity: 'info' as const },
+      { label: labels.frontend, value: stack.frontend, severity: 'success' as const },
+      { label: labels.backend, value: stack.backend, severity: 'warning' as const },
+      { label: labels.database, value: stack.database, severity: 'danger' as const },
+      { label: labels.devops, value: stack.devops, severity: 'secondary' as const }
+    ];
+  }
+
+  // 教育資料驅動
+  getEducationData() {
+    const education = this.content().education;
+
+    return [
+      {
+        name: 'Education Info',
+        items: [
+          { label: 'school', value: education.school, icon: 'pi pi-building-columns' },
+          { label: 'department', value: education.department, icon: 'pi pi-book' },
+          { label: 'degree', value: `${education.degree} | ${education.graduation_status}`, icon: 'pi pi-graduation-cap' }
+        ]
+      }
+    ];
   }
 }
