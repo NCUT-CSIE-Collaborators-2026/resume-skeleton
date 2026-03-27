@@ -469,6 +469,11 @@ export class ResumeComponent {
             clonedCanvas.classList.add('resume-canvas--pdf');
           }
 
+          // 移除action-panel元素
+          clonedCanvas?.querySelectorAll('.action-panel').forEach((panel) => {
+            panel.parentNode?.removeChild(panel);
+          });
+
           // 備用：移除 ambient 背景裝飾元素
           clonedCanvas?.querySelectorAll('.ambient').forEach((ambient) => {
             ambient.parentNode?.removeChild(ambient);
