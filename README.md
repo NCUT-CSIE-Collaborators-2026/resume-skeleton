@@ -4,13 +4,28 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Development server
 
-To start a local development server, run:
+To start the frontend development server, run:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The app now loads `content.i18n` from a Hono backend API. Start the backend in a second terminal:
+
+```bash
+cd ../resume-api
+npm install
+npm run dev
+```
+
+By default the API listens on `http://localhost:8787` and exposes:
+
+- `GET /health`
+- `GET /api/content.i18n`
+
+If you need to override API URL at runtime, set `globalThis.__APP_API_URL` before Angular bootstraps.
+
+Once both frontend and backend are running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding
 

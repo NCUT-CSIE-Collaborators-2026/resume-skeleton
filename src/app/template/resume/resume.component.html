@@ -11,66 +11,77 @@
       (a4ModeChange)="isA4Mode.set($event)"
       (exportPdf)="exportResumePdf()"
     ></app-top-bar>
-    <div class="resume-grid">
-      @for (card of cardsWithAutoFill(); track card.id) {
-        <div class="card" [style.grid-column]="'span ' + card.layout">
-          <h3 class="card-title">{{ card.title }}</h3>
-          @if (card.subtitle) {
-            <p class="card-subtitle">{{ card.subtitle }}</p>
-          }
 
-          @for (element of card.elements; track $index) {
-            @switch (element.type) {
-              @case ("text") {
-                <div class="intro-block">
-                  <p>{{ element.text }}</p>
-                </div>
-              }
-              @case ("badges") {
-                <div class="badge-row">
-                  @for (badge of element.items; track badge) {
-                    <span class="badge">{{ badge }}</span>
-                  }
-                </div>
-              }
-              @case ("icon-list") {
-                <ul class="detail-list">
-                  @for (item of element.items; track item) {
-                    <li>
-                      <i [class]="element.icon"></i>
-                      <span>{{ item }}</span>
-                    </li>
-                  }
-                </ul>
-              }
-              @case ("grid-tech") {
-                <div class="stack-grid" [class.grid-single]="element.gridLayout === 'single'">
-                  @for (category of element.items; track category.label) {
-                    <div class="stack-item">
-                      <span class="stack-label">{{ category.label }}</span>
-                      <div class="stack-tags">
-                        @for (tech of category.value; track tech) {
-                          <span
-                            class="tag"
-                            [class]="'tag-' + category.severity"
-                            >{{ tech }}</span
-                          >
-                        }
+    @if (isContentLoading()) {
+      <div class="state-panel">
+        <p>Loading resume content from backend...</p>
+      </div>
+    } @else if (contentError()) {
+      <div class="state-panel state-panel--error">
+        <p>Failed to load backend content: {{ contentError() }}</p>
+      </div>
+    } @else {
+      <div class="resume-grid">
+        @for (card of cardsWithAutoFill(); track card.id) {
+          <div class="card" [style.grid-column]="'span ' + card.layout">
+            <h3 class="card-title">{{ card.title }}</h3>
+            @if (card.subtitle) {
+              <p class="card-subtitle">{{ card.subtitle }}</p>
+            }
+
+            @for (element of card.elements; track $index) {
+              @switch (element.type) {
+                @case ("text") {
+                  <div class="intro-block">
+                    <p>{{ element.text }}</p>
+                  </div>
+                }
+                @case ("badges") {
+                  <div class="badge-row">
+                    @for (badge of element.items; track badge) {
+                      <span class="badge">{{ badge }}</span>
+                    }
+                  </div>
+                }
+                @case ("icon-list") {
+                  <ul class="detail-list">
+                    @for (item of element.items; track item) {
+                      <li>
+                        <i [class]="element.icon"></i>
+                        <span>{{ item }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+                @case ("grid-tech") {
+                  <div class="stack-grid" [class.grid-single]="element.gridLayout === 'single'">
+                    @for (category of element.items; track category.label) {
+                      <div class="stack-item">
+                        <span class="stack-label">{{ category.label }}</span>
+                        <div class="stack-tags">
+                          @for (tech of category.value; track tech) {
+                            <span
+                              class="tag"
+                              [class]="'tag-' + category.severity"
+                              >{{ tech }}</span
+                            >
+                          }
+                        </div>
                       </div>
-                    </div>
-                  }
-                </div>
-              }
-              @case ("grid-education") {
-                <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
-              }
-              @case ("grid-groups") {
-                <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
+                    }
+                  </div>
+                }
+                @case ("grid-education") {
+                  <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
+                }
+                @case ("grid-groups") {
+                  <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
+                }
               }
             }
-          }
-        </div>
-      }
-    </div>
+          </div>
+        }
+      </div>
+    }
   </section>
 </main>

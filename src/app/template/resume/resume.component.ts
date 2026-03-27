@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { GroupListComponent } from '../../uikit/group-list.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import i18nData from '../../ui.i18n.json';
-import contentData from '../../content.i18n.json';
+import { environment } from '../../config/environment';
 
 type LangCode = 'en' | 'zh_TW';
 
@@ -138,18 +138,43 @@ interface Card {
   elements: CardElement[];
 }
 
-const RESUME_I18N = Object.entries(
-  i18nData as Record<LangCode, I18nLocale>,
-).reduce(
-  (acc, [lang, i18n]) => {
-    acc[lang as LangCode] = {
-      ...i18n,
-      ...(contentData as Record<LangCode, ContentLocale>)[lang as LangCode],
-    } as ResumeLocale;
-    return acc;
+const UI_I18N = i18nData as Record<LangCode, I18nLocale>;
+
+const EMPTY_CONTENT_LOCALE: ContentLocale = {
+  profile: {
+    name: '',
+    title: '',
+    gender: '',
+    age: '',
+    status: '',
+    mbti: '',
   },
-  {} as Record<LangCode, ResumeLocale>,
-);
+  education: {
+    school: '',
+    department: '',
+    degree: '',
+    graduation_status: '',
+  },
+  experience: {
+    intern_title: '',
+    assistant_title: '',
+    military_title: '',
+  },
+  tech_stack: {
+    language: [],
+    frontend: [],
+    backend: [],
+    database: [],
+    devops: [],
+  },
+  introductions: {
+    pitch_30s: '',
+    pitch_1min: '',
+  },
+  projects: {
+    items: [],
+  },
+};
 
 @Component({
   selector: 'resume',
@@ -164,8 +189,18 @@ export class ResumeComponent {
   readonly introMode = signal<'30' | '60'>(this.getIntroModeFromHash());
   readonly isExporting = signal(false);
   readonly isA4Mode = signal(this.getPaperModeFromLocalStorage());
+  readonly isContentLoading = signal(true);
+  readonly contentError = signal<string | null>(null);
+
+  private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
+  private readonly contentByLang = signal<Record<LangCode, ContentLocale>>({
+    en: { ...EMPTY_CONTENT_LOCALE },
+    zh_TW: { ...EMPTY_CONTENT_LOCALE },
+  });
 
   constructor() {
+    void this.loadContentFromApi();
+
     // 同步文件語言屬性
     effect(() => {
       const lang = this.content().config.lang;
@@ -186,13 +221,16 @@ export class ResumeComponent {
   }
 
   readonly languageOptions = computed(() =>
-    Object.entries(RESUME_I18N).map(([code, locale]) => ({
+    Object.entries(UI_I18N).map(([code, locale]) => ({
       label: locale.config.label,
       code: code as LangCode,
     })),
   );
 
-  readonly content = computed(() => RESUME_I18N[this.activeLang()]);
+  readonly content = computed<ResumeLocale>(() => ({
+    ...UI_I18N[this.activeLang()],
+    ...this.contentByLang()[this.activeLang()],
+  }));
 
   readonly uiCopy = computed<UiCopy>(() => {
     const content = this.content();
@@ -383,6 +421,37 @@ export class ResumeComponent {
 
     return adjusted;
   });
+
+  private async loadContentFromApi(): Promise<void> {
+    this.isContentLoading.set(true);
+    this.contentError.set(null);
+
+    try {
+      const response = await fetch(this.contentApiUrl);
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = (await response.json()) as Partial<
+        Record<LangCode, ContentLocale>
+      >;
+
+      if (!data.en || !data.zh_TW) {
+        throw new Error('Incomplete i18n payload from backend');
+      }
+
+      this.contentByLang.set({
+        en: data.en,
+        zh_TW: data.zh_TW,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown loading error';
+      this.contentError.set(message);
+    } finally {
+      this.isContentLoading.set(false);
+    }
+  }
 
   setLanguage(lang: string | LangCode): void {
     if (lang === 'en' || lang === 'zh_TW') {

@@ -97,6 +97,29 @@
   gap: 0.8rem;
 }
 
+.state-panel {
+  margin-top: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 1rem 1.2rem;
+
+  p {
+    margin: 0;
+    color: #243b53;
+    font-size: 0.95rem;
+  }
+
+  &.state-panel--error {
+    border-color: rgba(220, 38, 38, 0.28);
+    background: rgba(254, 242, 242, 0.88);
+
+    p {
+      color: #991b1b;
+    }
+  }
+}
+
 .card {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.75);
