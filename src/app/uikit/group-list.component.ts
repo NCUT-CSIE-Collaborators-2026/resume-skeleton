@@ -39,9 +39,8 @@ interface Group {
     .group-list {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 0.25rem;
       list-style: none;
-      padding: 0.5rem;
+      padding: 0 0.5rem;
       margin: 0;
       border-radius: 0.5rem;
       background: transparent;
@@ -52,6 +51,7 @@ interface Group {
       &:hover {
         background: rgba(221, 231, 240, 0.69);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        cursor: default;
       }
 
       &.grid-single {

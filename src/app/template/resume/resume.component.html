@@ -1,48 +1,16 @@
 <main class="resume-shell" [class.a4-mode]="isA4Mode()">
   <section class="resume-canvas" #resumeCanvas>
-    <header class="top-bar">
-      <div>
-        <h1 class="name">{{ content().profile.name }}</h1>
-        <p class="headline">{{ content().profile.title }}</p>
-      </div>
-
-      <div class="action-panel">
-        <div class="lang-switch" aria-label="language selector">
-          @for (option of languageOptions(); track option.code) {
-            <button
-              class="lang-btn"
-              [class.active]="activeLang() === option.code"
-              (click)="setLanguage(option.code)"
-            >
-              {{ option.label }}
-            </button>
-          }
-          <button
-            class="a4-btn"
-            [class.active]="isA4Mode()"
-            (click)="isA4Mode.set(!isA4Mode())"
-            title="Toggle A4 aspect ratio"
-          >
-            <i class="pi pi-rectangle" style="font-size: 0.8rem; margin-right: 0.25rem;"></i>
-            A4
-          </button>
-          <button
-            class="download-btn"
-            [disabled]="isExporting()"
-            (click)="exportResumePdf()"
-            [title]="
-              isExporting() ? barUi().exportingLabel : barUi().exportPdfLabel
-            "
-          >
-            <i
-              [class]="
-                isExporting() ? 'pi pi-spinner pi-spin' : 'pi pi-download'
-              "
-            ></i>
-          </button>
-        </div>
-      </div>
-    </header>
+    <app-top-bar
+      [profile]="profileInfo()"
+      [languageOptions]="languageOptions()"
+      [activeLang]="activeLang()"
+      [isA4Mode]="isA4Mode()"
+      [isExporting]="isExporting()"
+      [barUi]="barUi()"
+      (languageChange)="setLanguage($event)"
+      (a4ModeChange)="isA4Mode.set($event)"
+      (exportPdf)="exportResumePdf()"
+    ></app-top-bar>
     <div class="resume-grid">
       @for (card of cardsWithAutoFill(); track card.id) {
         <div class="card" [style.grid-column]="'span ' + card.layout">

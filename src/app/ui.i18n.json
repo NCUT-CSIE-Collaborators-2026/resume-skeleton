@@ -40,8 +40,8 @@
             "projectsTitle": "專案成就",
             "labels": {
                 "language": "語言",
-                "frontend": "Frontend",
-                "backend": "Backend",
+                "frontend": "前端",
+                "backend": "後端",
                 "database": "資料庫",
                 "devops": "DevOps"
             }

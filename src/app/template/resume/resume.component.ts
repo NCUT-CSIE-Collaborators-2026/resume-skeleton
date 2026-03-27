@@ -1,6 +1,15 @@
-import { Component, ElementRef, HostListener, ViewChild, computed, effect, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  computed,
+  effect,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GroupListComponent } from '../../uikit/group-list.component';
+import { TopBarComponent } from './top-bar/top-bar.component';
 import i18nData from '../../ui.i18n.json';
 import contentData from '../../content.i18n.json';
 
@@ -95,21 +104,25 @@ type CardElement =
   | { type: 'text'; text: string }
   | { type: 'badges'; items: string[] }
   | { type: 'icon-list'; icon: string; items: string[] }
-  | { 
-      type: 'grid-tech'; 
-      items: Array<{ label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' }>;
+  | {
+      type: 'grid-tech';
+      items: Array<{
+        label: string;
+        value: string[];
+        severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary';
+      }>;
       gridLayout?: 'compact' | 'single';
     }
-  | { 
-      type: 'grid-education'; 
+  | {
+      type: 'grid-education';
       groups: Array<{
         name: string;
         items: Array<{ label: string; value: string; icon: string }>;
       }>;
       gridLayout?: 'compact' | 'single';
     }
-  | { 
-      type: 'grid-groups'; 
+  | {
+      type: 'grid-groups';
       groups: Array<{
         name: string;
         items: Array<{ label: string; value: string; icon: string }>;
@@ -125,20 +138,22 @@ interface Card {
   elements: CardElement[];
 }
 
-const RESUME_I18N = Object.entries(i18nData as Record<LangCode, I18nLocale>).reduce(
+const RESUME_I18N = Object.entries(
+  i18nData as Record<LangCode, I18nLocale>,
+).reduce(
   (acc, [lang, i18n]) => {
     acc[lang as LangCode] = {
       ...i18n,
-      ...(contentData as Record<LangCode, ContentLocale>)[lang as LangCode]
+      ...(contentData as Record<LangCode, ContentLocale>)[lang as LangCode],
     } as ResumeLocale;
     return acc;
   },
-  {} as Record<LangCode, ResumeLocale>
+  {} as Record<LangCode, ResumeLocale>,
 );
 
 @Component({
   selector: 'resume',
-  imports: [CommonModule, GroupListComponent],
+  imports: [CommonModule, GroupListComponent, TopBarComponent],
   templateUrl: './resume.component.html',
   styleUrl: './resume.component.scss',
 })
@@ -148,7 +163,7 @@ export class ResumeComponent {
   readonly activeLang = signal<LangCode>(this.getInitialLanguage());
   readonly introMode = signal<'30' | '60'>(this.getIntroModeFromHash());
   readonly isExporting = signal(false);
-  readonly isA4Mode = signal(true);  // 預設啟用 A4 模式
+  readonly isA4Mode = signal(this.getPaperModeFromLocalStorage());
 
   constructor() {
     // 同步文件語言屬性
@@ -162,13 +177,19 @@ export class ResumeComponent {
       const title = this.content().config.title;
       document.title = title;
     });
+
+    // 保存 A4 模式狀態到 localStorage
+    effect(() => {
+      const isA4 = this.isA4Mode();
+      this.savePaperModeToLocalStorage(isA4);
+    });
   }
 
   readonly languageOptions = computed(() =>
     Object.entries(RESUME_I18N).map(([code, locale]) => ({
       label: locale.config.label,
-      code: code as LangCode
-    }))
+      code: code as LangCode,
+    })),
   );
 
   readonly content = computed(() => RESUME_I18N[this.activeLang()]);
@@ -181,7 +202,7 @@ export class ResumeComponent {
       expTitle: content['content-ui'].expTitle,
       stackTitle: content['content-ui'].stackTitle,
       projectTitle: content['content-ui'].projectsTitle,
-      labels: content['content-ui'].labels
+      labels: content['content-ui'].labels,
     };
   });
 
@@ -191,7 +212,15 @@ export class ResumeComponent {
     const content = this.content();
     return {
       exportPdfLabel: content['bar-ui'].exportPdfLabel,
-      exportingLabel: content['bar-ui'].exportingLabel
+      exportingLabel: content['bar-ui'].exportingLabel,
+    };
+  });
+
+  readonly profileInfo = computed(() => {
+    const content = this.content();
+    return {
+      name: content.profile.name,
+      title: content.profile.title,
     };
   });
 
@@ -204,34 +233,36 @@ export class ResumeComponent {
   readonly experiences = computed(() => [
     this.content().experience.intern_title,
     this.content().experience.assistant_title,
-    this.content().experience.military_title
+    this.content().experience.military_title,
   ]);
 
   // 經驗資料轉換為groups格式（3個GROUP，各有1筆資料）
   readonly experienceGroups = computed(() => {
     const exps = this.experiences();
-    return exps.map(exp => ({
+    return exps.map((exp) => ({
       name: 'Experience',
-      items: [{
-        label: 'experience',
-        value: exp,
-        icon: 'pi pi-briefcase'
-      }]
+      items: [
+        {
+          label: 'experience',
+          value: exp,
+          icon: 'pi pi-briefcase',
+        },
+      ],
     }));
   });
 
   readonly introText = computed(() =>
     this.introMode() === '30'
       ? this.content().introductions.pitch_30s
-      : this.content().introductions.pitch_1min
+      : this.content().introductions.pitch_1min,
   );
 
   // 技術堆疊卡片的動態寬度：根據項目數量自動調整
   readonly stackCardLayout = computed(() => {
     const stackItems = this.getTechStackData();
-    if (stackItems.length > 6) return 8;  // 超過6項，用8列
-    if (stackItems.length > 4) return 6;  // 5-6項，用6列
-    return 4;  // 4項以下，用4列
+    if (stackItems.length > 6) return 8; // 超過6項，用8列
+    if (stackItems.length > 4) return 6; // 5-6項，用6列
+    return 4; // 4項以下，用4列
   });
 
   readonly cards = computed<Card[]>(() => {
@@ -245,18 +276,14 @@ export class ResumeComponent {
         title: 'Profile',
         subtitle: content.profile.status,
         layout: 4,
-        elements: [
-          { type: 'badges', items: this.profileBadges() }
-        ]
+        elements: [{ type: 'badges', items: this.profileBadges() }],
       },
       // 介紹卡
       {
         id: 'intro',
         title: ui.introTitle,
         layout: 6,
-        elements: [
-          { type: 'text', text: this.introText() }
-        ]
+        elements: [{ type: 'text', text: this.introText() }],
       },
       // 教育卡
       {
@@ -267,9 +294,9 @@ export class ResumeComponent {
           {
             type: 'grid-education',
             groups: this.getEducationData(),
-            gridLayout: 'compact'
-          }
-        ]
+            gridLayout: 'compact',
+          },
+        ],
       },
       // 經驗卡
       {
@@ -280,9 +307,9 @@ export class ResumeComponent {
           {
             type: 'grid-groups',
             groups: this.experienceGroups(),
-            gridLayout: 'compact'
-          }
-        ]
+            gridLayout: 'compact',
+          },
+        ],
       },
       // 技術堆疊卡
       {
@@ -293,9 +320,9 @@ export class ResumeComponent {
           {
             type: 'grid-tech',
             items: this.getTechStackData(),
-            gridLayout: 'compact'
-          }
-        ]
+            gridLayout: 'compact',
+          },
+        ],
       },
       // 專案卡
       {
@@ -306,10 +333,10 @@ export class ResumeComponent {
           {
             type: 'icon-list',
             icon: 'pi pi-check-circle',
-            items: this.projectItems()
-          }
-        ]
-      }
+            items: this.projectItems(),
+          },
+        ],
+      },
     ];
   });
 
@@ -336,7 +363,7 @@ export class ResumeComponent {
         if (rowSpan < 12 && adjusted.length > rowStartIndex) {
           adjusted[adjusted.length - 1] = {
             ...adjusted[adjusted.length - 1],
-            layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan)
+            layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan),
           };
         }
         // 開始新的一行
@@ -350,7 +377,7 @@ export class ResumeComponent {
     if (rowSpan < 12 && adjusted.length > 0) {
       adjusted[adjusted.length - 1] = {
         ...adjusted[adjusted.length - 1],
-        layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan)
+        layout: adjusted[adjusted.length - 1].layout + (12 - rowSpan),
       };
     }
 
@@ -364,9 +391,14 @@ export class ResumeComponent {
     }
   }
 
+  setPaperMode(isA4: boolean): void {
+    this.isA4Mode.set(isA4);
+    this.savePaperModeToLocalStorage(isA4);
+  }
+
   private getInitialLanguage(): LangCode {
     if (typeof window === 'undefined') {
-      return 'zh_TW';
+      return 'en';
     }
 
     const saved = localStorage.getItem('resume-language');
@@ -374,13 +406,28 @@ export class ResumeComponent {
       return saved as LangCode;
     }
 
-    return 'zh_TW';
+    return 'en';
   }
 
   private saveLanguageToLocalStorage(lang: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('resume-language', lang);
     }
+  }
+
+  private savePaperModeToLocalStorage(isA4: boolean): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('resume-a4-mode', isA4 ? 'true' : 'false');
+    }
+  }
+
+  private getPaperModeFromLocalStorage(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const saved = localStorage.getItem('resume-a4-mode');
+    return saved === 'true';
   }
 
   async exportResumePdf(): Promise<void> {
@@ -397,39 +444,45 @@ export class ResumeComponent {
     try {
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
         import('html2canvas'),
-        import('jspdf')
+        import('jspdf'),
       ]);
 
       const source = this.resumeCanvas.nativeElement;
+      // 臨時保存 A4 模式狀態
+      const wasA4Mode = this.isA4Mode();
+
+      // 強制啟用 A4 模式
+      this.isA4Mode.set(true);
+
+      // 等待 DOM 更新
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(source, {
         backgroundColor: '#ffffff',
         useCORS: true,
         scale: 2,
         logging: false,
         onclone: (clonedDocument: Document) => {
+          // 添加 PDF 模式 CSS 類，處理所有樣式移除
           const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
           if (clonedCanvas instanceof HTMLElement) {
-            // 新增 PDF 模式類
             clonedCanvas.classList.add('resume-canvas--pdf');
-
-            // 移除 action-panel（語言選擇和下載按鈕）
-            const actionPanel = clonedCanvas.querySelector('.action-panel');
-            if (actionPanel?.parentNode) {
-              actionPanel.parentNode.removeChild(actionPanel);
-            }
-
-            // 移除 ambient 背景裝飾元素
-            clonedCanvas.querySelectorAll('.ambient').forEach((ambient) => {
-              ambient.parentNode?.removeChild(ambient);
-            });
           }
-        }
+
+          // 備用：移除 ambient 背景裝飾元素
+          clonedCanvas?.querySelectorAll('.ambient').forEach((ambient) => {
+            ambient.parentNode?.removeChild(ambient);
+          });
+        },
       });
+
+      // 恢復 A4 模式狀態
+      this.isA4Mode.set(wasA4Mode);
 
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
       });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -452,8 +505,15 @@ export class ResumeComponent {
 
       const leftMargin = (pageWidth - imgWidth) / 2;
 
-      pdf.addImage(imageData, 'PNG', leftMargin, topMargin, imgWidth, imgHeight);
-      pdf.save(this.activeLang() === 'zh_TW' ? 'resume-zh.pdf' : 'resume-en.pdf');
+      pdf.addImage(
+        imageData,
+        'PNG',
+        leftMargin,
+        topMargin,
+        imgWidth,
+        imgHeight,
+      );
+      pdf.save(`Resume_Haolun_Wang_${this.activeLang()}.pdf`);
     } finally {
       this.isExporting.set(false);
     }
@@ -478,11 +538,31 @@ export class ResumeComponent {
     const labels = this.uiCopy().labels;
 
     return [
-      { label: labels.language, value: stack.language, severity: 'info' as const },
-      { label: labels.frontend, value: stack.frontend, severity: 'success' as const },
-      { label: labels.backend, value: stack.backend, severity: 'warning' as const },
-      { label: labels.database, value: stack.database, severity: 'danger' as const },
-      { label: labels.devops, value: stack.devops, severity: 'secondary' as const }
+      {
+        label: labels.language,
+        value: stack.language,
+        severity: 'info' as const,
+      },
+      {
+        label: labels.frontend,
+        value: stack.frontend,
+        severity: 'success' as const,
+      },
+      {
+        label: labels.backend,
+        value: stack.backend,
+        severity: 'warning' as const,
+      },
+      {
+        label: labels.database,
+        value: stack.database,
+        severity: 'danger' as const,
+      },
+      {
+        label: labels.devops,
+        value: stack.devops,
+        severity: 'secondary' as const,
+      },
     ];
   }
 
@@ -494,11 +574,23 @@ export class ResumeComponent {
       {
         name: 'Education Info',
         items: [
-          { label: 'school', value: education.school, icon: 'pi pi-building-columns' },
-          { label: 'department', value: education.department, icon: 'pi pi-book' },
-          { label: 'degree', value: `${education.degree} | ${education.graduation_status}`, icon: 'pi pi-graduation-cap' }
-        ]
-      }
+          {
+            label: 'school',
+            value: education.school,
+            icon: 'pi pi-building-columns',
+          },
+          {
+            label: 'department',
+            value: education.department,
+            icon: 'pi pi-book',
+          },
+          {
+            label: 'degree',
+            value: `${education.degree} | ${education.graduation_status}`,
+            icon: 'pi pi-graduation-cap',
+          },
+        ],
+      },
     ];
   }
 }

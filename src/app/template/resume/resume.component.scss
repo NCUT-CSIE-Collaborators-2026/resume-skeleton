@@ -1,342 +1,216 @@
-/* PDF Export Mode - Border Variables */
-$pdf-border: 1.5px solid #bcbfc78c;
-
 :host {
-    display: block;
-    // CSS 變數用於尺寸統一管理
-    --unit-xs: 0.25rem;
-    --unit-sm: 0.5rem;
-    --unit-md: 1rem;
-    --unit-lg: 1.5rem;
-    --unit-xl: 2rem;
+  display: block;
+  // CSS 變數用於尺寸統一管理
+  --unit-xs: 0.25rem;
+  --unit-sm: 0.5rem;
+  --unit-md: 1rem;
+  --unit-lg: 1.5rem;
+  --unit-xl: 2rem;
 }
 
 .resume-shell {
-    position: relative;
-    overflow: hidden;
-    padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 
-    // A4 模式：保持 A4 比例（寬:高 = 210:297 = 1:1.414）
-    &.a4-mode {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        padding: 1rem;
-        
-        // 基於螢幕寬度計算最大寬度
-        // A4 寬高比例：210mm / 297mm ≈ 0.707
-        max-width: 70vw;
-        margin: 0 auto;
-        
-        @media (max-width: 1200px) {
-            max-width: 80vw;
-        }
-        
-        @media (max-width: 768px) {
-            max-width: 90vw;
-        }
-        
-        @media (max-width: 480px) {
-            max-width: 100%;
-            padding: 0.5rem;
-        }
-    }
+  // A4 模式：固定大小容器，允許雙向滾動
+  &.a4-mode {
+    width: 100%;
+    height: 100vh;
+    overflow: auto;
+    display: block;
+  }
 }
 
 .resume-canvas {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 210 / 297;
-    padding: clamp(1.6rem, 2.8vw, 2.4rem);
-    border-radius: 20px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(248, 251, 255, 0.6) 100%);
-    box-shadow: 0 28px 70px rgba(39, 39, 39, 0.2);
-    box-sizing: border-box;
-    margin: 0 auto;
-    backdrop-filter: blur(4px);
-    
-    // A4 模式：固定 font-size 來鎖定所有 rem 單位
-    .a4-mode & {
-        font-size: 14px;  // 所有子元素的 rem 都相對於 14px，確保內容大小固定
-    }
+  position: relative;
+  width: 100%;
+  padding: clamp(1.6rem, 2.8vw, 2.4rem);
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(248, 251, 255, 0.6) 100%
+  );
+  box-shadow: 0 28px 70px rgba(39, 39, 39, 0.2);
+  box-sizing: border-box;
+  margin: 0 auto;
+  backdrop-filter: blur(4px);
+
+  // A4 模式：固定尺寸 (A4 寬高比例 210mm:297mm)
+  .a4-mode & {
+    width: 960px; // 960px × 80%
+    height: 1357px; // 1357px × 80%
+  }
+
+  // PDF 導出模式：純白背景，移除所有視覺效果
+  &.resume-canvas--pdf {
+    background: #ffffff !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+
+  &.resume-canvas--pdf .card {
+    background: #ffffff !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border-color: rgba(148, 163, 184, 0.15) !important;
+    animation: none !important;
+  }
+
+  &.resume-canvas--pdf .glass-card {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  &.resume-canvas--pdf .action-panel {
+    display: none !important;
+  }
+
+  /* PDF 模式下的徽章和芯片樣式 */
+  &.resume-canvas--pdf .badge {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+    border-color: #d1d5db !important;
+  }
+
+  &.resume-canvas--pdf .chip {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+    border-color: #d1d5db !important;
+  }
+
+  &.resume-canvas--pdf .tag {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+    border-color: #d1d5db !important;
+  }
+
+
+
+  &.resume-canvas--pdf .stack-item {
+    background: #f9fafb !important;
+    border-color: rgba(148, 163, 184, 0.15) !important;
+  }
 }
 
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
 
-.action-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.6rem;
-}
-
-.name {
-    margin: 0.4rem 0 0;
-    font-size: clamp(2rem, 6.4vw, 3.35rem);
-    line-height: 1;
-    color: #102a43;
-    font-weight: 800;
-}
-
-.headline {
-    margin: 0.6rem 0 0;
-    color: #334e68;
-    font-size: clamp(1rem, 2vw, 1.25rem);
-}
-
-.lang-switch {
-    display: inline-flex;
-    gap: 0.5rem;
-    padding: 0.45rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(8px);
-}
-
-/* Button styles */
-.lang-btn,
-.download-btn,
-.a4-btn {
-    padding: 0.4rem 0.75rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background-color: rgba(255, 255, 255, 0.7);
-    color: #334e68;
-}
-
-.lang-btn:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-.lang-btn.active {
-    background-color: #00a651;
-    color: white;
-}
-
-.a4-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    padding: 0.4rem 0.6rem;
-}
-
-.a4-btn:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-.a4-btn.active {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.download-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 1rem;
-}
-
-.download-btn:hover:not(:disabled) {
-    background-color: rgba(0, 166, 81, 0.15);
-    color: #00a651;
-}
-
-.download-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
 
 .resume-grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(0.5rem, 2vw, 1.5rem);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 .card {
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    background: linear-gradient(140deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.56));
-    box-shadow: 0 20px 40px rgba(121, 121, 121, 0.14);
-    animation: reveal 560ms ease both;
-    padding: clamp(0.8rem, 2.5vw, 1.5rem);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.84),
+    rgba(255, 255, 255, 0.56)
+  );
+  box-shadow: 0 20px 40px rgba(121, 121, 121, 0.14);
+  animation: reveal 560ms ease both;
+  padding: clamp(0.8rem, 2.5vw, 1.5rem);
 }
 
 .card-title {
-    margin: 0 0 0.5rem;
-    color: #102a43;
-    font-size: 1.15rem;
-    font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #102a43;
+  font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .card-subtitle {
-    margin: 0 0 0.75rem;
-    color: #334e68;
-    font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+  color: #334e68;
+  font-size: 0.9rem;
 }
 
 .badge-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .badge {
-    display: inline-block;
-    padding: 0.35rem 0.7rem;
-    border-radius: 999px;
-    background-color: #f0f9ff;
-    color: #0c4a6e;
-    border: 1px solid #bae6fd;
-    font-size: 0.8rem;
-    font-weight: 500;
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background-color: #f0f9ff;
+  color: #0c4a6e;
+  border: 1px solid #bae6fd;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 999px;
-    background-color: #f0f9ff;
-    color: #0c4a6e;
-    border: 1px solid #bae6fd;
-    font-size: 0.825rem;
-    font-weight: 500;
-}
-
-.tag {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tag-success {
-    background-color: #ecfdf5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
-}
-
-.tag-info,
-.tag-secondary {
-    background-color: #eff6ff;
-    color: #0c4a6e;
-    border: 1px solid #bae6fd;
-}
-
-.tag-warning {
-    background-color: #fffbeb;
-    color: #78350f;
-    border: 1px solid #fde68a;
-}
-
-.tag-danger {
-    background-color: #fee2e2;
-    color: #7f1d1d;
-    border: 1px solid #fecaca;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background-color: #f0f9ff;
+  color: #0c4a6e;
+  border: 1px solid #bae6fd;
+  font-size: 0.825rem;
+  font-weight: 500;
 }
 
 .intro-block p {
-    margin: 0.5rem 0 0;
-    color: #243b53;
-    line-height: 1.7;
+  margin: 0.5rem 0 0;
+  color: #243b53;
+  line-height: 1.7;
 }
 
 .detail-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.72rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
 }
 
 .detail-list li {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    color: #243b53;
-    line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #243b53;
+  line-height: 1.45;
 }
 
 .detail-list i {
-    color: #0369a1;
-    font-size: 0.95rem;
-}
-
-.stack-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-}
-
-.stack-item {
-    padding: 0.7rem;
-    border-radius: 12px;
-    background: rgba(236, 253, 245, 0.7);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.stack-label {
-    display: block;
-    margin-bottom: 0.4rem;
-    color: #134e4a;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-}
-
-.stack-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+  color: #0369a1;
+  font-size: 0.95rem;
 }
 
 //向上滑入特效
 @keyframes reveal {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1024px) {
-
-    .resume-grid :is(.identity-card, .education-card, .experience-card),
-    .intro-card,
-    .stack-card,
-    .skills-card,
-    .project-card {
-        grid-column: span 6;
-    }
+  .resume-grid :is(.identity-card, .education-card, .experience-card),
+  .intro-card,
+  .stack-card,
+  .skills-card,
+  .project-card {
+    grid-column: span 6;
+  }
 }
 
 /* 技術堆疊 Grid 樣式 */
@@ -372,7 +246,7 @@ $pdf-border: 1.5px solid #bcbfc78c;
   font-weight: 500;
   color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
 }
 
 .stack-tags {
@@ -468,99 +342,35 @@ $pdf-border: 1.5px solid #bcbfc78c;
 }
 
 @media (max-width: 768px) {
-    .resume-shell {
-        padding-top: 1.3rem;
-        display: block;
-    }
+  .resume-shell:not(.a4-mode) {
+    padding-top: 1.3rem;
+    display: block;
+  }
 
-    .resume-canvas {
-        aspect-ratio: auto;
-    }
+  .resume-shell:not(.a4-mode) .resume-canvas {
+    aspect-ratio: auto;
+  }
 
-    .top-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
+  .resume-shell:not(.a4-mode) .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-    .action-panel {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
+  .resume-shell:not(.a4-mode) .action-panel {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-    .lang-switch {
-        align-self: flex-start;
-    }
+  .resume-shell:not(.a4-mode) .lang-switch {
+    align-self: flex-start;
+  }
 
-    .resume-grid>* {
-        grid-column: span 12 !important;
-    }
+  .resume-shell:not(.a4-mode) .resume-grid > * {
+    grid-column: span 12 !important;
+  }
 
-    .stack-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* PDF Export Mode */
-.resume-canvas--pdf {
-    background: #ffffff !important;
-    background-image: none !important;
-    backdrop-filter: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.resume-canvas--pdf .card {
-    background: #ffffff !important;
-    box-shadow: none !important;
-    border: $pdf-border !important;
-    animation: none !important;
-}
-
-.resume-canvas--pdf .badge,
-.resume-canvas--pdf .chip {
-    background-color: #dcfce7 !important;
-    color: #166534 !important;
-    border: 1px solid #86efac !important;
-}
-
-.resume-canvas--pdf .stack-item {
-    background: #f0fdf4 !important;
-}
-
-.resume-canvas--pdf .tag-success {
-    background-color: #dcfce7 !important;
-    color: #166534 !important;
-    border: 1px solid #86efac !important;
-}
-
-.resume-canvas--pdf .tag-info,
-.resume-canvas--pdf .tag-secondary {
-    background-color: #dbeafe !important;
-    color: #0c4a6e !important;
-    border: 1px solid #7dd3fc !important;
-}
-
-.resume-canvas--pdf .tag-warning {
-    background-color: #fef08a !important;
-    color: #78350f !important;
-    border: 1px solid #fde047 !important;
-}
-
-.resume-canvas--pdf .tag-danger {
-    background-color: #fecaca !important;
-    color: #7f1d1d !important;
-    border: 1px solid #fca5a5 !important;
-}
-
-.resume-canvas--pdf .education-item {
-    background: #f0f9ff !important;
-}
-
-.resume-canvas--pdf .education-value {
-    color: #1e293b !important;
-}
-
-.resume-canvas--pdf .education-item i {
-    color: #0c4a6e !important;
+  .resume-shell:not(.a4-mode) .stack-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -20,9 +20,9 @@
             "military_title": "Volunteer Enlisted Soldier"
         },
         "tech_stack": {
-            "language": ["TypeScript"],
-            "frontend": ["Angular (Standalone)"],
-            "backend": ["NestJS", "Mikro-ORM"],
+            "language": ["TypeScript v5"],
+            "frontend": ["Angular v21"],
+            "backend": ["NestJS v11", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
             "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions", "Swagger"]
         },
@@ -58,9 +58,9 @@
             "military_title": "志願役士兵"
         },
         "tech_stack": {
-            "language": ["TypeScript"],
-            "frontend": ["Angular (獨立元件架構)"],
-            "backend": ["NestJS", "Mikro-ORM"],
+            "language": ["TypeScript v5"],
+            "frontend": ["Angular v21"],
+            "backend": ["NestJS v11", "Mikro-ORM"],
             "database": ["MariaDB", "SQL Server"],
             "devops": ["Docker(Swarm)", "Nginx (OpenResty + Lua)", "Git", "GitHub Actions", "Swagger"]
         },
