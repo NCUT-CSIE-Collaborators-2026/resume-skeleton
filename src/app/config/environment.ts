@@ -7,7 +7,8 @@ const browserOrigin =
   typeof window !== 'undefined' ? window.location.origin : undefined;
 
 export const environment = {
-  apiUrl: runtimeApiUrl ?? browserOrigin ?? '',
+//   apiUrl: runtimeApiUrl ?? browserOrigin ?? '',
+  apiUrl: 'https://resume-api.haolun-wang.workers.dev',
   apiEndpoints: {
     contentI18n: '/api/resume/content.i18n',
   },
