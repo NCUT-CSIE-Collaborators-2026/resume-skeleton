@@ -227,6 +227,7 @@ export class ResumeComponent {
 
   private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
   private readonly sessionApiUrl = `${environment.apiUrl}${environment.apiEndpoints.authSession}`;
+  private readonly contentCardUpdateApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentCardUpdate}`;
   private readonly contentByLang = signal<Record<LangCode, ContentLocale>>({
     en: { ...EMPTY_CONTENT_LOCALE },
     zh_TW: { ...EMPTY_CONTENT_LOCALE },
@@ -585,12 +586,42 @@ export class ResumeComponent {
   private async persistCardUpdate(
     card: Card,
   ): Promise<{ ok: boolean; message: string }> {
-    // Placeholder API: 後續替換成實際後端更新接口。
-    await new Promise((resolve) => setTimeout(resolve, 850));
-    return {
-      ok: true,
-      message: `「${card.title}」已更新。`,
-    };
+    try {
+      const response = await fetch(this.contentCardUpdateApiUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lang: this.activeLang(),
+          introMode: this.introMode(),
+          card,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        return {
+          ok: false,
+          message: payload.message ?? `更新失敗（HTTP ${response.status}）`,
+        };
+      }
+
+      return {
+        ok: true,
+        message: payload.message ?? `「${card.title}」已更新。`,
+      };
+    } catch {
+      return {
+        ok: false,
+        message: '無法連線更新內容，請稍後再試。',
+      };
+    }
   }
 
   private deepClone<T>(value: T): T {

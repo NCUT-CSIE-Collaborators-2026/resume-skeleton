@@ -12,5 +12,6 @@ export const environment = {
   apiEndpoints: {
     contentI18n: '/api/resume/content.i18n',
     authSession: '/api/resume/auth/session',
+    contentCardUpdate: '/api/resume/content.card/update',
   },
 };
