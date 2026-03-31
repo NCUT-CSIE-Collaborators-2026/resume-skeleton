@@ -11,5 +11,6 @@ export const environment = {
   apiUrl: 'https://resume-api-haolun-wang.9b117201.workers.dev',
   apiEndpoints: {
     contentI18n: '/api/resume/content.i18n',
+    authSession: '/api/resume/auth/session',
   },
 };

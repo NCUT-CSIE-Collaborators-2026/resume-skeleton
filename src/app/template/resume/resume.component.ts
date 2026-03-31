@@ -8,10 +8,17 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { GroupListComponent } from '../../uikit/group-list.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import i18nData from '../../ui.i18n.json';
 import { environment } from '../../config/environment';
+import { AuthSessionService } from '../../services/auth-session.service';
 
 type LangCode = 'en' | 'zh_TW';
 
@@ -178,7 +185,17 @@ const EMPTY_CONTENT_LOCALE: ContentLocale = {
 
 @Component({
   selector: 'resume',
-  imports: [CommonModule, GroupListComponent, TopBarComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    InputTextModule,
+    TextareaModule,
+    ButtonModule,
+    ToastModule,
+    GroupListComponent,
+    TopBarComponent,
+  ],
+  providers: [MessageService],
   templateUrl: './resume.component.html',
   styleUrl: './resume.component.scss',
 })
@@ -191,15 +208,36 @@ export class ResumeComponent {
   readonly isA4Mode = signal(this.getPaperModeFromLocalStorage());
   readonly isContentLoading = signal(true);
   readonly contentError = signal<string | null>(null);
+  readonly editorUser = computed(() => {
+    const user = this.authSessionService.user();
+    if (!user || !user.name) {
+      return null;
+    }
+
+    return {
+      name: user.name,
+      picture: user.picture ?? null,
+    };
+  });
+  readonly isAuthenticated = computed(() => this.authSessionService.isAuthenticated());
+
+  readonly editingCardIds = signal<Set<string>>(new Set());
+  readonly savingCardIds = signal<Set<string>>(new Set());
+  readonly cardDrafts = signal<Record<string, Card>>({});
 
   private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
+  private readonly sessionApiUrl = `${environment.apiUrl}${environment.apiEndpoints.authSession}`;
   private readonly contentByLang = signal<Record<LangCode, ContentLocale>>({
     en: { ...EMPTY_CONTENT_LOCALE },
     zh_TW: { ...EMPTY_CONTENT_LOCALE },
   });
 
-  constructor() {
+  constructor(
+    private readonly authSessionService: AuthSessionService,
+    private readonly messageService: MessageService,
+  ) {
     void this.loadContentFromApi();
+    void this.authSessionService.loadSession(this.sessionApiUrl);
 
     // 同步文件語言屬性
     effect(() => {
@@ -422,6 +460,11 @@ export class ResumeComponent {
     return adjusted;
   });
 
+  readonly renderedCards = computed<Card[]>(() => {
+    const drafts = this.cardDrafts();
+    return this.cardsWithAutoFill().map((card) => drafts[card.id] ?? card);
+  });
+
   private async loadContentFromApi(): Promise<void> {
     this.isContentLoading.set(true);
     this.contentError.set(null);
@@ -453,8 +496,215 @@ export class ResumeComponent {
     }
   }
 
+  isCardEditing(cardId: string): boolean {
+    return this.editingCardIds().has(cardId);
+  }
+
+  isCardSaving(cardId: string): boolean {
+    return this.savingCardIds().has(cardId);
+  }
+
+  async onCardEditAction(card: Card): Promise<void> {
+    if (this.isCardSaving(card.id)) {
+      return;
+    }
+
+    if (!this.isCardEditing(card.id)) {
+      this.startCardEditing(card);
+      return;
+    }
+
+    await this.saveCard(card.id);
+  }
+
+  private startCardEditing(card: Card): void {
+    const cloned = this.deepClone(card);
+    this.cardDrafts.update((drafts) => ({ ...drafts, [card.id]: cloned }));
+    this.editingCardIds.update((ids) => {
+      const next = new Set(ids);
+      next.add(card.id);
+      return next;
+    });
+  }
+
+  private async saveCard(cardId: string): Promise<void> {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    this.savingCardIds.update((ids) => {
+      const next = new Set(ids);
+      next.add(cardId);
+      return next;
+    });
+
+    try {
+      const result = await this.persistCardUpdate(draft);
+      if (!result.ok) {
+        this.messageService.add({
+          severity: 'error',
+          summary: '儲存失敗',
+          detail: result.message,
+        });
+        return;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: '儲存成功',
+        detail: result.message,
+      });
+
+      this.editingCardIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(cardId);
+        return next;
+      });
+      this.cardDrafts.update((drafts) => {
+        const { [cardId]: _removed, ...rest } = drafts;
+        return rest;
+      });
+
+      await this.loadContentFromApi();
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: '儲存失敗',
+        detail: '更新卡片時發生未預期錯誤。',
+      });
+    } finally {
+      this.savingCardIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(cardId);
+        return next;
+      });
+    }
+  }
+
+  private async persistCardUpdate(
+    card: Card,
+  ): Promise<{ ok: boolean; message: string }> {
+    // Placeholder API: 後續替換成實際後端更新接口。
+    await new Promise((resolve) => setTimeout(resolve, 850));
+    return {
+      ok: true,
+      message: `「${card.title}」已更新。`,
+    };
+  }
+
+  private deepClone<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value)) as T;
+  }
+
+  updateTextElement(cardId: string, elementIndex: number, value: string): void {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    const element = draft.elements[elementIndex];
+    if (element?.type !== 'text') {
+      return;
+    }
+
+    element.text = value;
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  }
+
+  updateBadgeItem(
+    cardId: string,
+    elementIndex: number,
+    itemIndex: number,
+    value: string,
+  ): void {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    const element = draft.elements[elementIndex];
+    if (element?.type !== 'badges') {
+      return;
+    }
+
+    element.items[itemIndex] = value;
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  }
+
+  updateIconListItem(
+    cardId: string,
+    elementIndex: number,
+    itemIndex: number,
+    value: string,
+  ): void {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    const element = draft.elements[elementIndex];
+    if (element?.type !== 'icon-list') {
+      return;
+    }
+
+    element.items[itemIndex] = value;
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  }
+
+  updateTechCategoryValues(
+    cardId: string,
+    elementIndex: number,
+    categoryIndex: number,
+    value: string,
+  ): void {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    const element = draft.elements[elementIndex];
+    if (element?.type !== 'grid-tech') {
+      return;
+    }
+
+    element.items[categoryIndex].value = value
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  }
+
+  getTechCategoryValueText(values: string[]): string {
+    return values.join(', ');
+  }
+
+  updateGroupItemValue(
+    cardId: string,
+    elementIndex: number,
+    groupIndex: number,
+    itemIndex: number,
+    value: string,
+  ): void {
+    const draft = this.cardDrafts()[cardId];
+    if (!draft) {
+      return;
+    }
+
+    const element = draft.elements[elementIndex];
+    if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+      return;
+    }
+
+    element.groups[groupIndex].items[itemIndex].value = value;
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  }
+
   setLanguage(lang: string | LangCode): void {
     if (lang === 'en' || lang === 'zh_TW') {
+      this.editingCardIds.set(new Set());
+      this.savingCardIds.set(new Set());
+      this.cardDrafts.set({});
       this.activeLang.set(lang);
       this.saveLanguageToLocalStorage(lang);
     }

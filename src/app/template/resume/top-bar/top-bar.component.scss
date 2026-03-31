@@ -16,6 +16,87 @@
   gap: 0.3rem;
 }
 
+.editor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(16, 42, 67, 0.08);
+  border: 1px solid rgba(16, 42, 67, 0.12);
+}
+
+.editor-avatar {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(16, 42, 67, 0.14);
+}
+
+.editor-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #102a43;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.editor-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.editor-label {
+  color: #486581;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.editor-name {
+  color: #102a43;
+  font-size: 0.82rem;
+  font-weight: 700;
+  max-width: 10.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.login-subtle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.62rem;
+  border: 1px dashed rgba(16, 42, 67, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.32);
+  color: rgba(16, 42, 67, 0.58);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.42;
+  cursor: default;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.55;
+  }
+
+  &:disabled {
+    pointer-events: none;
+  }
+}
+
+.google-icon {
+  font-size: 0.84rem;
+  line-height: 1;
+}
+
 .name {
   margin: 0.4rem 0 0;
   font-size: 2rem;
@@ -87,4 +168,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .top-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .action-panel {
+    align-items: flex-start;
+  }
 }

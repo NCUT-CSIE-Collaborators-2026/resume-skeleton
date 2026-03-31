@@ -133,8 +133,20 @@
   padding: clamp(0.8rem, 2.5vw, 1.5rem);
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.card-edit-btn {
+  opacity: 0.9;
+}
+
 .card-title {
-  margin: 0 0 0.5rem;
+  margin: 0;
   color: #102a43;
   font-size: 1.15rem;
   font-weight: 600;
@@ -202,6 +214,31 @@
 .detail-list i {
   color: #0369a1;
   font-size: 0.95rem;
+}
+
+.edit-list,
+.edit-group-list,
+.edit-tech-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.edit-group-item,
+.edit-tech-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.edit-group-item i {
+  width: 1rem;
+  color: #486581;
+}
+
+.edit-input,
+.edit-textarea {
+  width: 100%;
 }
 
 //向上滑入特效

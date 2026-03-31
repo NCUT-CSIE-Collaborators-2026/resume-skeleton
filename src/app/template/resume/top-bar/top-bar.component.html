@@ -5,6 +5,32 @@
   </div>
 
   <div class="action-panel">
+    @if (editorUser) {
+      <div class="editor-chip" aria-label="editor identity">
+        @if (editorUser.picture) {
+          <img class="editor-avatar" [src]="editorUser.picture" [alt]="editorUser.name + ' avatar'" />
+        } @else {
+          <div class="editor-avatar editor-avatar--fallback" aria-hidden="true">
+            {{ editorUser.name.charAt(0) }}
+          </div>
+        }
+
+        <div class="editor-meta">
+          <span class="editor-label">編輯中...</span>
+        </div>
+      </div>
+    } @else {
+      <button
+        class="login-subtle-btn"
+        type="button"
+        disabled
+        title="目前未開放登入"
+      >
+        <i class="pi pi-google google-icon" aria-hidden="true"></i>
+        登入
+      </button>
+    }
+
     <div class="lang-switch" aria-label="language selector">
       @for (option of languageOptions; track option.code) {
         <button

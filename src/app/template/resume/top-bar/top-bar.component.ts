@@ -16,6 +16,11 @@ export interface BarUi {
   exportingLabel: string;
 }
 
+export interface EditorUser {
+  name: string;
+  picture: string | null;
+}
+
 @Component({
   selector: 'app-top-bar',
   standalone: true,
@@ -25,6 +30,7 @@ export interface BarUi {
 })
 export class TopBarComponent {
   @Input() profile!: Profile;
+  @Input() editorUser: EditorUser | null = null;
   @Input() languageOptions!: LanguageOption[];
   @Input() activeLang!: 'en' | 'zh_TW';
   @Input() isA4Mode!: boolean;
