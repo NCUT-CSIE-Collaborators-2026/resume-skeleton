@@ -28,10 +28,14 @@
           </div>
         </div>
       } @else {
-        <button class="login-subtle-btn" type="button" title="目前未開放登入">
+        <a 
+          class="login-subtle-btn" 
+          href="https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login"
+          title="使用 Google 登入"
+        >
           <i class="pi pi-google google-icon" aria-hidden="true"></i>
           登入
-        </button>
+        </a>
       }
 
       @for (option of languageOptions; track option.code) {

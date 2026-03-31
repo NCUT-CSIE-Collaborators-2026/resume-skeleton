@@ -11,8 +11,8 @@
 
 .action-panel {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: center;
   gap: 0.3rem;
 }
 
@@ -79,12 +79,13 @@
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  opacity: 0.42;
-  cursor: default;
+  opacity: 0.72;
+  cursor: pointer;
   transition: opacity 0.2s ease;
+  text-decoration: none;
 
   &:hover {
-    opacity: 0.55;
+    opacity: 0.85;
   }
 
   &:disabled {
