@@ -1,3 +1,10 @@
+@import '../../../styles/_variables';
+
+/* A4 模式下 mobile 控制面板右側留白 */
+.action-panel--mobile.action-panel--a4-mode {
+  right: $resume-canvas-padding; // sticky right offset，與 resume-canvas padding 共用
+}
+
 :host {
   display: block;
 }
@@ -5,62 +12,98 @@
 .top-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.3rem;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: nowrap;
+  overflow: visible;
+  position: relative;
 }
 
-.action-panel {
+.top-bar > div:first-child {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.action-panel--mobile {
+  display: none;
   flex-direction: row;
   align-items: center;
-  gap: 0.3rem;
+  gap: $spacing-sm;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  position: sticky;
+  right: 0;
+  z-index: $z-sticky;
+  right: $resume-canvas-padding;
 }
 
 .editor-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
-  border-radius: 999px;
-  background: rgba(16, 42, 67, 0.08);
-  border: 1px solid rgba(16, 42, 67, 0.12);
+  gap: $spacing-xl;
+  padding: $spacing-md;
+  border-radius: $border-radius-pill;
+  background: $color-editor-bg-light;
+  border: 1px solid $color-editor-border;
+  cursor: pointer;
+  transition: $transition-background;
+
+  &:hover,
+  &:focus {
+    background: $color-editor-interact;
+  }
+}
+
+.editor-chip--mobile {
+  @extend .editor-chip;
 }
 
 .editor-avatar {
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 999px;
+  width: $size-avatar;
+  height: $size-avatar;
+  border-radius: $border-radius-pill;
   object-fit: cover;
-  border: 1px solid rgba(16, 42, 67, 0.14);
+  border: 1px solid $color-editor-hover;
 }
 
 .editor-avatar--fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #102a43;
-  color: #ffffff;
-  font-size: 0.78rem;
-  font-weight: 700;
+  background: $color-primary-dark;
+  color: $color-white;
+  font-size: $size-label;
+  font-weight: $font-weight-extrabold;
 }
 
 .editor-meta {
   display: flex;
   flex-direction: column;
-  line-height: 1.05;
+  line-height: $line-height-tight;
 }
 
 .editor-label {
-  color: #486581;
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
+  color: $color-primary-medium;
+  font-size: $size-label;
+  letter-spacing: $letter-spacing-wide;
   text-transform: uppercase;
 }
 
+.editor-menu {
+  :deep(.p-menu) {
+    border-radius: $border-radius-sm;
+  }
+}
+
 .editor-name {
-  color: #102a43;
-  font-size: 0.82rem;
-  font-weight: 700;
+  color: $color-primary-dark;
+  font-size: $size-text-md;
+  font-weight: $font-weight-bold;
   max-width: 10.5rem;
   white-space: nowrap;
   overflow: hidden;
@@ -70,18 +113,18 @@
 .login-subtle-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.62rem;
-  border: 1px dashed rgba(16, 42, 67, 0.24);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.32);
-  color: rgba(16, 42, 67, 0.58);
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-md * 1.75;
+  border: 1px dashed $color-editor-interact;
+  border-radius: $border-radius-pill;
+  background: $color-button-bg-light;
+  color: rgba($color-primary-dark, 0.58);
+  font-size: $size-text-sm;
+  font-weight: $font-weight-semibold;
+  letter-spacing: $letter-spacing-sm;
   opacity: 0.72;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity $transition-default;
   text-decoration: none;
 
   &:hover {
@@ -93,50 +136,67 @@
   }
 }
 
+.login-subtle-btn--mobile {
+  padding: $spacing-md;
+  border: none;
+  font-size: 0;
+}
+
 .google-icon {
-  font-size: 0.84rem;
-  line-height: 1;
+  font-size: $size-icon;
+  line-height: $line-height-normal;
 }
 
 .name {
   margin: 0.4rem 0 0;
-  font-size: 2rem;
-  line-height: 1;
-  color: #102a43;
-  font-weight: 800;
+  font-size: $size-title;
+  line-height: $line-height-normal;
+  color: $color-primary-dark;
+  font-weight: $font-weight-extrabold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .headline {
   margin: 0.6rem 0 0;
-  color: #334e68;
+  color: $color-primary-light;
   font-size: clamp(1rem, 2vw, 1.25rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.lang-switch {
+.desktop-toolbar {
   display: inline-flex;
-  gap: 0.3rem;
-  padding: 0.45rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(8px);
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $desktop-toolbar-padding;
+  border-radius: $border-radius-pill;
+  background: $color-toolbar-bg;
+  backdrop-filter: $backdrop-blur;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  position: sticky;
+  right: 0;
+  z-index: $z-sticky;
 }
 
-/* Button styles */
 .lang-btn,
 .download-btn,
 .a4-btn {
   padding: 0.4rem 0.75rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: $border-radius-sm;
+  font-size: $size-text-base;
+  font-weight: $font-weight-normal;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: rgba(255, 255, 255, 0.7);
-  color: #334e68;
+  transition: all $transition-default;
+  background-color: $color-button-bg;
+  color: $color-primary-light;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: $color-toolbar-bg-hover;
   }
 
   &:disabled {
@@ -145,10 +205,15 @@
   }
 }
 
+// 共享的按鈕樣式邏輯（用於 lang-btn 和 a4-btn）
+@mixin button-active-style($bg-color, $text-color) {
+  background-color: $bg-color;
+  color: $text-color;
+}
+
 .lang-btn {
   &.active {
-    background-color: #00a651;
-    color: white;
+    @include button-active-style($color-success, $color-white);
   }
 }
 
@@ -156,12 +221,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: $spacing-sm;
   padding: 0.4rem 0.6rem;
 
   &.active {
-    background-color: #3b82f6;
-    color: white;
+    @include button-active-style($color-info, $color-white);
   }
 }
 
@@ -171,13 +235,41 @@
   justify-content: center;
 }
 
-@media (max-width: 720px) {
-  .top-bar {
-    align-items: stretch;
-    flex-direction: column;
+.menu-trigger-btn {
+  opacity: 0.9 !important;
+}
+
+.mobile-menu {
+  :deep(.p-menu) {
+    border-radius: $border-radius-sm;
   }
 
-  .action-panel {
-    align-items: flex-start;
+  :deep(.language-item.active) {
+    background-color: $color-success-bg !important;
+    color: $color-success !important;
+  }
+}
+
+/* RWD 模式（≤768px，非 A4）：隱藏 desktop-toolbar，顯示 action-panel--mobile */
+@media (max-width: 768px) {
+  .desktop-toolbar {
+    display: none;
+  }
+
+  .action-panel--mobile:not(.action-panel--a4-mode) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-sm;
+    flex: 0 0 auto;
+  }
+
+  /* A4 模式在窄視窗時也顯示行動面板 */
+  .action-panel--mobile.action-panel--a4-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-sm;
+    flex: 0 0 auto;
   }
 }

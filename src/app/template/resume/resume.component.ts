@@ -227,6 +227,7 @@ export class ResumeComponent {
 
   private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
   private readonly sessionApiUrl = `${environment.apiUrl}${environment.apiEndpoints.authSession}`;
+  private readonly logoutApiUrl = `${environment.apiUrl}/api/resume/auth/logout`;
   private readonly contentCardUpdateApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentCardUpdate}`;
   private readonly contentByLang = signal<Record<LangCode, ContentLocale>>({
     en: { ...EMPTY_CONTENT_LOCALE },
@@ -518,6 +519,18 @@ export class ResumeComponent {
     await this.saveCard(card.id);
   }
 
+  onCardCancelEdit(cardId: string): void {
+    this.editingCardIds.update((ids) => {
+      const next = new Set(ids);
+      next.delete(cardId);
+      return next;
+    });
+    this.cardDrafts.update((drafts) => {
+      const { [cardId]: _removed, ...rest } = drafts;
+      return rest;
+    });
+  }
+
   private startCardEditing(card: Card): void {
     const cloned = this.deepClone(card);
     this.cardDrafts.update((drafts) => ({ ...drafts, [card.id]: cloned }));
@@ -746,6 +759,38 @@ export class ResumeComponent {
     this.savePaperModeToLocalStorage(isA4);
   }
 
+  async onLogout(): Promise<void> {
+    try {
+      const response = await fetch(this.logoutApiUrl, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        this.messageService.add({
+          severity: 'success',
+          summary: '登出成功',
+          detail: '已清除編輯狀態',
+        });
+        
+        // 重新加载session以清除编辑用户
+        await this.authSessionService.loadSession(this.sessionApiUrl);
+      } else {
+        this.messageService.add({
+          severity: 'error',
+          summary: '登出失敗',
+          detail: '無法完成登出',
+        });
+      }
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: '登出失敗',
+        detail: '登出過程出現錯誤',
+      });
+    }
+  }
+
   private getInitialLanguage(): LangCode {
     if (typeof window === 'undefined') {
       return 'en';
@@ -817,11 +862,15 @@ export class ResumeComponent {
           const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
           if (clonedCanvas instanceof HTMLElement) {
             clonedCanvas.classList.add('resume-canvas--pdf');
+            clonedCanvas.classList.add('pdf-export-mode');
           }
 
-          // 移除action-panel元素
-          clonedCanvas?.querySelectorAll('.action-panel').forEach((panel) => {
-            panel.parentNode?.removeChild(panel);
+          // 明確隱藏 action-panel 元素
+          const actionPanels = clonedCanvas?.querySelectorAll('[class*="action-panel"]');
+          actionPanels?.forEach((panel) => {
+            if (panel instanceof HTMLElement) {
+              panel.style.display = 'none !important';
+            }
           });
 
           // 備用：移除 ambient 背景裝飾元素

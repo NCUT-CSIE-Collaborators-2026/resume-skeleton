@@ -13,6 +13,7 @@
       (languageChange)="setLanguage($event)"
       (a4ModeChange)="isA4Mode.set($event)"
       (exportPdf)="exportResumePdf()"
+      (logout)="onLogout()"
     ></app-top-bar>
 
     @if (isContentLoading()) {
@@ -31,16 +32,28 @@
               <h3 class="card-title">{{ card.title }}</h3>
 
               @if (isAuthenticated()) {
-                <button
-                  pButton
-                  type="button"
-                  class="p-button-sm p-button-rounded card-edit-btn"
-                  [severity]="isCardEditing(card.id) ? 'success' : 'contrast'"
-                  [icon]="isCardEditing(card.id) ? 'pi pi-save' : 'pi pi-pencil'"
-                  [loading]="isCardSaving(card.id)"
-                  [label]="isCardEditing(card.id) ? 'Save' : 'Edit'"
-                  (click)="onCardEditAction(card)"
-                ></button>
+                <div class="card-button-group">
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-rounded card-edit-btn"
+                    [severity]="isCardEditing(card.id) ? 'success' : 'contrast'"
+                    [icon]="isCardEditing(card.id) ? 'pi pi-save' : 'pi pi-pencil'"
+                    [loading]="isCardSaving(card.id)"
+                    [label]="isCardEditing(card.id) ? 'Save' : 'Edit'"
+                    (click)="onCardEditAction(card)"
+                  ></button>
+                  @if (isCardEditing(card.id)) {
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-sm p-button-rounded card-cancel-btn"
+                      severity="secondary"
+                      icon="pi pi-times"
+                      (click)="onCardCancelEdit(card.id)"
+                    ></button>
+                  }
+                </div>
               }
             </div>
 

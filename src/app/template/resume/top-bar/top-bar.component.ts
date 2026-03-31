@@ -1,5 +1,8 @@
-import { Component, EventEmitter, Input, Output, Signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, ViewChild, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { MenuModule, Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 
 export interface LanguageOption {
   label: string;
@@ -24,7 +27,7 @@ export interface EditorUser {
 @Component({
   selector: 'app-top-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonModule, MenuModule],
   templateUrl: './top-bar.component.html',
   styleUrl: './top-bar.component.scss'
 })
@@ -40,16 +43,100 @@ export class TopBarComponent {
   @Output() languageChange = new EventEmitter<'en' | 'zh_TW'>();
   @Output() a4ModeChange = new EventEmitter<boolean>();
   @Output() exportPdf = new EventEmitter<void>();
+  @Output() logout = new EventEmitter<void>();
+
+  @ViewChild('mobileMenu') mobileMenu!: Menu;
+  @ViewChild('editorMenu') editorMenu!: Menu;
+
+  readonly menuOpen = signal(false);
+
+  get currentModeLabel(): string {
+    return this.isA4Mode ? 'RWD 模式' : 'A4 模式';
+  }
+
+  get editorMenuItems(): MenuItem[] {
+    return [
+      {
+        label: '登出',
+        command: () => this.onLogout(),
+        icon: 'pi pi-sign-out',
+      },
+    ];
+  }
+
+  get mobileMenuItems(): MenuItem[] {
+    const items: MenuItem[] = [];
+    // 語言切換
+    this.languageOptions.forEach(option => {
+      items.push({
+        label: option.label,
+        command: () => this.onLanguageChange(option.code),
+        styleClass: `language-item ${this.activeLang === option.code ? 'active' : ''}`
+      });
+    });
+    items.push({ separator: true });
+    // A4/RWD 切換
+    items.push({
+      label: this.currentModeLabel,
+      icon: 'pi pi-arrow-right',
+      command: () => this.onA4ModeToggle(),
+      styleClass: this.isA4Mode ? 'active' : ''
+    });
+    // PDF 下載
+    items.push({
+      label: this.barUi.exportPdfLabel,
+      icon: this.isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download',
+      command: () => this.onExportPdf(),
+      disabled: this.isExporting
+    });
+    // 登出/登入
+    if (this.editorUser) {
+      items.push({
+        label: '登出',
+        icon: 'pi pi-sign-out',
+        command: () => this.onLogout()
+      });
+    } else {
+      items.push({
+        label: '登入',
+        icon: 'pi pi-google',
+        url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
+        target: '_self'
+      });
+    }
+    return items;
+  }
 
   onLanguageChange(code: 'en' | 'zh_TW'): void {
     this.languageChange.emit(code);
+    this.menuOpen.set(false);
   }
 
   onA4ModeToggle(): void {
     this.a4ModeChange.emit(!this.isA4Mode);
+    this.menuOpen.set(false);
   }
 
   onExportPdf(): void {
     this.exportPdf.emit();
+    this.menuOpen.set(false);
+  }
+
+  toggleMobileMenu(event: Event): void {
+    event.stopPropagation();
+    this.mobileMenu.toggle(event);
+  }
+
+  toggleEditorMenu(event: Event): void {
+    event.stopPropagation();
+    this.editorMenu.toggle(event);
+  }
+
+  onLogout(): void {
+    this.logout.emit();
+    if (this.editorMenu) {
+      this.editorMenu.hide();
+    }
+    this.menuOpen.set(false);
   }
 }

@@ -1,74 +1,141 @@
-<header class="top-bar">
+<header class="top-bar" [class.a4-mode]="isA4Mode">
   <div>
     <h1 class="name">{{ profile.name }}</h1>
     <p class="headline">{{ profile.title }}</p>
   </div>
 
-  <div class="lang-switch" aria-label="language selector">
-    <div class="action-panel">
-      @if (editorUser) {
-        <div class="editor-chip" aria-label="editor identity">
-          @if (editorUser.picture) {
-            <img
-              class="editor-avatar"
-              [src]="editorUser.picture"
-              [alt]="editorUser.name + ' avatar'"
-            />
-          } @else {
-            <div
-              class="editor-avatar editor-avatar--fallback"
-              aria-hidden="true"
-            >
-              {{ editorUser.name.charAt(0) }}
-            </div>
-          }
-
-          <div class="editor-meta">
-            <span class="editor-label">編輯中...</span>
+  <!-- Desktop view -->
+  <div class="desktop-toolbar" aria-label="editor and settings toolbar">
+    @if (editorUser) {
+      <div
+        class="editor-chip"
+        aria-label="editor identity"
+        (click)="toggleEditorMenu($event)"
+        role="button"
+        tabindex="0"
+      >
+        @if (editorUser.picture) {
+          <img
+            class="editor-avatar"
+            [src]="editorUser.picture"
+            [alt]="editorUser.name + ' avatar'"
+          />
+        } @else {
+          <div class="editor-avatar editor-avatar--fallback" aria-hidden="true">
+            {{ editorUser.name.charAt(0) }}
           </div>
-        </div>
-      } @else {
-        <a 
-          class="login-subtle-btn" 
-          href="https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login"
-          title="使用 Google 登入"
-        >
-          <i class="pi pi-google google-icon" aria-hidden="true"></i>
-          登入
-        </a>
-      }
+        }
 
-      @for (option of languageOptions; track option.code) {
-        <button
-          class="lang-btn"
-          [class.active]="activeLang === option.code"
-          (click)="onLanguageChange(option.code)"
-        >
-          {{ option.label }}
-        </button>
-      }
-      <button
-        class="a4-btn"
-        [class.active]="isA4Mode"
-        (click)="onA4ModeToggle()"
-        title="Toggle A4 aspect ratio"
+        <div class="editor-meta">
+          <span class="editor-label">編輯中...</span>
+        </div>
+      </div>
+      <p-menu
+        #editorMenu
+        [model]="editorMenuItems"
+        [popup]="true"
+        appendTo="body"
+        class="editor-menu"
+      ></p-menu>
+    } @else {
+      <div
+        class="editor-chip"
+        aria-label="login identity"
+        (click)="toggleEditorMenu($event)"
+        role="button"
+        tabindex="0"
       >
-        <i
-          class="pi pi-rectangle"
-          style="font-size: 0.8rem; margin-right: 0.25rem"
-        ></i>
-        A4
-      </button>
+        <i class="pi pi-google google-icon" aria-hidden="true"></i>
+      </div>
+      <p-menu
+        #editorMenu
+        [model]="editorMenuItems"
+        [popup]="true"
+        appendTo="body"
+        class="editor-menu"
+      ></p-menu>
+    }
+
+    @for (option of languageOptions; track option.code) {
       <button
-        class="download-btn"
-        [disabled]="isExporting"
-        (click)="onExportPdf()"
-        [title]="isExporting ? barUi.exportingLabel : barUi.exportPdfLabel"
+        class="lang-btn"
+        [class.active]="activeLang === option.code"
+        (click)="onLanguageChange(option.code)"
       >
-        <i
-          [class]="isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download'"
-        ></i>
+        {{ option.label }}
       </button>
-    </div>
+    }
+    <button
+      class="a4-btn"
+      [class.active]="isA4Mode"
+      (click)="onA4ModeToggle()"
+      title="Toggle A4 aspect ratio"
+    >
+      <i
+        class="pi pi-rectangle"
+        style="font-size: 0.8rem; margin-right: 0.25rem"
+      ></i>
+      A4
+    </button>
+    <button
+      class="download-btn"
+      [disabled]="isExporting"
+      (click)="onExportPdf()"
+      [title]="isExporting ? barUi.exportingLabel : barUi.exportPdfLabel"
+    >
+      <i [class]="isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download'"></i>
+    </button>
+  </div>
+
+  <!-- Mobile view -->
+  <div
+    class="action-panel action-panel--mobile"
+    [class.action-panel--a4-mode]="isA4Mode"
+  >
+    @if (editorUser) {
+      <div
+        class="editor-chip editor-chip--mobile"
+        aria-label="editor identity"
+        (click)="toggleEditorMenu($event)"
+        role="button"
+        tabindex="0"
+      >
+        @if (editorUser.picture) {
+          <img
+            class="editor-avatar"
+            [src]="editorUser.picture"
+            [alt]="editorUser.name + ' avatar'"
+          />
+        } @else {
+          <div class="editor-avatar editor-avatar--fallback" aria-hidden="true">
+            {{ editorUser.name.charAt(0) }}
+          </div>
+        }
+      </div>
+      <p-menu
+        #editorMenu
+        [model]="mobileMenuItems"
+        [popup]="true"
+        appendTo="body"
+        class="editor-menu"
+      ></p-menu>
+    } @else {
+      <div
+        class="editor-chip editor-chip--mobile"
+        aria-label="login identity"
+        (click)="toggleEditorMenu($event)"
+        role="button"
+        tabindex="0"
+      >
+        <i class="pi pi-google google-icon" aria-hidden="true"></i>
+      </div>
+      <p-menu
+        #editorMenu
+        [model]="mobileMenuItems"
+        [popup]="true"
+        appendTo="body"
+        class="editor-menu"
+      ></p-menu>
+    }
   </div>
 </header>
