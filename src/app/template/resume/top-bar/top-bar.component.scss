@@ -1,10 +1,5 @@
 @import '../../../styles/_variables';
 
-/* A4 模式下 mobile 控制面板右側留白 */
-.action-panel--mobile.action-panel--a4-mode {
-  right: $resume-canvas-padding; // sticky right offset，與 resume-canvas padding 共用
-}
-
 :host {
   display: block;
 }
@@ -37,7 +32,7 @@
   flex-shrink: 0;
   flex-wrap: nowrap;
   position: sticky;
-  right: 0;
+  right: $resume-canvas-padding;
   z-index: $z-sticky;
   right: $resume-canvas-padding;
 }
@@ -45,8 +40,8 @@
 .editor-chip {
   display: inline-flex;
   align-items: center;
-  gap: $spacing-xl;
-  padding: $spacing-md;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
   border-radius: $border-radius-pill;
   background: $color-editor-bg-light;
   border: 1px solid $color-editor-border;
@@ -178,7 +173,7 @@
   flex-wrap: nowrap;
   flex-shrink: 0;
   position: sticky;
-  right: 0;
+  right: $resume-canvas-padding;
   z-index: $z-sticky;
 }
 
