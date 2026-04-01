@@ -55,13 +55,24 @@ export class TopBarComponent {
   }
 
   get editorMenuItems(): MenuItem[] {
-    return [
-      {
-        label: '登出',
-        command: () => this.onLogout(),
-        icon: 'pi pi-sign-out',
-      },
-    ];
+    if (this.editorUser) {
+      return [
+        {
+          label: '登出',
+          command: () => this.onLogout(),
+          icon: 'pi pi-sign-out',
+        },
+      ];
+    } else {
+      return [
+        {
+          label: '登入',
+          icon: 'pi pi-sign-in',
+          url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
+          target: '_self',
+        },
+      ];
+    }
   }
 
   get mobileMenuItems(): MenuItem[] {
