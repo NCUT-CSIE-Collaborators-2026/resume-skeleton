@@ -28,180 +28,23 @@
     } @else {
       <div class="resume-grid">
         @for (card of renderedCards(); track card.id) {
-          <div class="card" [style.grid-column]="'span ' + card.layout">
-            <div class="card-header">
-              <h3 class="card-title">{{ card.title }}</h3>
-
-              @if (isAuthenticated()) {
-                <div class="card-button-group">
-                  <button
-                    pButton
-                    type="button"
-                    class="p-button-sm p-button-rounded card-edit-btn"
-                    [severity]="isCardEditing(card.id) ? 'success' : 'contrast'"
-                    [icon]="isCardEditing(card.id) ? 'pi pi-save' : 'pi pi-pencil'"
-                    [loading]="isCardSaving(card.id)"
-                    [label]="isCardEditing(card.id) ? 'Save' : 'Edit'"
-                    (click)="onCardEditAction(card)"
-                  ></button>
-                  @if (isCardEditing(card.id)) {
-                    <button
-                      pButton
-                      type="button"
-                      class="p-button-sm p-button-rounded card-cancel-btn"
-                      severity="secondary"
-                      icon="pi pi-times"
-                      (click)="onCardCancelEdit(card.id)"
-                    ></button>
-                  }
-                </div>
-              }
-            </div>
-
-            @if (card.subtitle) {
-              <p class="card-subtitle">{{ card.subtitle }}</p>
-            }
-
-            @for (element of card.elements; track $index; let elementIndex = $index) {
-              @switch (element.type) {
-                @case ("text") {
-                  @if (isCardEditing(card.id)) {
-                    <textarea
-                      pInputTextarea
-                      rows="5"
-                      class="edit-textarea"
-                      [ngModel]="element.text"
-                      (ngModelChange)="updateTextElement(card.id, elementIndex, $event)"
-                    ></textarea>
-                  } @else {
-                    <div class="intro-block">
-                      <p>{{ element.text }}</p>
-                    </div>
-                  }
-                }
-                @case ("badges") {
-                  @if (isCardEditing(card.id)) {
-                    <div class="edit-list">
-                      @for (badge of element.items; track $index; let badgeIndex = $index) {
-                        <input
-                          pInputText
-                          class="edit-input"
-                          [ngModel]="badge"
-                          (ngModelChange)="updateBadgeItem(card.id, elementIndex, badgeIndex, $event)"
-                        />
-                      }
-                    </div>
-                  } @else {
-                    <div class="badge-row">
-                      @for (badge of element.items; track badge) {
-                        <span class="badge">{{ badge }}</span>
-                      }
-                    </div>
-                  }
-                }
-                @case ("icon-list") {
-                  @if (isCardEditing(card.id)) {
-                    <div class="edit-list">
-                      @for (item of element.items; track $index; let itemIndex = $index) {
-                        <input
-                          pInputText
-                          class="edit-input"
-                          [ngModel]="item"
-                          (ngModelChange)="updateIconListItem(card.id, elementIndex, itemIndex, $event)"
-                        />
-                      }
-                    </div>
-                  } @else {
-                    <ul class="detail-list">
-                      @for (item of element.items; track item) {
-                        <li>
-                          <i [class]="element.icon"></i>
-                          <span>{{ item }}</span>
-                        </li>
-                      }
-                    </ul>
-                  }
-                }
-                @case ("grid-tech") {
-                  @if (isCardEditing(card.id)) {
-                    <div class="edit-tech-grid">
-                      @for (category of element.items; track category.label; let categoryIndex = $index) {
-                        <div class="edit-tech-row">
-                          <span class="stack-label">{{ category.label }}</span>
-                          <textarea
-                            pInputTextarea
-                            rows="2"
-                            class="edit-textarea"
-                            [ngModel]="getTechCategoryValueText(category.value)"
-                            (ngModelChange)="updateTechCategoryValues(card.id, elementIndex, categoryIndex, $event)"
-                          ></textarea>
-                        </div>
-                      }
-                    </div>
-                  } @else {
-                    <div class="stack-grid" [class.grid-single]="element.gridLayout === 'single'">
-                      @for (category of element.items; track category.label) {
-                        <div class="stack-item">
-                          <span class="stack-label">{{ category.label }}</span>
-                          <div class="stack-tags">
-                            @for (tech of category.value; track tech) {
-                              <span
-                                class="tag"
-                                [class]="'tag-' + category.severity"
-                                >{{ tech }}</span
-                              >
-                            }
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  }
-                }
-                @case ("grid-education") {
-                  @if (isCardEditing(card.id)) {
-                    <div class="edit-group-list">
-                      @for (group of element.groups; track group.name; let groupIndex = $index) {
-                        @for (item of group.items; track item.label; let itemIndex = $index) {
-                          <div class="edit-group-item">
-                            <i [class]="item.icon"></i>
-                            <input
-                              pInputText
-                              class="edit-input"
-                              [ngModel]="item.value"
-                              (ngModelChange)="updateGroupItemValue(card.id, elementIndex, groupIndex, itemIndex, $event)"
-                            />
-                          </div>
-                        }
-                      }
-                    </div>
-                  } @else {
-                    <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
-                  }
-                }
-                @case ("grid-groups") {
-                  @if (isCardEditing(card.id)) {
-                    <div class="edit-group-list">
-                      @for (group of element.groups; track group.name; let groupIndex = $index) {
-                        @for (item of group.items; track item.label; let itemIndex = $index) {
-                          <div class="edit-group-item">
-                            <i [class]="item.icon"></i>
-                            <input
-                              pInputText
-                              class="edit-input"
-                              [ngModel]="item.value"
-                              (ngModelChange)="updateGroupItemValue(card.id, elementIndex, groupIndex, itemIndex, $event)"
-                            />
-                          </div>
-                        }
-                      }
-                    </div>
-                  } @else {
-                    <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
-                  }
-                }
-              }
-            }
-          </div>
+          <app-resume-card
+            [style.grid-column]="'span ' + card.layout"
+            [card]="card"
+            [isAuthenticated]="isAuthenticated()"
+            [isEditing]="isCardEditing(card.id)"
+            [isSaving]="isCardSaving(card.id)"
+            [cardUi]="cardUi()"
+            (editAction)="onCardEditAction($event)"
+            (cancelEdit)="onCardCancelEdit($event)"
+            (addItem)="addCardItem($event.cardId, $event.elementIndex)"
+            (deleteItem)="deleteCardItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.groupIndex, $event.categoryIndex)"
+            (textElementChange)="updateTextElement($event.cardId, $event.elementIndex, $event.value)"
+            (badgeItemChange)="updateBadgeItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"
+            (iconListItemChange)="updateIconListItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"
+            (techCategoryChange)="updateTechCategoryValues($event.cardId, $event.elementIndex, $event.categoryIndex, $event.value)"
+            (groupItemChange)="updateGroupItemValue($event.cardId, $event.elementIndex, $event.groupIndex, $event.itemIndex, $event.value)"
+          ></app-resume-card>
         }
       </div>
     }

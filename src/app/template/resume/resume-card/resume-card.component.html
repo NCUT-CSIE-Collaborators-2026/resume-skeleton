@@ -1,0 +1,269 @@
+<article class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{ card.title }}</h3>
+
+    @if (isAuthenticated) {
+      <div class="card-button-group">
+        <button
+          pButton
+          type="button"
+          class="p-button-sm p-button-rounded card-edit-btn"
+          [severity]="isEditing ? 'success' : 'contrast'"
+          [icon]="isEditing ? 'pi pi-save' : 'pi pi-pencil'"
+          [loading]="isSaving"
+          [label]="isEditing ? 'Save' : 'Edit'"
+          (click)="onEditAction()"
+        ></button>
+        @if (isEditing) {
+          <button
+            pButton
+            type="button"
+            class="p-button-sm p-button-rounded card-cancel-btn"
+            severity="secondary"
+            icon="pi pi-times"
+            (click)="onCancelEdit()"
+          ></button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (card.subtitle) {
+    <p class="card-subtitle">{{ card.subtitle }}</p>
+  }
+
+  @for (element of card.elements; track $index; let elementIndex = $index) {
+    @switch (element.type) {
+      @case ("text") {
+        @if (isEditing) {
+          <textarea
+            pInputTextarea
+            rows="5"
+            class="edit-textarea"
+            [ngModel]="element.text"
+            (ngModelChange)="onTextElementChange(elementIndex, $event)"
+          ></textarea>
+        } @else {
+          <div class="intro-block">
+            <p>{{ element.text }}</p>
+          </div>
+        }
+      }
+      @case ("badges") {
+        @if (isEditing) {
+          <div class="edit-list">
+            @for (badge of element.items; track $index; let badgeIndex = $index) {
+              <div class="edit-item-row">
+                <input
+                  pInputText
+                  class="edit-input"
+                  [ngModel]="badge"
+                  (ngModelChange)="onBadgeItemChange(elementIndex, badgeIndex, $event)"
+                />
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                  icon="pi pi-trash"
+                  [label]="cardUi.deleteLabel"
+                  (click)="onDeleteItem({ elementIndex, itemIndex: badgeIndex })"
+                ></button>
+              </div>
+            }
+            <button
+              pButton
+              type="button"
+              class="p-button-sm p-button-outlined add-item-btn"
+              icon="pi pi-plus"
+              [label]="cardUi.addLabel"
+              [disabled]="isSaving"
+              (click)="onAddItem(elementIndex)"
+            ></button>
+          </div>
+        } @else {
+          <div class="badge-row">
+            @for (badge of element.items; track badge) {
+              <span class="badge">{{ badge }}</span>
+            }
+          </div>
+        }
+      }
+      @case ("icon-list") {
+        @if (isEditing) {
+          <div class="edit-list">
+            @for (item of element.items; track $index; let itemIndex = $index) {
+              <div class="edit-item-row">
+                <input
+                  pInputText
+                  class="edit-input"
+                  [ngModel]="item"
+                  (ngModelChange)="onIconListItemChange(elementIndex, itemIndex, $event)"
+                />
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                  icon="pi pi-trash"
+                  [label]="cardUi.deleteLabel"
+                  (click)="onDeleteItem({ elementIndex, itemIndex })"
+                    [disabled]="isSaving"
+                ></button>
+              </div>
+            }
+            <button
+              pButton
+              type="button"
+              class="p-button-sm p-button-outlined add-item-btn"
+              icon="pi pi-plus"
+              [label]="cardUi.addLabel"
+              [disabled]="isSaving"
+              (click)="onAddItem(elementIndex)"
+            ></button>
+          </div>
+        } @else {
+          <ul class="detail-list">
+            @for (item of element.items; track item) {
+              <li>
+                <i [class]="element.icon"></i>
+                <span>{{ item }}</span>
+              </li>
+            }
+          </ul>
+        }
+      }
+      @case ("grid-tech") {
+        @if (isEditing) {
+          <div class="edit-tech-grid">
+            @for (category of element.items; track category.label; let categoryIndex = $index) {
+              <div class="edit-tech-row">
+                <div class="edit-tech-main">
+                  <span class="stack-label">{{ category.label }}</span>
+                  <textarea
+                    pInputTextarea
+                    rows="2"
+                    class="edit-textarea"
+                    [ngModel]="getTechCategoryValueText(category.value)"
+                    (ngModelChange)="onTechCategoryChange(elementIndex, categoryIndex, $event)"
+                  ></textarea>
+                </div>
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                  icon="pi pi-trash"
+                  [label]="cardUi.deleteLabel"
+                  [disabled]="isSaving"
+                  (click)="onDeleteItem({ elementIndex, itemIndex: categoryIndex, categoryIndex })"
+                ></button>
+              </div>
+            }
+            <button
+              pButton
+              type="button"
+              class="p-button-sm p-button-outlined add-item-btn"
+              icon="pi pi-plus"
+              [label]="cardUi.addLabel"
+              [disabled]="isSaving"
+              (click)="onAddItem(elementIndex)"
+            ></button>
+          </div>
+        } @else {
+          <div class="stack-grid" [class.grid-single]="element.gridLayout === 'single'">
+            @for (category of element.items; track category.label) {
+              <div class="stack-item">
+                <span class="stack-label">{{ category.label }}</span>
+                <div class="stack-tags">
+                  @for (tech of category.value; track tech) {
+                    <span class="tag" [class]="'tag-' + category.severity">{{ tech }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+      @case ("grid-education") {
+        @if (isEditing) {
+          <div class="edit-group-list">
+            @for (group of element.groups; track group.name; let groupIndex = $index) {
+              @for (item of group.items; track item.label; let itemIndex = $index) {
+                <div class="edit-group-item">
+                  <div class="edit-group-main">
+                    <i [class]="item.icon"></i>
+                    <input
+                      pInputText
+                      class="edit-input"
+                      [ngModel]="item.value"
+                      (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
+                    />
+                  </div>
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
+                    [label]="cardUi.deleteLabel"
+                    [disabled]="isSaving"
+                    (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
+                  ></button>
+                </div>
+              }
+            }
+            <button
+              pButton
+              type="button"
+              class="p-button-sm p-button-outlined add-item-btn"
+              icon="pi pi-plus"
+              [label]="cardUi.addLabel"
+              [disabled]="isSaving"
+              (click)="onAddItem(elementIndex)"
+            ></button>
+          </div>
+        } @else {
+          <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
+        }
+      }
+      @case ("grid-groups") {
+        @if (isEditing) {
+          <div class="edit-group-list">
+            @for (group of element.groups; track group.name; let groupIndex = $index) {
+              @for (item of group.items; track item.label; let itemIndex = $index) {
+                <div class="edit-group-item">
+                  <div class="edit-group-main">
+                    <i [class]="item.icon"></i>
+                    <input
+                      pInputText
+                      class="edit-input"
+                      [ngModel]="item.value"
+                      (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
+                    />
+                  </div>
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
+                    [label]="cardUi.deleteLabel"
+                    [disabled]="isSaving"
+                    (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
+                  ></button>
+                </div>
+              }
+            }
+            <button
+              pButton
+              type="button"
+              class="p-button-sm p-button-outlined add-item-btn"
+              icon="pi pi-plus"
+              [label]="cardUi.addLabel"
+              [disabled]="isSaving"
+              (click)="onAddItem(elementIndex)"
+            ></button>
+          </div>
+        } @else {
+          <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
+        }
+      }
+    }
+  }
+</article>

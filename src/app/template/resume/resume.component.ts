@@ -8,14 +8,11 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { GroupListComponent } from '../../uikit/group-list.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { ResumeCardComponent } from './resume-card/resume-card.component';
+import { Card } from './resume-card.model';
 import i18nData from '../../ui.i18n.json';
 import { environment } from '../../config/environment';
 import { AuthSessionService } from '../../services/auth-session.service';
@@ -46,6 +43,10 @@ interface I18nLocale {
   'bar-ui': {
     exportPdfLabel: string;
     exportingLabel: string;
+  };
+  'card-ui': {
+    addLabel: string;
+    deleteLabel: string;
   };
   'topbar-ui': {
     editorMenuLabel: string;
@@ -92,6 +93,13 @@ interface ContentLocale {
   projects: {
     items: string[];
   };
+  card_content?: Record<
+    string,
+    {
+      subtitle?: string;
+      elements?: Card['elements'];
+    }
+  >;
 }
 
 type ResumeLocale = I18nLocale & ContentLocale;
@@ -116,6 +124,11 @@ interface BarUi {
   exportingLabel: string;
 }
 
+interface CardUi {
+  addLabel: string;
+  deleteLabel: string;
+}
+
 interface TopBarUi {
   editorMenuLabel: string;
   loginLabel: string;
@@ -124,44 +137,6 @@ interface TopBarUi {
   modeRwdLabel: string;
   exportPdfLabel: string;
   exportingLabel: string;
-}
-
-type CardElement =
-  | { type: 'text'; text: string }
-  | { type: 'badges'; items: string[] }
-  | { type: 'icon-list'; icon: string; items: string[] }
-  | {
-      type: 'grid-tech';
-      items: Array<{
-        label: string;
-        value: string[];
-        severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary';
-      }>;
-      gridLayout?: 'compact' | 'single';
-    }
-  | {
-      type: 'grid-education';
-      groups: Array<{
-        name: string;
-        items: Array<{ label: string; value: string; icon: string }>;
-      }>;
-      gridLayout?: 'compact' | 'single';
-    }
-  | {
-      type: 'grid-groups';
-      groups: Array<{
-        name: string;
-        items: Array<{ label: string; value: string; icon: string }>;
-      }>;
-      gridLayout?: 'compact' | 'single';
-    };
-
-interface Card {
-  id: string;
-  title: string;
-  subtitle?: string;
-  layout: number;
-  elements: CardElement[];
 }
 
 const UI_I18N = i18nData as Record<LangCode, I18nLocale>;
@@ -200,19 +175,16 @@ const EMPTY_CONTENT_LOCALE: ContentLocale = {
   projects: {
     items: [],
   },
+  card_content: {},
 };
 
 @Component({
   selector: 'resume',
   imports: [
     CommonModule,
-    FormsModule,
-    InputTextModule,
-    TextareaModule,
-    ButtonModule,
     ToastModule,
-    GroupListComponent,
     TopBarComponent,
+    ResumeCardComponent,
   ],
   providers: [MessageService],
   templateUrl: './resume.component.html',
@@ -313,6 +285,14 @@ export class ResumeComponent {
     };
   });
 
+  readonly cardUi = computed<CardUi>(() => {
+    const content = this.content();
+    return {
+      addLabel: content['card-ui'].addLabel,
+      deleteLabel: content['card-ui'].deleteLabel,
+    };
+  });
+
   readonly topBarUi = computed<TopBarUi>(() => {
     const content = this.content();
     return {
@@ -378,8 +358,7 @@ export class ResumeComponent {
   readonly cards = computed<Card[]>(() => {
     const content = this.content();
     const ui = this.uiCopy();
-
-    return [
+    const baseCards: Card[] = [
       // 個人資料卡
       {
         id: 'profile',
@@ -448,7 +427,43 @@ export class ResumeComponent {
         ],
       },
     ];
+
+    return baseCards.map((card) => this.applyStoredCardContent(card));
   });
+
+  private getStoredCardContent(cardId: string):
+    | {
+        subtitle?: string;
+        elements?: Card['elements'];
+      }
+    | null {
+    const cardContent = this.content().card_content;
+    if (!cardContent) {
+      return null;
+    }
+
+    const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
+    const stored = cardContent[key];
+    return stored ?? null;
+  }
+
+  private applyStoredCardContent(card: Card): Card {
+    const stored = this.getStoredCardContent(card.id);
+    if (!stored) {
+      return card;
+    }
+
+    const nextCard: Card = { ...card };
+    if (typeof stored.subtitle === 'string') {
+      nextCard.subtitle = stored.subtitle;
+    }
+
+    if (Array.isArray(stored.elements)) {
+      nextCard.elements = this.deepClone(stored.elements as Card['elements']);
+    }
+
+    return nextCard;
+  }
 
   // 自動填滿列的計算
   readonly cardsWithAutoFill = computed<Card[]>(() => {
@@ -573,7 +588,7 @@ export class ResumeComponent {
     });
   }
 
-  private async saveCard(cardId: string): Promise<void> {
+  private async saveCard(cardId: string, keepEditing = false): Promise<void> {
     const draft = this.cardDrafts()[cardId];
     if (!draft) {
       return;
@@ -602,17 +617,13 @@ export class ResumeComponent {
         detail: result.message,
       });
 
-      this.editingCardIds.update((ids) => {
-        const next = new Set(ids);
-        next.delete(cardId);
-        return next;
-      });
-      this.cardDrafts.update((drafts) => {
-        const { [cardId]: _removed, ...rest } = drafts;
-        return rest;
-      });
-
-      await this.loadContentFromApi();
+      if (!keepEditing) {
+        this.editingCardIds.update((ids) => {
+          const next = new Set(ids);
+          next.delete(cardId);
+          return next;
+        });
+      }
     } catch {
       this.messageService.add({
         severity: 'error',
@@ -673,19 +684,26 @@ export class ResumeComponent {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
-  updateTextElement(cardId: string, elementIndex: number, value: string): void {
+  private updateDraftCard(cardId: string, updater: (draft: Card) => Card): void {
     const draft = this.cardDrafts()[cardId];
     if (!draft) {
       return;
     }
 
-    const element = draft.elements[elementIndex];
-    if (element?.type !== 'text') {
-      return;
-    }
+    const nextDraft = updater(this.deepClone(draft));
+    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: nextDraft }));
+  }
 
-    element.text = value;
-    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  updateTextElement(cardId: string, elementIndex: number, value: string): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'text') {
+        return draft;
+      }
+
+      element.text = value;
+      return draft;
+    });
   }
 
   updateBadgeItem(
@@ -694,18 +712,15 @@ export class ResumeComponent {
     itemIndex: number,
     value: string,
   ): void {
-    const draft = this.cardDrafts()[cardId];
-    if (!draft) {
-      return;
-    }
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'badges') {
+        return draft;
+      }
 
-    const element = draft.elements[elementIndex];
-    if (element?.type !== 'badges') {
-      return;
-    }
-
-    element.items[itemIndex] = value;
-    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+      element.items[itemIndex] = value;
+      return draft;
+    });
   }
 
   updateIconListItem(
@@ -714,18 +729,15 @@ export class ResumeComponent {
     itemIndex: number,
     value: string,
   ): void {
-    const draft = this.cardDrafts()[cardId];
-    if (!draft) {
-      return;
-    }
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'icon-list') {
+        return draft;
+      }
 
-    const element = draft.elements[elementIndex];
-    if (element?.type !== 'icon-list') {
-      return;
-    }
-
-    element.items[itemIndex] = value;
-    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+      element.items[itemIndex] = value;
+      return draft;
+    });
   }
 
   updateTechCategoryValues(
@@ -734,25 +746,18 @@ export class ResumeComponent {
     categoryIndex: number,
     value: string,
   ): void {
-    const draft = this.cardDrafts()[cardId];
-    if (!draft) {
-      return;
-    }
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'grid-tech') {
+        return draft;
+      }
 
-    const element = draft.elements[elementIndex];
-    if (element?.type !== 'grid-tech') {
-      return;
-    }
-
-    element.items[categoryIndex].value = value
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0);
-    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
-  }
-
-  getTechCategoryValueText(values: string[]): string {
-    return values.join(', ');
+      element.items[categoryIndex].value = value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0);
+      return draft;
+    });
   }
 
   updateGroupItemValue(
@@ -762,18 +767,84 @@ export class ResumeComponent {
     itemIndex: number,
     value: string,
   ): void {
-    const draft = this.cardDrafts()[cardId];
-    if (!draft) {
-      return;
-    }
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+        return draft;
+      }
 
-    const element = draft.elements[elementIndex];
-    if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
-      return;
-    }
+      element.groups[groupIndex].items[itemIndex].value = value;
+      return draft;
+    });
+  }
 
-    element.groups[groupIndex].items[itemIndex].value = value;
-    this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: draft }));
+  addCardItem(cardId: string, elementIndex: number): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+
+      if (element?.type === 'badges') {
+        element.items.push('');
+        return draft;
+      }
+
+      if (element?.type === 'icon-list') {
+        element.items.push('');
+        return draft;
+      }
+
+      if (element?.type === 'grid-education' || element?.type === 'grid-groups') {
+        const targetGroup = element.groups[0];
+        if (!targetGroup) {
+          return draft;
+        }
+
+        const nextIndex = targetGroup.items.length + 1;
+        targetGroup.items.push({
+          label: `item-${nextIndex}`,
+          value: '',
+          icon: 'pi pi-circle',
+        });
+        return draft;
+      }
+
+      return draft;
+    });
+
+    void this.saveCard(cardId, true);
+  }
+
+  deleteCardItem(
+    cardId: string,
+    elementIndex: number,
+    itemIndex: number,
+    groupIndex?: number,
+    categoryIndex?: number,
+  ): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+
+      if (element?.type === 'badges' || element?.type === 'icon-list') {
+        element.items.splice(itemIndex, 1);
+        return draft;
+      }
+
+      if (element?.type === 'grid-tech' && typeof categoryIndex === 'number') {
+        element.items.splice(categoryIndex, 1);
+        return draft;
+      }
+
+      if (
+        (element?.type === 'grid-education' || element?.type === 'grid-groups') &&
+        typeof groupIndex === 'number'
+      ) {
+        element.groups[groupIndex].items.splice(itemIndex, 1);
+        return draft;
+      }
+
+      return draft;
+    });
+
+    void this.saveCard(cardId, true);
   }
 
   setLanguage(lang: string | LangCode): void {

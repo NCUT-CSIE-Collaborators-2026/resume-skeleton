@@ -1,72 +1,80 @@
 {
-    "en": {
-        "config": {
-            "code": "en",
-            "label":  "EN",
-            "lang": "en",
-            "title": "Haolun Wang | Resume"
-        },
-        "content-ui": {
-            "introTitle": "Self Introduction",
-            "educationTitle": "Education",
-            "expTitle": "Experience",
-            "stackTitle": "Tech Stack",
-            "projectsTitle": "Project Achievements",
-            "labels": {
-                "language": "Language",
-                "frontend": "Frontend",
-                "backend": "Backend",
-                "database": "Database",
-                "devops": "DevOps"
-            }
-        },
-        "bar-ui": {
-            "exportPdfLabel": "Export PDF",
-            "exportingLabel": "Exporting"
-        },
-        "topbar-ui": {
-            "editorMenuLabel": "Editor menu",
-            "loginLabel": "Login",
-            "logoutLabel": "Logout",
-            "modeA4Label": "A4 Mode",
-            "modeRwdLabel": "RWD Mode",
-            "exportPdfLabel": "Export PDF",
-            "exportingLabel": "Exporting"
-        }
+  "en": {
+    "config": {
+      "code": "en",
+      "label": "EN",
+      "lang": "en",
+      "title": "Haolun Wang | Resume"
     },
-    "zh_TW": {
-        "config":{
-            "code": "zh_TW",
-            "label": "繁",
-            "lang": "zh-TW",
-            "title": "王顥倫 | 簡歷"
-        },
-        "content-ui": {
-            "introTitle": "自我---介紹",
-            "educationTitle": "學歷背景",
-            "expTitle": "經歷概覽",
-            "stackTitle": "技術堆疊",
-            "projectsTitle": "專案成就",
-            "labels": {
-                "language": "語言",
-                "frontend": "前端",
-                "backend": "後端",
-                "database": "資料庫",
-                "devops": "DevOps"
-            }
-        },
-        "bar-ui": {
-            "exportPdfLabel": "匯出 PDF",
-            "exportingLabel": "匯出中"
-        },
-        "topbar-ui": {
-            "editorMenuLabel": "編輯選單",
-            "loginLabel": "登入",
-            "logoutLabel": "登出",
-            "modeA4Label": "A4 模式",
-            "modeRwdLabel": "RWD 模式",
-            "exportPdfLabel": "匯出 PDF",
-            "exportingLabel": "匯出中"
-        }
+    "content-ui": {
+      "introTitle": "Self Introduction",
+      "educationTitle": "Education",
+      "expTitle": "Experience",
+      "stackTitle": "Tech Stack",
+      "projectsTitle": "Project Achievements",
+      "labels": {
+        "language": "Language",
+        "frontend": "Frontend",
+        "backend": "Backend",
+        "database": "Database",
+        "devops": "DevOps"
+      }
+    },
+    "bar-ui": {
+      "exportPdfLabel": "Export PDF",
+      "exportingLabel": "Exporting"
+    },
+    "card-ui": {
+      "addLabel": "Add",
+      "deleteLabel": "Delete"
+    },
+    "topbar-ui": {
+      "editorMenuLabel": "Editor menu",
+      "loginLabel": "Login",
+      "logoutLabel": "Logout",
+      "modeA4Label": "A4 Mode",
+      "modeRwdLabel": "RWD Mode",
+      "exportPdfLabel": "Export PDF",
+      "exportingLabel": "Exporting"
     }
+  },
+  "zh_TW": {
+    "config": {
+      "code": "zh_TW",
+      "label": "繁",
+      "lang": "zh-TW",
+      "title": "王顥倫 | 簡歷"
+    },
+    "content-ui": {
+      "introTitle": "自我---介紹",
+      "educationTitle": "學歷背景",
+      "expTitle": "經歷概覽",
+      "stackTitle": "技術堆疊",
+      "projectsTitle": "專案成就",
+      "labels": {
+        "language": "語言",
+        "frontend": "前端",
+        "backend": "後端",
+        "database": "資料庫",
+        "devops": "DevOps"
+      }
+    },
+    "bar-ui": {
+      "exportPdfLabel": "匯出 PDF",
+      "exportingLabel": "匯出中"
+    },
+    "card-ui": {
+      "addLabel": "新增",
+      "deleteLabel": "刪除"
+    },
+    "topbar-ui": {
+      "editorMenuLabel": "編輯選單",
+      "loginLabel": "登入",
+      "logoutLabel": "登出",
+      "modeA4Label": "A4 模式",
+      "modeRwdLabel": "RWD 模式",
+      "exportPdfLabel": "匯出 PDF",
+      "exportingLabel": "匯出中"
+    }
+  }
 }
