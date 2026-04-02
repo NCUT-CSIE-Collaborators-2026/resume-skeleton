@@ -19,6 +19,16 @@ export interface BarUi {
   exportingLabel: string;
 }
 
+export interface TopBarUi {
+  editorMenuLabel: string;
+  loginLabel: string;
+  logoutLabel: string;
+  modeRwdLabel: string;
+  modeA4Label: string;
+  exportPdfLabel: string;
+  exportingLabel: string;
+}
+
 export interface EditorUser {
   name: string;
   picture: string | null;
@@ -39,6 +49,7 @@ export class TopBarComponent implements OnChanges {
   @Input() isA4Mode!: boolean;
   @Input() isExporting!: boolean;
   @Input() barUi!: BarUi;
+  @Input() topBarUi!: TopBarUi;
 
   @Output() languageChange = new EventEmitter<'en' | 'zh_TW'>();
   @Output() a4ModeChange = new EventEmitter<boolean>();
@@ -56,7 +67,11 @@ export class TopBarComponent implements OnChanges {
   readonly menuOpen = signal(false);
 
   get currentModeLabel(): string {
-    return this.isA4Mode ? 'RWD 模式' : 'A4 模式';
+    const modeLabel = this.isA4Mode
+      ? this.topBarUi?.modeRwdLabel
+      : this.topBarUi?.modeA4Label;
+
+    return modeLabel ?? (this.isA4Mode ? 'RWD Mode' : 'A4 Mode');
   }
 
   ngOnChanges(_: SimpleChanges): void {
@@ -72,17 +87,16 @@ export class TopBarComponent implements OnChanges {
     if (this.editorUser) {
       return [
         {
-          label: '登出',
-          command: () => this.runMenuCommand('editor:logout', () => this.onLogout()),
+          label: this.topBarUi?.logoutLabel ?? 'Logout',
+          command: () => this.onLogout(),
           icon: 'pi pi-sign-out',
         },
       ];
     } else {
       return [
         {
-          label: '登入',
+          label: this.topBarUi?.loginLabel ?? 'Login',
           icon: 'pi pi-sign-in',
-          command: () => this.logMenuClick('editor:login'),
           url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
           target: '_self',
         },
@@ -97,7 +111,7 @@ export class TopBarComponent implements OnChanges {
     languageOptions.forEach(option => {
       items.push({
         label: option.label,
-        command: () => this.runMenuCommand(`mobile:language:${option.code}`, () => this.onLanguageChange(option.code)),
+        command: () => this.onLanguageChange(option.code),
         styleClass: `language-item ${this.activeLang === option.code ? 'active' : ''}`
       });
     });
@@ -106,42 +120,32 @@ export class TopBarComponent implements OnChanges {
     items.push({
       label: this.currentModeLabel,
       icon: 'pi pi-arrow-right',
-      command: () => this.runMenuCommand('mobile:toggle-a4', () => this.onA4ModeToggle()),
+      command: () => this.onA4ModeToggle(),
       styleClass: this.isA4Mode ? 'active' : ''
     });
     // PDF 下載
     items.push({
-      label: this.barUi?.exportPdfLabel ?? 'Export PDF',
+      label: this.topBarUi?.exportPdfLabel ?? this.barUi?.exportPdfLabel ?? 'Export PDF',
       icon: this.isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download',
-      command: () => this.runMenuCommand('mobile:export-pdf', () => this.onExportPdf()),
+      command: () => this.onExportPdf(),
       disabled: this.isExporting
     });
     // 登出/登入
     if (this.editorUser) {
       items.push({
-        label: '登出',
+        label: this.topBarUi?.logoutLabel ?? 'Logout',
         icon: 'pi pi-sign-out',
-        command: () => this.runMenuCommand('mobile:logout', () => this.onLogout())
+        command: () => this.onLogout()
       });
     } else {
       items.push({
-        label: '登入',
+        label: this.topBarUi?.loginLabel ?? 'Login',
         icon: 'pi pi-google',
-        command: () => this.logMenuClick('mobile:login'),
         url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
         target: '_self'
       });
     }
     return items;
-  }
-
-  private logMenuClick(tag: string): void {
-    console.log('[TopBarMenu]', tag);
-  }
-
-  private runMenuCommand(tag: string, action: () => void): void {
-    this.logMenuClick(tag);
-    action();
   }
 
   onLanguageChange(code: 'en' | 'zh_TW'): void {

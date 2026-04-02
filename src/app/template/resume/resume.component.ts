@@ -47,6 +47,15 @@ interface I18nLocale {
     exportPdfLabel: string;
     exportingLabel: string;
   };
+  'topbar-ui': {
+    editorMenuLabel: string;
+    loginLabel: string;
+    logoutLabel: string;
+    modeA4Label: string;
+    modeRwdLabel: string;
+    exportPdfLabel: string;
+    exportingLabel: string;
+  };
 }
 
 interface ContentLocale {
@@ -103,6 +112,16 @@ interface UiCopy {
 }
 
 interface BarUi {
+  exportPdfLabel: string;
+  exportingLabel: string;
+}
+
+interface TopBarUi {
+  editorMenuLabel: string;
+  loginLabel: string;
+  logoutLabel: string;
+  modeA4Label: string;
+  modeRwdLabel: string;
   exportPdfLabel: string;
   exportingLabel: string;
 }
@@ -291,6 +310,19 @@ export class ResumeComponent {
     return {
       exportPdfLabel: content['bar-ui'].exportPdfLabel,
       exportingLabel: content['bar-ui'].exportingLabel,
+    };
+  });
+
+  readonly topBarUi = computed<TopBarUi>(() => {
+    const content = this.content();
+    return {
+      editorMenuLabel: content['topbar-ui'].editorMenuLabel,
+      loginLabel: content['topbar-ui'].loginLabel,
+      logoutLabel: content['topbar-ui'].logoutLabel,
+      modeA4Label: content['topbar-ui'].modeA4Label,
+      modeRwdLabel: content['topbar-ui'].modeRwdLabel,
+      exportPdfLabel: content['topbar-ui'].exportPdfLabel,
+      exportingLabel: content['topbar-ui'].exportingLabel,
     };
   });
 
