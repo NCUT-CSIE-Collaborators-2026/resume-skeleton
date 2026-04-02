@@ -11,7 +11,7 @@
 
 .resume-shell {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   // A4 模式：固定大小容器，允許雙向滾動
   &.a4-mode {

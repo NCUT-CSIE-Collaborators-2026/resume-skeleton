@@ -11,17 +11,6 @@
   gap: $spacing-sm;
   flex-wrap: nowrap;
   overflow: visible;
-  position: relative;
-}
-
-.top-bar > div:first-child {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .action-panel--mobile {

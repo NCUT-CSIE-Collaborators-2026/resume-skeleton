@@ -1,4 +1,4 @@
-<header class="top-bar" [class.a4-mode]="isA4Mode">
+<header class="top-bar">
   <div>
     <h1 class="name">{{ profile.name }}</h1>
     <p class="headline">{{ profile.title }}</p>
@@ -10,7 +10,7 @@
       <div
         class="editor-chip"
         aria-label="editor identity"
-        (click)="toggleEditorMenu($event)"
+        (click)="toggleEditorMenu($event, desktopEditorMenu)"
         role="button"
         tabindex="0"
       >
@@ -31,7 +31,7 @@
         </div>
       </div>
       <p-menu
-        #editorMenu
+        #desktopEditorMenu
         [model]="editorMenuItems"
         [popup]="true"
         appendTo="body"
@@ -41,14 +41,14 @@
       <div
         class="editor-chip"
         aria-label="login identity"
-        (click)="toggleEditorMenu($event)"
+        (click)="toggleEditorMenu($event, desktopEditorMenu)"
         role="button"
         tabindex="0"
       >
         <i class="pi pi-google google-icon" aria-hidden="true"></i>
       </div>
       <p-menu
-        #editorMenu
+        #desktopEditorMenu
         [model]="editorMenuItems"
         [popup]="true"
         appendTo="body"
@@ -96,7 +96,7 @@
       <div
         class="editor-chip editor-chip--mobile"
         aria-label="editor identity"
-        (click)="toggleEditorMenu($event)"
+        (click)="toggleEditorMenu($event, mobileEditorMenu)"
         role="button"
         tabindex="0"
       >
@@ -113,7 +113,7 @@
         }
       </div>
       <p-menu
-        #editorMenu
+        #mobileEditorMenu
         [model]="mobileMenuItems"
         [popup]="true"
         appendTo="body"
@@ -123,14 +123,14 @@
       <div
         class="editor-chip editor-chip--mobile"
         aria-label="login identity"
-        (click)="toggleEditorMenu($event)"
+        (click)="toggleEditorMenu($event, mobileEditorMenu)"
         role="button"
         tabindex="0"
       >
         <i class="pi pi-google google-icon" aria-hidden="true"></i>
       </div>
       <p-menu
-        #editorMenu
+        #mobileEditorMenu
         [model]="mobileMenuItems"
         [popup]="true"
         appendTo="body"

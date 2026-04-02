@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal, ViewChild, Signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule, Menu } from 'primeng/menu';
@@ -45,8 +45,7 @@ export class TopBarComponent {
   @Output() exportPdf = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
 
-  @ViewChild('mobileMenu') mobileMenu!: Menu;
-  @ViewChild('editorMenu') editorMenu!: Menu;
+  private activeEditorMenu: Menu | null = null;
 
   readonly menuOpen = signal(false);
 
@@ -133,20 +132,16 @@ export class TopBarComponent {
     this.menuOpen.set(false);
   }
 
-  toggleMobileMenu(event: Event): void {
+  toggleEditorMenu(event: Event, menu: Menu): void {
     event.stopPropagation();
-    this.mobileMenu.toggle(event);
-  }
-
-  toggleEditorMenu(event: Event): void {
-    event.stopPropagation();
-    this.editorMenu.toggle(event);
+    this.activeEditorMenu = menu;
+    menu.toggle(event);
   }
 
   onLogout(): void {
     this.logout.emit();
-    if (this.editorMenu) {
-      this.editorMenu.hide();
+    if (this.activeEditorMenu) {
+      this.activeEditorMenu.hide();
     }
     this.menuOpen.set(false);
   }
