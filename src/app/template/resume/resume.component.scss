@@ -67,7 +67,7 @@
     box-shadow: none !important;
   }
 
-  /* PDF 模式下的徽章和芯片樣式 */
+  /* PDF 模式下的徽章與晶片樣式 */
   &.resume-canvas--pdf .badge {
     background-color: #f3f4f6 !important;
     color: #374151 !important;
@@ -292,7 +292,7 @@
   flex-direction: column;
   gap: 1rem;
 
-  // 緊湊排列模式（默認）- 多列顯示
+  // 緊湊排列模式（預設）- 多列顯示
   @supports (display: grid) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

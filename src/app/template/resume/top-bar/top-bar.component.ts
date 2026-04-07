@@ -4,21 +4,25 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule, Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 
+/** 語言選項資料結構。 */
 export interface LanguageOption {
   label: string;
   code: 'en' | 'zh_TW';
 }
 
+/** 個人基本資訊。 */
 export interface Profile {
   name: string;
   title: string;
 }
 
+/** 右側操作列文案設定。 */
 export interface BarUi {
   exportPdfLabel: string;
   exportingLabel: string;
 }
 
+/** 頂部工具列文案設定。 */
 export interface TopBarUi {
   editorMenuLabel: string;
   loginLabel: string;
@@ -29,6 +33,7 @@ export interface TopBarUi {
   exportingLabel: string;
 }
 
+/** 目前登入的編輯者資訊。 */
 export interface EditorUser {
   name: string;
   picture: string | null;
@@ -66,6 +71,7 @@ export class TopBarComponent implements OnChanges {
 
   readonly menuOpen = signal(false);
 
+  /** 依目前模式回傳切換按鈕顯示文字。 */
   get currentModeLabel(): string {
     const modeLabel = this.isA4Mode
       ? this.topBarUi?.modeRwdLabel
@@ -74,15 +80,18 @@ export class TopBarComponent implements OnChanges {
     return modeLabel ?? (this.isA4Mode ? 'RWD Mode' : 'A4 Mode');
   }
 
+  /** 輸入變更後重建所有選單模型。 */
   ngOnChanges(_: SimpleChanges): void {
     this.rebuildMenuModels();
   }
 
+  /** 重建桌機與行動版選單資料。 */
   private rebuildMenuModels(): void {
     this.editorMenuItems = this.buildEditorMenuItems();
     this.mobileMenuItems = this.buildMobileMenuItems();
   }
 
+  /** 建立編輯者功能選單。 */
   private buildEditorMenuItems(): MenuItem[] {
     if (this.editorUser) {
       return [
@@ -104,10 +113,10 @@ export class TopBarComponent implements OnChanges {
     }
   }
 
+  /** 建立行動版選單（語言、模式、匯出、登入狀態）。 */
   private buildMobileMenuItems(): MenuItem[] {
     const items: MenuItem[] = [];
     const languageOptions = this.languageOptions ?? [];
-    // 語言切換
     languageOptions.forEach(option => {
       items.push({
         label: option.label,
@@ -116,21 +125,18 @@ export class TopBarComponent implements OnChanges {
       });
     });
     items.push({ separator: true });
-    // A4/RWD 切換
     items.push({
       label: this.currentModeLabel,
       icon: 'pi pi-arrow-right',
       command: () => this.onA4ModeToggle(),
       styleClass: this.isA4Mode ? 'active' : ''
     });
-    // PDF 下載
     items.push({
       label: this.topBarUi?.exportPdfLabel ?? this.barUi?.exportPdfLabel ?? 'Export PDF',
       icon: this.isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download',
       command: () => this.onExportPdf(),
       disabled: this.isExporting
     });
-    // 登出/登入
     if (this.editorUser) {
       items.push({
         label: this.topBarUi?.logoutLabel ?? 'Logout',
@@ -148,29 +154,32 @@ export class TopBarComponent implements OnChanges {
     return items;
   }
 
+  /** 觸發語言切換事件並關閉選單。 */
   onLanguageChange(code: 'en' | 'zh_TW'): void {
     this.languageChange.emit(code);
     this.rebuildMenuModels();
     this.menuOpen.set(false);
   }
 
+  /** 切換 A4 / RWD 模式並關閉選單。 */
   onA4ModeToggle(): void {
     this.a4ModeChange.emit(!this.isA4Mode);
     this.rebuildMenuModels();
     this.menuOpen.set(false);
   }
 
+  /** 觸發 PDF 匯出事件並關閉選單。 */
   onExportPdf(): void {
     this.exportPdf.emit();
     this.rebuildMenuModels();
     this.menuOpen.set(false);
   }
 
+  /** 切換指定選單，並確保同一時間僅有一個浮層選單開啟。 */
   toggleEditorMenu(event: Event, menu: Menu): void {
     event.preventDefault();
     event.stopPropagation();
 
-    // Ensure only one overlay menu is open to avoid click-swallow behavior.
     if (this.desktopEditorMenu && this.desktopEditorMenu !== menu) {
       this.desktopEditorMenu.hide();
     }
@@ -188,6 +197,7 @@ export class TopBarComponent implements OnChanges {
     menu.show(event);
   }
 
+  /** 觸發登出事件並關閉目前開啟的選單。 */
   onLogout(): void {
     this.logout.emit();
     this.rebuildMenuModels();

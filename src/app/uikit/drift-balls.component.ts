@@ -1,5 +1,8 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 
+/**
+ * 產生背景漂浮光球效果，並依視窗尺寸動態重建動畫關鍵影格。
+ */
 @Component({
     selector: 'app-drift-balls',
     standalone: true,
@@ -36,16 +39,17 @@ export class DriftBallsComponent implements OnInit, OnDestroy {
 
   constructor(private renderer: Renderer2) {}
 
+  /** 初始化動畫並建立視窗尺寸監聽。 */
   ngOnInit(): void {
     this.generateDriftKeyframes();
-    
-    // 監聽 resize 事件
+
     this.resizeObserver = new ResizeObserver(() => {
       this.generateDriftKeyframes();
     });
     this.resizeObserver.observe(document.documentElement);
   }
 
+  /** 銷毀監聽器與動態樣式，避免記憶體洩漏。 */
   ngOnDestroy(): void {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -55,12 +59,12 @@ export class DriftBallsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** 依目前視窗大小建立漂浮動畫的 @keyframes。 */
   private generateDriftKeyframes(): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const perimeter = 2 * (w + h);
 
-    // 計算每邊的百分比
     const topPercent = (w / perimeter) * 100;
     const rightPercent = topPercent + (h / perimeter) * 100;
     const bottomPercent = rightPercent + (w / perimeter) * 100;
@@ -90,7 +94,6 @@ export class DriftBallsComponent implements OnInit, OnDestroy {
       }
     `;
 
-    // 替換舊的 style 元素
     if (this.styleElement) {
       this.styleElement.remove();
     }

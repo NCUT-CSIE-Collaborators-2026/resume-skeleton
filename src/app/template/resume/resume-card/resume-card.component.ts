@@ -1,72 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
-import { GroupListComponent } from '../../../uikit/group-list.component';
 import { Card } from '../resume-card.model';
-
-export interface TextElementChange {
-  cardId: string;
-  elementIndex: number;
-  value: string;
-}
-
-export interface BadgeItemChange {
-  cardId: string;
-  elementIndex: number;
-  itemIndex: number;
-  value: string;
-}
-
-export interface IconListItemChange {
-  cardId: string;
-  elementIndex: number;
-  itemIndex: number;
-  value: string;
-}
-
-export interface TechCategoryChange {
-  cardId: string;
-  elementIndex: number;
-  categoryIndex: number;
-  value: string;
-}
-
-export interface GroupItemChange {
-  cardId: string;
-  elementIndex: number;
-  groupIndex: number;
-  itemIndex: number;
-  value: string;
-}
-
-export interface GroupItemIconChange {
-  cardId: string;
-  elementIndex: number;
-  groupIndex: number;
-  itemIndex: number;
-  icon: string;
-}
-
-export interface CardUi {
-  addLabel: string;
-}
-
-export interface DeleteItemChange {
-  cardId: string;
-  elementIndex: number;
-  itemIndex: number;
-  groupIndex?: number;
-  categoryIndex?: number;
-}
+import { ResumeCardElementComponent } from './resume-card-element.component';
+import {
+  BadgeItemChange,
+  CardUi,
+  DeleteItemChange,
+  GroupItemChange,
+  GroupItemIconChange,
+  IconListItemChange,
+  TechCategoryChange,
+  TextElementChange,
+} from './resume-card.types';
 
 @Component({
   selector: 'app-resume-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, SelectModule, InputTextModule, TextareaModule, GroupListComponent],
+  imports: [CommonModule, ButtonModule, ResumeCardElementComponent],
   templateUrl: './resume-card.component.html',
   styleUrl: './resume-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +41,7 @@ export class ResumeCardComponent {
   @Output() addItem = new EventEmitter<{ cardId: string; elementIndex: number }>();
   @Output() deleteItem = new EventEmitter<DeleteItemChange>();
 
+  /** 可選擇的 PrimeIcons 與對應顯示名稱。 */
   readonly iconOptions: Array<{ icon: string; label: string }> = [
     { icon: 'pi pi-circle', label: 'Circle' },
     { icon: 'pi pi-check-circle', label: 'Check Circle' },
@@ -123,57 +75,47 @@ export class ResumeCardComponent {
     { icon: 'pi pi-shield', label: 'Shield' },
   ];
 
-  getIconLabel(icon: string | null | undefined): string {
-    if (!icon) {
-      return '';
-    }
-
-    return this.iconOptions.find((option) => option.icon === icon)?.label ?? icon;
-  }
-
+  /** 觸發卡片編輯動作。 */
   onEditAction(): void {
     this.editAction.emit(this.card);
   }
 
+  /** 觸發取消編輯動作。 */
   onCancelEdit(): void {
     this.cancelEdit.emit(this.card.id);
   }
 
+  /** 觸發新增項目事件。 */
   onAddItem(elementIndex: number): void {
     this.addItem.emit({ cardId: this.card.id, elementIndex });
   }
 
+  /** 補上目前卡片識別後，觸發刪除項目事件。 */
   onDeleteItem(payload: Omit<DeleteItemChange, 'cardId'>): void {
     this.deleteItem.emit({ cardId: this.card.id, ...payload });
   }
 
-  isCardItemPendingDelete(
-    elementIndex: number,
-    itemIndex: number,
-    groupIndex?: number,
-    categoryIndex?: number,
-  ): boolean {
-    return this.pendingDeleteItemKeys?.has(
-      this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex),
-    ) ?? false;
-  }
-
+  /** 觸發文字元素變更事件。 */
   onTextElementChange(elementIndex: number, value: string): void {
     this.textElementChange.emit({ cardId: this.card.id, elementIndex, value });
   }
 
+  /** 觸發徽章項目變更事件。 */
   onBadgeItemChange(elementIndex: number, itemIndex: number, value: string): void {
     this.badgeItemChange.emit({ cardId: this.card.id, elementIndex, itemIndex, value });
   }
 
+  /** 觸發圖示清單項目變更事件。 */
   onIconListItemChange(elementIndex: number, itemIndex: number, value: string): void {
     this.iconListItemChange.emit({ cardId: this.card.id, elementIndex, itemIndex, value });
   }
 
+  /** 觸發技術分類名稱變更事件。 */
   onTechCategoryChange(elementIndex: number, categoryIndex: number, value: string): void {
     this.techCategoryChange.emit({ cardId: this.card.id, elementIndex, categoryIndex, value });
   }
 
+  /** 觸發分組項目文字變更事件。 */
   onGroupItemChange(
     elementIndex: number,
     groupIndex: number,
@@ -183,6 +125,7 @@ export class ResumeCardComponent {
     this.groupItemChange.emit({ cardId: this.card.id, elementIndex, groupIndex, itemIndex, value });
   }
 
+  /** 觸發分組項目圖示變更事件。 */
   onGroupItemIconChange(
     elementIndex: number,
     groupIndex: number,
@@ -192,24 +135,4 @@ export class ResumeCardComponent {
     this.groupItemIconChange.emit({ cardId: this.card.id, elementIndex, groupIndex, itemIndex, icon });
   }
 
-  getTechCategoryValueText(values: string[]): string {
-    return values.join(', ');
-  }
-
-  private getPendingDeleteItemKey(
-    elementIndex: number,
-    itemIndex: number,
-    groupIndex?: number,
-    categoryIndex?: number,
-  ): string {
-    if (typeof categoryIndex === 'number') {
-      return `${elementIndex}:category:${categoryIndex}`;
-    }
-
-    if (typeof groupIndex === 'number') {
-      return `${elementIndex}:group:${groupIndex}:${itemIndex}`;
-    }
-
-    return `${elementIndex}:item:${itemIndex}`;
-  }
 }

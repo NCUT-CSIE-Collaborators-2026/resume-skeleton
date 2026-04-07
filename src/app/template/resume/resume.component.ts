@@ -244,7 +244,7 @@ export class ResumeComponent {
       document.title = title;
     });
 
-    // 保存 A4 模式狀態到 localStorage
+    // 儲存 A4 模式狀態到 localStorage
     effect(() => {
       const isA4 = this.isA4Mode();
       this.savePaperModeToLocalStorage(isA4);
@@ -581,7 +581,7 @@ export class ResumeComponent {
     });
     this.clearPendingDeleteItemKeys(cardId);
 
-    // Force component recreation for the cancelled card to reset any transient UI state.
+    // 強制重建已取消編輯的卡片元件，以重置暫時性的介面狀態。
     this.cardRenderVersions.update((versions) => ({
       ...versions,
       [cardId]: (versions[cardId] ?? 0) + 1,
@@ -913,7 +913,7 @@ export class ResumeComponent {
           detail: '已清除編輯狀態',
         });
         
-        // 重新加载session以清除编辑用户
+        // 重新載入 session 以清除編輯中的使用者狀態
         await this.authSessionService.loadSession(this.sessionApiUrl);
       } else {
         this.messageService.add({
@@ -1061,7 +1061,7 @@ export class ResumeComponent {
       ]);
 
       const source = this.resumeCanvas.nativeElement;
-      // 臨時保存 A4 模式狀態
+      // 暫時儲存 A4 模式狀態
       const wasA4Mode = this.isA4Mode();
 
       // 強制啟用 A4 模式
@@ -1076,7 +1076,7 @@ export class ResumeComponent {
         scale: 2,
         logging: false,
         onclone: (clonedDocument: Document) => {
-          // 添加 PDF 模式 CSS 類，處理所有樣式移除
+          // 新增 PDF 模式 CSS 類別，處理所有樣式移除
           const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
           if (clonedCanvas instanceof HTMLElement) {
             clonedCanvas.classList.add('resume-canvas--pdf');
