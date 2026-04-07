@@ -12,7 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { ResumeCardComponent } from './resume-card/resume-card.component';
-import { Card } from './resume-card.model';
+import { Card } from './resume.model';
 import i18nData from '../../ui.i18n.json';
 import { environment } from '../../config/environment';
 import { AuthSessionService } from '../../services/auth-session.service';

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { Card } from '../resume-card.model';
-import { ResumeCardElementComponent } from './resume-card-element.component';
+import { Card } from '../resume.model';
+import { ResumeCardElementComponent } from './resume-element/resume-card-element.component';
 import {
   BadgeItemChange,
   CardUi,

@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
-import { GroupListComponent } from '../../../uikit/group-list.component';
+import { GroupListComponent } from '../../../../uikit/group-list.component';
 import { ResumeCardElement } from './resume-card-element.model';
 
 /** 文字元素變更事件。 */

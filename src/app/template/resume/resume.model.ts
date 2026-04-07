@@ -1,4 +1,4 @@
-import { ResumeCardElement } from './resume-card/resume-card-element.model';
+import { ResumeCardElement } from './resume-card/resume-element/resume-card-element.model';
 
 export type CardElement = ResumeCardElement;
 
