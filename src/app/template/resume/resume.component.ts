@@ -46,7 +46,6 @@ interface I18nLocale {
   };
   'card-ui': {
     addLabel: string;
-    deleteLabel: string;
   };
   'topbar-ui': {
     editorMenuLabel: string;
@@ -126,7 +125,6 @@ interface BarUi {
 
 interface CardUi {
   addLabel: string;
-  deleteLabel: string;
 }
 
 interface TopBarUi {
@@ -215,6 +213,8 @@ export class ResumeComponent {
   readonly editingCardIds = signal<Set<string>>(new Set());
   readonly savingCardIds = signal<Set<string>>(new Set());
   readonly cardDrafts = signal<Record<string, Card>>({});
+  readonly cardRenderVersions = signal<Record<string, number>>({});
+  readonly pendingDeleteItemKeys = signal<Record<string, Set<string>>>({});
 
   private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
   private readonly sessionApiUrl = `${environment.apiUrl}${environment.apiEndpoints.authSession}`;
@@ -289,7 +289,6 @@ export class ResumeComponent {
     const content = this.content();
     return {
       addLabel: content['card-ui'].addLabel,
-      deleteLabel: content['card-ui'].deleteLabel,
     };
   });
 
@@ -553,6 +552,10 @@ export class ResumeComponent {
     return this.savingCardIds().has(cardId);
   }
 
+  getPendingDeleteItemKeys(cardId: string): Set<string> | null {
+    return this.pendingDeleteItemKeys()[cardId] ?? null;
+  }
+
   async onCardEditAction(card: Card): Promise<void> {
     if (this.isCardSaving(card.id)) {
       return;
@@ -576,6 +579,18 @@ export class ResumeComponent {
       const { [cardId]: _removed, ...rest } = drafts;
       return rest;
     });
+    this.clearPendingDeleteItemKeys(cardId);
+
+    // Force component recreation for the cancelled card to reset any transient UI state.
+    this.cardRenderVersions.update((versions) => ({
+      ...versions,
+      [cardId]: (versions[cardId] ?? 0) + 1,
+    }));
+  }
+
+  getCardTrackKey(cardId: string): string {
+    const version = this.cardRenderVersions()[cardId] ?? 0;
+    return `${cardId}:${version}`;
   }
 
   private startCardEditing(card: Card): void {
@@ -601,7 +616,8 @@ export class ResumeComponent {
     });
 
     try {
-      const result = await this.persistCardUpdate(draft);
+      const sanitizedDraft = this.applyPendingDeleteItemKeys(cardId, draft);
+      const result = await this.persistCardUpdate(sanitizedDraft);
       if (!result.ok) {
         this.messageService.add({
           severity: 'error',
@@ -616,6 +632,12 @@ export class ResumeComponent {
         summary: '儲存成功',
         detail: result.message,
       });
+
+      this.cardDrafts.update((drafts) => ({
+        ...drafts,
+        [cardId]: sanitizedDraft,
+      }));
+      this.clearPendingDeleteItemKeys(cardId);
 
       if (!keepEditing) {
         this.editingCardIds.update((ids) => {
@@ -778,6 +800,24 @@ export class ResumeComponent {
     });
   }
 
+  updateGroupItemIcon(
+    cardId: string,
+    elementIndex: number,
+    groupIndex: number,
+    itemIndex: number,
+    icon: string,
+  ): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+        return draft;
+      }
+
+      element.groups[groupIndex].items[itemIndex].icon = icon;
+      return draft;
+    });
+  }
+
   addCardItem(cardId: string, elementIndex: number): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
@@ -809,8 +849,6 @@ export class ResumeComponent {
 
       return draft;
     });
-
-    void this.saveCard(cardId, true);
   }
 
   deleteCardItem(
@@ -820,31 +858,29 @@ export class ResumeComponent {
     groupIndex?: number,
     categoryIndex?: number,
   ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
+    this.pendingDeleteItemKeys.update((pendingDeletes) => {
+      const next = new Set(pendingDeletes[cardId] ?? []);
+      next.add(this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex));
 
-      if (element?.type === 'badges' || element?.type === 'icon-list') {
-        element.items.splice(itemIndex, 1);
-        return draft;
-      }
-
-      if (element?.type === 'grid-tech' && typeof categoryIndex === 'number') {
-        element.items.splice(categoryIndex, 1);
-        return draft;
-      }
-
-      if (
-        (element?.type === 'grid-education' || element?.type === 'grid-groups') &&
-        typeof groupIndex === 'number'
-      ) {
-        element.groups[groupIndex].items.splice(itemIndex, 1);
-        return draft;
-      }
-
-      return draft;
+      return {
+        ...pendingDeletes,
+        [cardId]: next,
+      };
     });
+  }
 
-    void this.saveCard(cardId, true);
+  isCardItemPendingDelete(
+    cardId: string,
+    elementIndex: number,
+    itemIndex: number,
+    groupIndex?: number,
+    categoryIndex?: number,
+  ): boolean {
+    return (
+      this.pendingDeleteItemKeys()[cardId]?.has(
+        this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex),
+      ) ?? false
+    );
   }
 
   setLanguage(lang: string | LangCode): void {
@@ -852,6 +888,7 @@ export class ResumeComponent {
       this.editingCardIds.set(new Set());
       this.savingCardIds.set(new Set());
       this.cardDrafts.set({});
+      this.pendingDeleteItemKeys.set({});
       this.activeLang.set(lang);
       this.saveLanguageToLocalStorage(lang);
     }
@@ -926,6 +963,84 @@ export class ResumeComponent {
 
     const saved = localStorage.getItem('resume-a4-mode');
     return saved === 'true';
+  }
+
+  private clearPendingDeleteItemKeys(cardId: string): void {
+    this.pendingDeleteItemKeys.update((pendingDeletes) => {
+      if (!pendingDeletes[cardId]) {
+        return pendingDeletes;
+      }
+
+      const { [cardId]: _removed, ...rest } = pendingDeletes;
+      return rest;
+    });
+  }
+
+  private getPendingDeleteItemKey(
+    elementIndex: number,
+    itemIndex: number,
+    groupIndex?: number,
+    categoryIndex?: number,
+  ): string {
+    if (typeof categoryIndex === 'number') {
+      return `${elementIndex}:category:${categoryIndex}`;
+    }
+
+    if (typeof groupIndex === 'number') {
+      return `${elementIndex}:group:${groupIndex}:${itemIndex}`;
+    }
+
+    return `${elementIndex}:item:${itemIndex}`;
+  }
+
+  private applyPendingDeleteItemKeys(cardId: string, draft: Card): Card {
+    const pendingDeletes = this.pendingDeleteItemKeys()[cardId];
+    if (!pendingDeletes || pendingDeletes.size === 0) {
+      return draft;
+    }
+
+    const nextDraft = this.deepClone(draft);
+    nextDraft.elements = nextDraft.elements.map((element, elementIndex) => {
+      if (element.type === 'badges' || element.type === 'icon-list') {
+        return {
+          ...element,
+          items: element.items.filter((_, itemIndex) => {
+            return !pendingDeletes.has(
+              this.getPendingDeleteItemKey(elementIndex, itemIndex),
+            );
+          }),
+        };
+      }
+
+      if (element.type === 'grid-tech') {
+        return {
+          ...element,
+          items: element.items.filter((_, categoryIndex) => {
+            return !pendingDeletes.has(
+              this.getPendingDeleteItemKey(elementIndex, categoryIndex, undefined, categoryIndex),
+            );
+          }),
+        };
+      }
+
+      if (element.type === 'grid-education' || element.type === 'grid-groups') {
+        return {
+          ...element,
+          groups: element.groups.map((group, groupIndex) => ({
+            ...group,
+            items: group.items.filter((_, itemIndex) => {
+              return !pendingDeletes.has(
+                this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex),
+              );
+            }),
+          })),
+        };
+      }
+
+      return element;
+    });
+
+    return nextDraft;
   }
 
   async exportResumePdf(): Promise<void> {

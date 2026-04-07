@@ -53,22 +53,23 @@
         @if (isEditing) {
           <div class="edit-list">
             @for (badge of element.items; track $index; let badgeIndex = $index) {
-              <div class="edit-item-row">
-                <input
-                  pInputText
-                  class="edit-input"
-                  [ngModel]="badge"
-                  (ngModelChange)="onBadgeItemChange(elementIndex, badgeIndex, $event)"
-                />
-                <button
-                  pButton
-                  type="button"
-                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                  icon="pi pi-trash"
-                  [label]="cardUi.deleteLabel"
-                  (click)="onDeleteItem({ elementIndex, itemIndex: badgeIndex })"
-                ></button>
-              </div>
+              @if (!isCardItemPendingDelete(elementIndex, badgeIndex)) {
+                <div class="edit-item-row">
+                  <input
+                    pInputText
+                    class="edit-input"
+                    [ngModel]="badge"
+                    (ngModelChange)="onBadgeItemChange(elementIndex, badgeIndex, $event)"
+                  />
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
+                    (click)="onDeleteItem({ elementIndex, itemIndex: badgeIndex })"
+                  ></button>
+                </div>
+              }
             }
             <button
               pButton
@@ -92,23 +93,24 @@
         @if (isEditing) {
           <div class="edit-list">
             @for (item of element.items; track $index; let itemIndex = $index) {
-              <div class="edit-item-row">
-                <input
-                  pInputText
-                  class="edit-input"
-                  [ngModel]="item"
-                  (ngModelChange)="onIconListItemChange(elementIndex, itemIndex, $event)"
-                />
-                <button
-                  pButton
-                  type="button"
-                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                  icon="pi pi-trash"
-                  [label]="cardUi.deleteLabel"
-                  (click)="onDeleteItem({ elementIndex, itemIndex })"
+              @if (!isCardItemPendingDelete(elementIndex, itemIndex)) {
+                <div class="edit-item-row">
+                  <input
+                    pInputText
+                    class="edit-input"
+                    [ngModel]="item"
+                    (ngModelChange)="onIconListItemChange(elementIndex, itemIndex, $event)"
+                  />
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
                     [disabled]="isSaving"
-                ></button>
-              </div>
+                    (click)="onDeleteItem({ elementIndex, itemIndex })"
+                  ></button>
+                </div>
+              }
             }
             <button
               pButton
@@ -135,27 +137,28 @@
         @if (isEditing) {
           <div class="edit-tech-grid">
             @for (category of element.items; track category.label; let categoryIndex = $index) {
-              <div class="edit-tech-row">
-                <div class="edit-tech-main">
-                  <span class="stack-label">{{ category.label }}</span>
-                  <textarea
-                    pInputTextarea
-                    rows="2"
-                    class="edit-textarea"
-                    [ngModel]="getTechCategoryValueText(category.value)"
-                    (ngModelChange)="onTechCategoryChange(elementIndex, categoryIndex, $event)"
-                  ></textarea>
+              @if (!isCardItemPendingDelete(elementIndex, categoryIndex, undefined, categoryIndex)) {
+                <div class="edit-tech-row">
+                  <div class="edit-tech-main">
+                    <span class="stack-label">{{ category.label }}</span>
+                    <textarea
+                      pInputTextarea
+                      rows="2"
+                      class="edit-textarea"
+                      [ngModel]="getTechCategoryValueText(category.value)"
+                      (ngModelChange)="onTechCategoryChange(elementIndex, categoryIndex, $event)"
+                    ></textarea>
+                  </div>
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
+                    [disabled]="isSaving"
+                    (click)="onDeleteItem({ elementIndex, itemIndex: categoryIndex, categoryIndex })"
+                  ></button>
                 </div>
-                <button
-                  pButton
-                  type="button"
-                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                  icon="pi pi-trash"
-                  [label]="cardUi.deleteLabel"
-                  [disabled]="isSaving"
-                  (click)="onDeleteItem({ elementIndex, itemIndex: categoryIndex, categoryIndex })"
-                ></button>
-              </div>
+              }
             }
             <button
               pButton
@@ -187,26 +190,44 @@
           <div class="edit-group-list">
             @for (group of element.groups; track group.name; let groupIndex = $index) {
               @for (item of group.items; track item.label; let itemIndex = $index) {
-                <div class="edit-group-item">
-                  <div class="edit-group-main">
-                    <i [class]="item.icon"></i>
-                    <input
-                      pInputText
-                      class="edit-input"
-                      [ngModel]="item.value"
-                      (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
-                    />
+                @if (!isCardItemPendingDelete(elementIndex, itemIndex, groupIndex)) {
+                  <div class="edit-group-item">
+                    <div class="edit-group-main">
+                      <p-select
+                        [options]="iconOptions"
+                        optionValue="icon"
+                        [ngModel]="item.icon"
+                        (ngModelChange)="onGroupItemIconChange(elementIndex, groupIndex, itemIndex, $event)"
+                        styleClass="icon-dropdown"
+                        [showClear]="false"
+                      >
+                        <ng-template pTemplate="item" let-option>
+                          <i [class]="option.icon" [title]="option.label"></i>
+                        </ng-template>
+                        <ng-template pTemplate="selectedItem" let-selectedOption>
+                          <i
+                            [class]="selectedOption?.icon ?? selectedOption"
+                            [title]="getIconLabel(selectedOption?.icon ?? selectedOption)"
+                          ></i>
+                        </ng-template>
+                      </p-select>
+                      <input
+                        pInputText
+                        class="edit-input"
+                        [ngModel]="item.value"
+                        (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
+                      />
+                    </div>
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                      icon="pi pi-trash"
+                      [disabled]="isSaving"
+                      (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
+                    ></button>
                   </div>
-                  <button
-                    pButton
-                    type="button"
-                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                    icon="pi pi-trash"
-                    [label]="cardUi.deleteLabel"
-                    [disabled]="isSaving"
-                    (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
-                  ></button>
-                </div>
+                }
               }
             }
             <button
@@ -228,26 +249,44 @@
           <div class="edit-group-list">
             @for (group of element.groups; track group.name; let groupIndex = $index) {
               @for (item of group.items; track item.label; let itemIndex = $index) {
-                <div class="edit-group-item">
-                  <div class="edit-group-main">
-                    <i [class]="item.icon"></i>
-                    <input
-                      pInputText
-                      class="edit-input"
-                      [ngModel]="item.value"
-                      (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
-                    />
+                @if (!isCardItemPendingDelete(elementIndex, itemIndex, groupIndex)) {
+                  <div class="edit-group-item">
+                    <div class="edit-group-main">
+                      <p-select
+                        [options]="iconOptions"
+                        optionValue="icon"
+                        [ngModel]="item.icon"
+                        (ngModelChange)="onGroupItemIconChange(elementIndex, groupIndex, itemIndex, $event)"
+                        styleClass="icon-dropdown"
+                        [showClear]="false"
+                      >
+                        <ng-template pTemplate="item" let-option>
+                          <i [class]="option.icon" [title]="option.label"></i>
+                        </ng-template>
+                        <ng-template pTemplate="selectedItem" let-selectedOption>
+                          <i
+                            [class]="selectedOption?.icon ?? selectedOption"
+                            [title]="getIconLabel(selectedOption?.icon ?? selectedOption)"
+                          ></i>
+                        </ng-template>
+                      </p-select>
+                      <input
+                        pInputText
+                        class="edit-input"
+                        [ngModel]="item.value"
+                        (ngModelChange)="onGroupItemChange(elementIndex, groupIndex, itemIndex, $event)"
+                      />
+                    </div>
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                      icon="pi pi-trash"
+                      [disabled]="isSaving"
+                      (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
+                    ></button>
                   </div>
-                  <button
-                    pButton
-                    type="button"
-                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                    icon="pi pi-trash"
-                    [label]="cardUi.deleteLabel"
-                    [disabled]="isSaving"
-                    (click)="onDeleteItem({ elementIndex, itemIndex, groupIndex })"
-                  ></button>
-                </div>
+                }
               }
             }
             <button

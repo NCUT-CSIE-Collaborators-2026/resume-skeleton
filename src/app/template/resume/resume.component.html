@@ -27,7 +27,7 @@
       </div>
     } @else {
       <div class="resume-grid">
-        @for (card of renderedCards(); track card.id) {
+        @for (card of renderedCards(); track getCardTrackKey(card.id)) {
           <app-resume-card
             [style.grid-column]="'span ' + card.layout"
             [card]="card"
@@ -35,6 +35,7 @@
             [isEditing]="isCardEditing(card.id)"
             [isSaving]="isCardSaving(card.id)"
             [cardUi]="cardUi()"
+            [pendingDeleteItemKeys]="getPendingDeleteItemKeys(card.id)"
             (editAction)="onCardEditAction($event)"
             (cancelEdit)="onCardCancelEdit($event)"
             (addItem)="addCardItem($event.cardId, $event.elementIndex)"
@@ -44,6 +45,7 @@
             (iconListItemChange)="updateIconListItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"
             (techCategoryChange)="updateTechCategoryValues($event.cardId, $event.elementIndex, $event.categoryIndex, $event.value)"
             (groupItemChange)="updateGroupItemValue($event.cardId, $event.elementIndex, $event.groupIndex, $event.itemIndex, $event.value)"
+            (groupItemIconChange)="updateGroupItemIcon($event.cardId, $event.elementIndex, $event.groupIndex, $event.itemIndex, $event.icon)"
           ></app-resume-card>
         }
       </div>

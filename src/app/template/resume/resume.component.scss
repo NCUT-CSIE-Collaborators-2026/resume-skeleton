@@ -147,6 +147,7 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .card-edit-btn {
@@ -159,9 +160,15 @@
 
 .card-title {
   margin: 0;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
   color: #102a43;
   font-size: 1.15rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-subtitle {
@@ -185,6 +192,9 @@
   border: 1px solid #bae6fd;
   font-size: 0.8rem;
   font-weight: 500;
+  white-space: normal;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .chip {
@@ -350,6 +360,9 @@
   &.tag-secondary {
     background: #f3f4f6;
     color: #374151;
+    white-space: normal;
+    word-break: break-all;
+    max-width: 100%;
   }
 }
 

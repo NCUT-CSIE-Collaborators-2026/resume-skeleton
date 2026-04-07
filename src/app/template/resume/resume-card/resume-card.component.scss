@@ -29,6 +29,7 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .card-edit-btn {
@@ -41,9 +42,15 @@
 
 .card-title {
   margin: 0;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
   color: #102a43;
   font-size: 1.15rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-subtitle {
@@ -67,6 +74,9 @@
   border: 1px solid #bae6fd;
   font-size: 0.8rem;
   font-weight: 500;
+  white-space: normal;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .intro-block p {
@@ -124,6 +134,39 @@
   align-items: center;
   gap: 0.55rem;
   flex: 1;
+}
+
+.icon-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 15rem;
+}
+
+.icon-dropdown {
+  width: auto;
+  min-width: 3.5rem;
+  max-width: 100%;
+
+  :deep(.p-select-dropdown) {
+    display: none;
+  }
+
+  :deep(.p-select-label) {
+    padding: 0;
+    font-size: 0;
+  }
+
+  :deep(.p-select-list) {
+    padding: 0.5rem;
+  }
+
+  :deep(.p-select-option) {
+    padding: 0.35rem 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .edit-group-item i {
@@ -210,6 +253,9 @@
   &.tag-secondary {
     background: #f3f4f6;
     color: #374151;
+    white-space: normal;
+    word-break: break-all;
+    max-width: 100%;
   }
 }
 

@@ -25,8 +25,7 @@
       "exportingLabel": "Exporting"
     },
     "card-ui": {
-      "addLabel": "Add",
-      "deleteLabel": "Delete"
+      "addLabel": "Add"
     },
     "topbar-ui": {
       "editorMenuLabel": "Editor menu",
@@ -64,8 +63,7 @@
       "exportingLabel": "匯出中"
     },
     "card-ui": {
-      "addLabel": "新增",
-      "deleteLabel": "刪除"
+      "addLabel": "新增"
     },
     "topbar-ui": {
       "editorMenuLabel": "編輯選單",
