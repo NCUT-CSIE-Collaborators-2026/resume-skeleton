@@ -38,7 +38,7 @@
             [pendingDeleteItemKeys]="getPendingDeleteItemKeys(card.id)"
             (editAction)="onCardEditAction($event)"
             (cancelEdit)="onCardCancelEdit($event)"
-            (addItem)="addCardItem($event.cardId, $event.elementIndex)"
+            (addItem)="addCardItem($event.cardId, $event.path)"
             (deleteItem)="deleteCardItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.groupIndex, $event.categoryIndex)"
             (textElementChange)="updateTextElement($event.cardId, $event.elementIndex, $event.value)"
             (badgeItemChange)="updateBadgeItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"
@@ -46,6 +46,8 @@
             (techCategoryChange)="updateTechCategoryValues($event.cardId, $event.elementIndex, $event.categoryIndex, $event.value)"
             (groupItemChange)="updateGroupItemValue($event.cardId, $event.elementIndex, $event.groupIndex, $event.itemIndex, $event.value)"
             (groupItemIconChange)="updateGroupItemIcon($event.cardId, $event.elementIndex, $event.groupIndex, $event.itemIndex, $event.icon)"
+            (groupNameChange)="updateGroupName($event.cardId, $event.elementIndex, $event.groupIndex, $event.value)"
+            (groupIconChange)="updateGroupIcon($event.cardId, $event.elementIndex, $event.groupIndex, $event.icon)"
           ></app-resume-card>
         }
       </div>

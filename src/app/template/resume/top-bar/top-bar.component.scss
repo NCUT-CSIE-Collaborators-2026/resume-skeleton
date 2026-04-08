@@ -138,7 +138,7 @@
   color: $color-primary-dark;
   font-weight: $font-weight-extrabold;
   white-space: nowrap;
-  overflow: hidden;
+  overflow-y: visible;
   text-overflow: ellipsis;
 }
 
@@ -147,7 +147,7 @@
   color: $color-primary-light;
   font-size: clamp(1rem, 2vw, 1.25rem);
   white-space: nowrap;
-  overflow: hidden;
+  overflow-y: visible;
   text-overflow: ellipsis;
 }
 

@@ -330,6 +330,7 @@ export class ResumeComponent {
     const exps = this.experiences();
     return exps.map((exp) => ({
       name: 'Experience',
+      icon: 'pi pi-briefcase',
       items: [
         {
           label: 'experience',
@@ -706,6 +707,53 @@ export class ResumeComponent {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
+  private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ label: string; value: string; icon: string }> } {
+    return {
+      name: 'New collection',
+      icon: 'pi pi-folder',
+      items: [this.createDefaultTreeGroupItem(1)],
+    };
+  }
+
+  private createDefaultTreeGroupItem(nextIndex: number): { label: string; value: string; icon: string } {
+    return {
+      label: `item-${nextIndex}`,
+      value: 'New item',
+      icon: 'pi pi-circle',
+    };
+  }
+
+  private createDefaultTreeChild(): Card['elements'][number] {
+    return {
+      type: 'text',
+      text: 'New node',
+      children: [],
+    };
+  }
+
+  private getTreeNodeByPath(
+    elements: Card['elements'],
+    path: number[],
+  ): Card['elements'][number] | null {
+    if (path.length === 0) {
+      return null;
+    }
+
+    let currentElements = elements;
+    let currentNode: Card['elements'][number] | undefined;
+
+    for (const index of path) {
+      currentNode = currentElements[index];
+      if (!currentNode) {
+        return null;
+      }
+
+      currentElements = currentNode.children ?? [];
+    }
+
+    return currentNode ?? null;
+  }
+
   private updateDraftCard(cardId: string, updater: (draft: Card) => Card): void {
     const draft = this.cardDrafts()[cardId];
     if (!draft) {
@@ -818,35 +866,75 @@ export class ResumeComponent {
     });
   }
 
-  addCardItem(cardId: string, elementIndex: number): void {
+  updateGroupName(
+    cardId: string,
+    elementIndex: number,
+    groupIndex: number,
+    value: string,
+  ): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
-
-      if (element?.type === 'badges') {
-        element.items.push('');
+      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
         return draft;
       }
 
-      if (element?.type === 'icon-list') {
-        element.items.push('');
+      element.groups[groupIndex].name = value;
+      return draft;
+    });
+  }
+
+  updateGroupIcon(
+    cardId: string,
+    elementIndex: number,
+    groupIndex: number,
+    icon: string,
+  ): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
         return draft;
       }
 
-      if (element?.type === 'grid-education' || element?.type === 'grid-groups') {
-        const targetGroup = element.groups[0];
+      element.groups[groupIndex].icon = icon;
+      return draft;
+    });
+  }
+
+  addCardItem(cardId: string, path: number[]): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const elementIndex = path[0];
+      const element = draft.elements[elementIndex];
+
+      if (!element) {
+        return draft;
+      }
+
+      if ((element.type === 'grid-education' || element.type === 'grid-groups') && path.length === 1) {
+        element.groups.push(this.createDefaultTreeCollection());
+        return draft;
+      }
+
+      if (
+        (element.type === 'grid-education' || element.type === 'grid-groups') &&
+        path.length === 2
+      ) {
+        const groupIndex = path[1];
+        const targetGroup = element.groups[groupIndex];
         if (!targetGroup) {
           return draft;
         }
 
-        const nextIndex = targetGroup.items.length + 1;
-        targetGroup.items.push({
-          label: `item-${nextIndex}`,
-          value: '',
-          icon: 'pi pi-circle',
-        });
+        targetGroup.items.push(this.createDefaultTreeGroupItem(targetGroup.items.length + 1));
         return draft;
       }
 
+      const target = this.getTreeNodeByPath(draft.elements, path);
+      if (!target) {
+        return draft;
+      }
+
+      target.children ??= [];
+      target.children.push(this.createDefaultTreeChild());
       return draft;
     });
   }
@@ -1081,13 +1169,62 @@ export class ResumeComponent {
           if (clonedCanvas instanceof HTMLElement) {
             clonedCanvas.classList.add('resume-canvas--pdf');
             clonedCanvas.classList.add('pdf-export-mode');
+            clonedCanvas.style.setProperty('opacity', '1', 'important');
+            clonedCanvas.style.setProperty('filter', 'none', 'important');
           }
+
+          // 強制移除動畫，避免 html2canvas 截到 reveal 淡入中的狀態。
+          clonedCanvas?.querySelectorAll<HTMLElement>('*').forEach((element) => {
+            element.style.setProperty('animation', 'none', 'important');
+            element.style.setProperty('transition', 'none', 'important');
+            element.style.setProperty('opacity', '1', 'important');
+            element.style.setProperty('filter', 'none', 'important');
+          });
+
+          // 直接在 clone 階段覆寫卡片與標籤色彩，避免元件封裝造成 PDF selector 漏命中。
+          clonedCanvas?.querySelectorAll<HTMLElement>('.card').forEach((card) => {
+            card.style.setProperty('background', '#ffffff', 'important');
+            card.style.setProperty('background-image', 'none', 'important');
+            card.style.setProperty('box-shadow', 'none', 'important');
+            card.style.setProperty('border-color', 'rgba(148, 163, 184, 0.15)', 'important');
+          });
+
+          clonedCanvas?.querySelectorAll<HTMLElement>('.badge, .chip, .tag').forEach((item) => {
+            item.style.setProperty('background-color', '#f3f4f6', 'important');
+            item.style.setProperty('color', '#374151', 'important');
+            item.style.setProperty('border-color', '#d1d5db', 'important');
+          });
+
+          clonedCanvas?.querySelectorAll<HTMLElement>('.stack-item').forEach((item) => {
+            item.style.setProperty('background', '#f9fafb', 'important');
+            item.style.setProperty('border-color', 'rgba(148, 163, 184, 0.15)', 'important');
+          });
 
           // 明確隱藏 action-panel 元素
           const actionPanels = clonedCanvas?.querySelectorAll('[class*="action-panel"]');
           actionPanels?.forEach((panel) => {
             if (panel instanceof HTMLElement) {
               panel.style.display = 'none !important';
+            }
+          });
+
+          // 相容新版卡片元件：匯出時隱藏編輯按鈕與按鈕群組
+          const cardActionControls = clonedCanvas?.querySelectorAll(
+            '.card-button-group, .card-edit-btn, .card-cancel-btn',
+          );
+          cardActionControls?.forEach((control) => {
+            if (control instanceof HTMLElement) {
+              control.style.setProperty('display', 'none', 'important');
+            }
+          });
+
+          // 隱藏 top-bar 右側工具與行動 action panel（包含 editor chip）。
+          const topBarControls = clonedCanvas?.querySelectorAll(
+            '.desktop-toolbar, .action-panel, .action-panel--mobile, .editor-chip, .editor-menu, .lang-btn, .a4-btn, .download-btn',
+          );
+          topBarControls?.forEach((control) => {
+            if (control instanceof HTMLElement) {
+              control.style.setProperty('display', 'none', 'important');
             }
           });
 
@@ -1195,6 +1332,7 @@ export class ResumeComponent {
     return [
       {
         name: 'Education Info',
+        icon: 'pi pi-building-columns',
         items: [
           {
             label: 'school',

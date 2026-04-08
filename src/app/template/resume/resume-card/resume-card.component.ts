@@ -2,13 +2,16 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { Card } from '../resume.model';
-import { ResumeCardElementComponent } from './resume-element/resume-card-element.component';
+import { TreeCardComponent } from './resume-element/resume-card-element.component';
 import {
+  AddItemChange,
   BadgeItemChange,
   CardUi,
   DeleteItemChange,
+  GroupIconChange,
   GroupItemChange,
   GroupItemIconChange,
+  GroupNameChange,
   IconListItemChange,
   TechCategoryChange,
   TextElementChange,
@@ -17,7 +20,7 @@ import {
 @Component({
   selector: 'app-resume-card',
   standalone: true,
-  imports: [CommonModule, ButtonModule, ResumeCardElementComponent],
+  imports: [CommonModule, ButtonModule, TreeCardComponent],
   templateUrl: './resume-card.component.html',
   styleUrl: './resume-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +41,9 @@ export class ResumeCardComponent {
   @Output() techCategoryChange = new EventEmitter<TechCategoryChange>();
   @Output() groupItemChange = new EventEmitter<GroupItemChange>();
   @Output() groupItemIconChange = new EventEmitter<GroupItemIconChange>();
-  @Output() addItem = new EventEmitter<{ cardId: string; elementIndex: number }>();
+  @Output() groupNameChange = new EventEmitter<GroupNameChange>();
+  @Output() groupIconChange = new EventEmitter<GroupIconChange>();
+  @Output() addItem = new EventEmitter<AddItemChange>();
   @Output() deleteItem = new EventEmitter<DeleteItemChange>();
 
   /** 可選擇的 PrimeIcons 與對應顯示名稱。 */
@@ -49,7 +54,8 @@ export class ResumeCardComponent {
     { icon: 'pi pi-heart', label: 'Heart' },
     { icon: 'pi pi-book', label: 'Book' },
     { icon: 'pi pi-briefcase', label: 'Briefcase' },
-    { icon: 'pi pi-building-columns', label: 'Building' },
+    { icon: 'pi pi-building-columns', label: 'Government' },
+    { icon: 'pi pi-building', label: 'Building' },
     { icon: 'pi pi-graduation-cap', label: 'Graduation' },
     { icon: 'pi pi-code', label: 'Code' },
     { icon: 'pi pi-desktop', label: 'Desktop' },
@@ -86,8 +92,8 @@ export class ResumeCardComponent {
   }
 
   /** 觸發新增項目事件。 */
-  onAddItem(elementIndex: number): void {
-    this.addItem.emit({ cardId: this.card.id, elementIndex });
+  onAddItem(path: number[]): void {
+    this.addItem.emit({ cardId: this.card.id, path });
   }
 
   /** 補上目前卡片識別後，觸發刪除項目事件。 */
@@ -133,6 +139,24 @@ export class ResumeCardComponent {
     icon: string,
   ): void {
     this.groupItemIconChange.emit({ cardId: this.card.id, elementIndex, groupIndex, itemIndex, icon });
+  }
+
+  /** 觸發分組標題變更事件。 */
+  onGroupNameChange(
+    elementIndex: number,
+    groupIndex: number,
+    value: string,
+  ): void {
+    this.groupNameChange.emit({ cardId: this.card.id, elementIndex, groupIndex, value });
+  }
+
+  /** 觸發分組父層圖示變更事件。 */
+  onGroupIconChange(
+    elementIndex: number,
+    groupIndex: number,
+    icon: string,
+  ): void {
+    this.groupIconChange.emit({ cardId: this.card.id, elementIndex, groupIndex, icon });
   }
 
 }

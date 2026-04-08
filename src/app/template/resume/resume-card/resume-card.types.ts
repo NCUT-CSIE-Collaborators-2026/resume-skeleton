@@ -47,9 +47,31 @@ export interface GroupItemIconChange {
   icon: string;
 }
 
+/** 分組標題編輯事件資料。 */
+export interface GroupNameChange {
+  cardId: string;
+  elementIndex: number;
+  groupIndex: number;
+  value: string;
+}
+
+/** 分組父層圖示編輯事件資料。 */
+export interface GroupIconChange {
+  cardId: string;
+  elementIndex: number;
+  groupIndex: number;
+  icon: string;
+}
+
 /** 卡片介面顯示設定。 */
 export interface CardUi {
   addLabel: string;
+}
+
+/** 新增樹節點事件資料。 */
+export interface AddItemChange {
+  cardId: string;
+  path: number[];
 }
 
 /** 刪除項目事件資料。 */

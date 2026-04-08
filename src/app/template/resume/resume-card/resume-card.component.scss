@@ -40,6 +40,20 @@
   opacity: 0.9;
 }
 
+:host-context(.resume-canvas--pdf) .card {
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+  animation: none !important;
+}
+
+:host-context(.resume-canvas--pdf) .card-button-group,
+:host-context(.resume-canvas--pdf) .card-edit-btn,
+:host-context(.resume-canvas--pdf) .card-cancel-btn {
+  display: none !important;
+}
+
 .card-title {
   margin: 0;
   width: auto;

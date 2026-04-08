@@ -33,9 +33,10 @@
   }
 
   @for (element of card.elements; track $index; let elementIndex = $index) {
-    <app-resume-card-element
+    <app-tree-card
       [element]="element"
       [elementIndex]="elementIndex"
+      [path]="[elementIndex]"
       [isEditing]="isEditing"
       [isSaving]="isSaving"
       [addLabel]="cardUi.addLabel"
@@ -47,8 +48,10 @@
       (techCategoryChange)="onTechCategoryChange($event.elementIndex, $event.categoryIndex, $event.value)"
       (groupItemChange)="onGroupItemChange($event.elementIndex, $event.groupIndex, $event.itemIndex, $event.value)"
       (groupItemIconChange)="onGroupItemIconChange($event.elementIndex, $event.groupIndex, $event.itemIndex, $event.icon)"
+      (groupNameChange)="onGroupNameChange($event.elementIndex, $event.groupIndex, $event.value)"
+      (groupIconChange)="onGroupIconChange($event.elementIndex, $event.groupIndex, $event.icon)"
       (addItem)="onAddItem($event)"
       (deleteItem)="onDeleteItem($event)"
-    ></app-resume-card-element>
+    ></app-tree-card>
   }
 </article>

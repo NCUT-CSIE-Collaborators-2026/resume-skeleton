@@ -3,8 +3,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
+import { IconSelectMenuComponent } from '../../../../uikit/icon-select-menu.component';
 import { GroupListComponent } from '../../../../uikit/group-list.component';
 import { ResumeCardElement } from './resume-card-element.model';
 
@@ -44,6 +44,20 @@ export interface ElementGroupItemIconChange {
   icon: string;
 }
 
+/** 分組標題變更事件。 */
+export interface ElementGroupNameChange {
+  elementIndex: number;
+  groupIndex: number;
+  value: string;
+}
+
+/** 分組父層圖示變更事件。 */
+export interface ElementGroupIconChange {
+  elementIndex: number;
+  groupIndex: number;
+  icon: string;
+}
+
 /** 元素刪除事件。 */
 export interface ElementDeleteItemChange {
   elementIndex: number;
@@ -52,17 +66,26 @@ export interface ElementDeleteItemChange {
   categoryIndex?: number;
 }
 
-/** 單一卡片元素渲染元件，封裝 switch 分支內容。 */
+/** 單一樹卡節點渲染元件，封裝 switch 分支內容。 */
 @Component({
-  selector: 'app-resume-card-element',
+  selector: 'app-tree-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, SelectModule, InputTextModule, TextareaModule, GroupListComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
+    GroupListComponent,
+    IconSelectMenuComponent,
+  ],
   templateUrl: './resume-card-element.component.html',
   styleUrl: './resume-card-element.component.scss',
 })
-export class ResumeCardElementComponent {
+export class TreeCardComponent {
   @Input({ required: true }) element!: ResumeCardElement;
   @Input({ required: true }) elementIndex!: number;
+  @Input() path: number[] = [];
   @Input() isEditing = false;
   @Input() isSaving = false;
   @Input() addLabel = 'Add';
@@ -75,21 +98,14 @@ export class ResumeCardElementComponent {
   @Output() techCategoryChange = new EventEmitter<ElementTechCategoryChange>();
   @Output() groupItemChange = new EventEmitter<ElementGroupItemChange>();
   @Output() groupItemIconChange = new EventEmitter<ElementGroupItemIconChange>();
-  @Output() addItem = new EventEmitter<number>();
+  @Output() groupNameChange = new EventEmitter<ElementGroupNameChange>();
+  @Output() groupIconChange = new EventEmitter<ElementGroupIconChange>();
+  @Output() addItem = new EventEmitter<number[]>();
   @Output() deleteItem = new EventEmitter<ElementDeleteItemChange>();
 
-  /** 依圖示代碼取得顯示名稱；若查無對應則回傳原始代碼。 */
-  getIconLabel(icon: string | null | undefined): string {
-    if (!icon) {
-      return '';
-    }
-
-    return this.iconOptions.find((option) => option.icon === icon)?.label ?? icon;
-  }
-
   /** 觸發新增項目事件。 */
-  onAddItem(): void {
-    this.addItem.emit(this.elementIndex);
+  onAddItem(pathOverride: number[] = this.path): void {
+    this.addItem.emit(pathOverride);
   }
 
   /** 觸發刪除項目事件。 */
@@ -132,6 +148,16 @@ export class ResumeCardElementComponent {
   /** 觸發分組項目圖示變更事件。 */
   onGroupItemIconChange(groupIndex: number, itemIndex: number, icon: string): void {
     this.groupItemIconChange.emit({ elementIndex: this.elementIndex, groupIndex, itemIndex, icon });
+  }
+
+  /** 觸發分組標題變更事件。 */
+  onGroupNameChange(groupIndex: number, value: string): void {
+    this.groupNameChange.emit({ elementIndex: this.elementIndex, groupIndex, value });
+  }
+
+  /** 觸發分組父層圖示變更事件。 */
+  onGroupIconChange(groupIndex: number, icon: string): void {
+    this.groupIconChange.emit({ elementIndex: this.elementIndex, groupIndex, icon });
   }
 
   /** 將分類值陣列轉為逗號分隔字串。 */
