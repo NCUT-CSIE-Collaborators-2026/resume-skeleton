@@ -157,6 +157,7 @@
       <div class="edit-group-list">
         <ul class="group-tree-edit">
           @for (group of element.groups; track group.name; let groupIndex = $index) {
+            @if (!isCardGroupPendingDelete(groupIndex)) {
             <li class="group-tree-node group-tree-node--parent">
               <div class="edit-group-item">
                 <div class="edit-group-main">
@@ -172,6 +173,14 @@
                     (ngModelChange)="onGroupNameChange(groupIndex, $event)"
                   />
                 </div>
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                  icon="pi pi-trash"
+                  [disabled]="isSaving"
+                  (click)="onDeleteItem({ groupIndex, deleteGroup: true })"
+                ></button>
               </div>
 
               <ul class="group-tree-children">
@@ -218,6 +227,7 @@
                 </li>
               </ul>
             </li>
+            }
           }
         </ul>
         <button
@@ -239,6 +249,7 @@
       <div class="edit-group-list">
         <ul class="group-tree-edit">
           @for (group of element.groups; track group.name; let groupIndex = $index) {
+            @if (!isCardGroupPendingDelete(groupIndex)) {
             <li class="group-tree-node group-tree-node--parent">
               <div class="edit-group-item">
                 <div class="edit-group-main">
@@ -254,6 +265,14 @@
                     (ngModelChange)="onGroupNameChange(groupIndex, $event)"
                   />
                 </div>
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                  icon="pi pi-trash"
+                  [disabled]="isSaving"
+                  (click)="onDeleteItem({ groupIndex, deleteGroup: true })"
+                ></button>
               </div>
 
               <ul class="group-tree-children">
@@ -300,6 +319,7 @@
                 </li>
               </ul>
             </li>
+            }
           }
         </ul>
         <button

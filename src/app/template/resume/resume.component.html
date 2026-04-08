@@ -39,7 +39,7 @@
             (editAction)="onCardEditAction($event)"
             (cancelEdit)="onCardCancelEdit($event)"
             (addItem)="addCardItem($event.cardId, $event.path)"
-            (deleteItem)="deleteCardItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.groupIndex, $event.categoryIndex)"
+            (deleteItem)="deleteCardItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.groupIndex, $event.categoryIndex, $event.deleteGroup)"
             (textElementChange)="updateTextElement($event.cardId, $event.elementIndex, $event.value)"
             (badgeItemChange)="updateBadgeItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"
             (iconListItemChange)="updateIconListItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.value)"

@@ -20,6 +20,8 @@ export interface IconOption {
       (ngModelChange)="onIconChange($event)"
       class="icon-dropdown"
       [showClear]="false"
+      [appendTo]="'body'"
+      [overlayOptions]="{ autoZIndex: true, baseZIndex: 12000 }"
     >
       <ng-template pTemplate="item" let-option>
         <i [class]="option.icon" [title]="option.label"></i>

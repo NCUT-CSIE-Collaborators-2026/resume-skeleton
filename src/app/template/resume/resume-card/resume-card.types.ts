@@ -78,7 +78,8 @@ export interface AddItemChange {
 export interface DeleteItemChange {
   cardId: string;
   elementIndex: number;
-  itemIndex: number;
+  itemIndex?: number;
   groupIndex?: number;
   categoryIndex?: number;
+  deleteGroup?: boolean;
 }

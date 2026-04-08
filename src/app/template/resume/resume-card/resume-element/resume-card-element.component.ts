@@ -61,9 +61,10 @@ export interface ElementGroupIconChange {
 /** 元素刪除事件。 */
 export interface ElementDeleteItemChange {
   elementIndex: number;
-  itemIndex: number;
+  itemIndex?: number;
   groupIndex?: number;
   categoryIndex?: number;
+  deleteGroup?: boolean;
 }
 
 /** 單一樹卡節點渲染元件，封裝 switch 分支內容。 */
@@ -117,6 +118,13 @@ export class TreeCardComponent {
   isCardItemPendingDelete(itemIndex: number, groupIndex?: number, categoryIndex?: number): boolean {
     return this.pendingDeleteItemKeys?.has(
       this.getPendingDeleteItemKey(itemIndex, groupIndex, categoryIndex),
+    ) ?? false;
+  }
+
+  /** 判斷指定分組是否處於待刪除狀態。 */
+  isCardGroupPendingDelete(groupIndex: number): boolean {
+    return this.pendingDeleteItemKeys?.has(
+      this.getPendingDeleteGroupKey(groupIndex),
     ) ?? false;
   }
 
@@ -176,5 +184,10 @@ export class TreeCardComponent {
     }
 
     return `${this.elementIndex}:item:${itemIndex}`;
+  }
+
+  /** 產生待刪除分組的唯一鍵值。 */
+  private getPendingDeleteGroupKey(groupIndex: number): string {
+    return `${this.elementIndex}:group:${groupIndex}:delete`;
   }
 }

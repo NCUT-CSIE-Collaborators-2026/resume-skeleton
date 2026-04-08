@@ -942,13 +942,14 @@ export class ResumeComponent {
   deleteCardItem(
     cardId: string,
     elementIndex: number,
-    itemIndex: number,
+    itemIndex?: number,
     groupIndex?: number,
     categoryIndex?: number,
+    deleteGroup?: boolean,
   ): void {
     this.pendingDeleteItemKeys.update((pendingDeletes) => {
       const next = new Set(pendingDeletes[cardId] ?? []);
-      next.add(this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex));
+      next.add(this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex, deleteGroup));
 
       return {
         ...pendingDeletes,
@@ -1066,19 +1067,28 @@ export class ResumeComponent {
 
   private getPendingDeleteItemKey(
     elementIndex: number,
-    itemIndex: number,
+    itemIndex?: number,
     groupIndex?: number,
     categoryIndex?: number,
+    deleteGroup?: boolean,
   ): string {
+    if (deleteGroup && typeof groupIndex === 'number') {
+      return `${elementIndex}:group:${groupIndex}:delete`;
+    }
+
     if (typeof categoryIndex === 'number') {
       return `${elementIndex}:category:${categoryIndex}`;
     }
 
-    if (typeof groupIndex === 'number') {
+    if (typeof groupIndex === 'number' && typeof itemIndex === 'number') {
       return `${elementIndex}:group:${groupIndex}:${itemIndex}`;
     }
 
-    return `${elementIndex}:item:${itemIndex}`;
+    if (typeof itemIndex === 'number') {
+      return `${elementIndex}:item:${itemIndex}`;
+    }
+
+    return `${elementIndex}:unknown`;
   }
 
   private applyPendingDeleteItemKeys(cardId: string, draft: Card): Card {
@@ -1114,7 +1124,15 @@ export class ResumeComponent {
       if (element.type === 'grid-education' || element.type === 'grid-groups') {
         return {
           ...element,
-          groups: element.groups.map((group, groupIndex) => ({
+          groups: element.groups.filter((_, groupIndex) => {
+            // Check if the entire group is marked for deletion
+            if (pendingDeletes.has(
+              this.getPendingDeleteItemKey(elementIndex, undefined, groupIndex, undefined, true),
+            )) {
+              return false;
+            }
+            return true;
+          }).map((group, groupIndex) => ({
             ...group,
             items: group.items.filter((_, itemIndex) => {
               return !pendingDeletes.has(

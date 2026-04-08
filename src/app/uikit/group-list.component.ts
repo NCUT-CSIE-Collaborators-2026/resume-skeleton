@@ -114,7 +114,6 @@ interface TreeNode {
       .tree-children {
         margin-left: 1.15rem;
         padding-left: 0.5rem;
-        border-left: 1px dashed rgba(148, 163, 184, 0.35);
       }
     `,
   ],
