@@ -26,6 +26,7 @@
                 pInputText
                 class="edit-input"
                 [ngModel]="badge"
+                [placeholder]="newItemValue"
                 (ngModelChange)="onBadgeItemChange(badgeIndex, $event)"
               />
               <button
@@ -66,6 +67,7 @@
                 pInputText
                 class="edit-input"
                 [ngModel]="item"
+                [placeholder]="newItemValue"
                 (ngModelChange)="onIconListItemChange(itemIndex, $event)"
               />
               <button
@@ -113,6 +115,7 @@
                   rows="2"
                   class="edit-textarea"
                   [ngModel]="getTechCategoryValueText(category.value)"
+                  [placeholder]="newItemValue"
                   (ngModelChange)="onTechCategoryChange(categoryIndex, $event)"
                 ></textarea>
               </div>
@@ -170,6 +173,7 @@
                     pInputText
                     class="edit-input group-collection-input"
                     [ngModel]="group.name"
+                    [placeholder]="newCollectionName"
                     (ngModelChange)="onTreeGroupNameChange(treeGroupIndex, $event)"
                   />
                 </div>
@@ -198,6 +202,7 @@
                             pInputText
                             class="edit-input"
                             [ngModel]="item.value"
+                            [placeholder]="newItemValue"
                             (ngModelChange)="onTreeGroupItemChange(treeGroupIndex, itemIndex, $event)"
                           />
                         </div>
@@ -220,7 +225,7 @@
                     type="button"
                     class="p-button-sm p-button-outlined add-item-btn"
                     icon="pi pi-plus"
-                    [label]="addLabel + ' item'"
+                    [label]="addItemLabel"
                     [disabled]="isSaving"
                     (click)="onAddItem(path.concat(treeGroupIndex))"
                   ></button>
@@ -235,7 +240,7 @@
           type="button"
           class="p-button-sm p-button-outlined add-item-btn"
           icon="pi pi-plus"
-          [label]="addLabel + ' collection'"
+          [label]="addCollectionLabel"
           [disabled]="isSaving"
           (click)="onAddItem(path)"
         ></button>
@@ -246,28 +251,6 @@
   }
 }
 
-    @if (isEditing && element.type !== 'grid-tree') {
-      <button
-        pButton
-        type="button"
-        class="p-button-sm p-button-outlined tree-add-btn"
-        icon="pi pi-plus"
-        [label]="addLabel"
-        [disabled]="isSaving"
-        (click)="onAddItem()"
-      ></button>
-    }
-
-    @if (element.type !== 'grid-tree' && element.children?.length) {
-      <div class="tree-children" [class.tree-children--editing]="depth === 0 && isEditing">
-        @for (child of element.children; track $index; let childIndex = $index) {
-          <ng-container
-            [ngTemplateOutlet]="treeNode"
-            [ngTemplateOutletContext]="{ $implicit: child, elementIndex: childIndex, depth: depth + 1, path: path.concat(childIndex) }"
-          ></ng-container>
-        }
-      </div>
-    }
   </div>
 </ng-template>
 

@@ -29,7 +29,9 @@ interface I18nLocale {
   'content-ui': {
     introTitle: string;
     educationTitle: string;
+    educationGroupName: string;
     expTitle: string;
+    experienceGroupName: string;
     stackTitle: string;
     projectsTitle: string;
     labels: {
@@ -46,6 +48,10 @@ interface I18nLocale {
   };
   'card-ui': {
     addLabel: string;
+    addItemLabel: string;
+    addCollectionLabel: string;
+    newCollectionName: string;
+    newItemValue: string;
   };
   'topbar-ui': {
     editorMenuLabel: string;
@@ -106,7 +112,9 @@ type ResumeLocale = I18nLocale & ContentLocale;
 interface UiCopy {
   introTitle: string;
   educationTitle: string;
+  educationGroupName: string;
   expTitle: string;
+  experienceGroupName: string;
   stackTitle: string;
   projectTitle: string;
   labels: {
@@ -125,6 +133,10 @@ interface BarUi {
 
 interface CardUi {
   addLabel: string;
+  addItemLabel: string;
+  addCollectionLabel: string;
+  newCollectionName: string;
+  newItemValue: string;
 }
 
 interface TopBarUi {
@@ -268,7 +280,9 @@ export class ResumeComponent {
     return {
       introTitle: content['content-ui'].introTitle,
       educationTitle: content['content-ui'].educationTitle,
+      educationGroupName: content['content-ui'].educationGroupName,
       expTitle: content['content-ui'].expTitle,
+      experienceGroupName: content['content-ui'].experienceGroupName,
       stackTitle: content['content-ui'].stackTitle,
       projectTitle: content['content-ui'].projectsTitle,
       labels: content['content-ui'].labels,
@@ -289,6 +303,10 @@ export class ResumeComponent {
     const content = this.content();
     return {
       addLabel: content['card-ui'].addLabel,
+      addItemLabel: content['card-ui'].addItemLabel,
+      addCollectionLabel: content['card-ui'].addCollectionLabel,
+      newCollectionName: content['card-ui'].newCollectionName,
+      newItemValue: content['card-ui'].newItemValue,
     };
   });
 
@@ -329,7 +347,7 @@ export class ResumeComponent {
   readonly experienceGroups = computed(() => {
     const exps = this.experiences();
     return exps.map((exp) => ({
-      name: 'Experience',
+      name: this.uiCopy().experienceGroupName,
       icon: 'pi pi-briefcase',
       items: [
         {
@@ -441,7 +459,20 @@ export class ResumeComponent {
       return null;
     }
 
-    const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
+    let key = cardId;
+    if (cardId === 'intro') {
+      const modeKey = `intro_${this.introMode()}`;
+      const alternateModeKey = this.introMode() === '30' ? 'intro_60' : 'intro_30';
+      key = modeKey;
+
+      const fallbackKey = [modeKey, 'intro', 'introductions', alternateModeKey].find(
+        (candidate) => this.isRecord(cardContent[candidate]),
+      );
+      if (fallbackKey) {
+        key = fallbackKey;
+      }
+    }
+
     const stored = cardContent[key];
     return stored ?? null;
   }
@@ -525,17 +556,15 @@ export class ResumeComponent {
         throw new Error(`Request failed with status ${response.status}`);
       }
 
-      const data = (await response.json()) as Partial<
-        Record<LangCode, ContentLocale>
-      >;
+      const data = (await response.json()) as Partial<Record<LangCode, unknown>>;
 
       if (!data.en || !data.zh_TW) {
         throw new Error('Incomplete i18n payload from backend');
       }
 
       this.contentByLang.set({
-        en: data.en,
-        zh_TW: data.zh_TW,
+        en: this.normalizeContentLocale(data.en),
+        zh_TW: this.normalizeContentLocale(data.zh_TW),
       });
     } catch (error) {
       const message =
@@ -544,6 +573,142 @@ export class ResumeComponent {
     } finally {
       this.isContentLoading.set(false);
     }
+  }
+
+  private normalizeContentLocale(raw: unknown): ContentLocale {
+    const source = this.isRecord(raw) ? raw : {};
+
+    const profile = this.isRecord(source['profile']) ? source['profile'] : {};
+    const education = this.isRecord(source['education']) ? source['education'] : {};
+    const experience = this.isRecord(source['experience']) ? source['experience'] : {};
+    const techStack = this.isRecord(source['tech_stack']) ? source['tech_stack'] : {};
+    const introductions = this.isRecord(source['introductions']) ? source['introductions'] : {};
+    const projects = this.isRecord(source['projects']) ? source['projects'] : {};
+    const cardContent = this.isRecord(source['card_content']) ? source['card_content'] : {};
+    const rootName = this.readNonEmptyString(source['name']);
+    const rootTitle = this.readNonEmptyString(source['title']) ?? this.readNonEmptyString(source['tittle']);
+
+    const normalizedProfile = {
+      ...EMPTY_CONTENT_LOCALE.profile,
+      ...profile,
+    };
+
+    if (!normalizedProfile.name && rootName) {
+      normalizedProfile.name = rootName;
+    }
+
+    if (!normalizedProfile.title && rootTitle) {
+      normalizedProfile.title = rootTitle;
+    }
+
+    return {
+      profile: normalizedProfile,
+      education: {
+        ...EMPTY_CONTENT_LOCALE.education,
+        ...education,
+      },
+      experience: {
+        ...EMPTY_CONTENT_LOCALE.experience,
+        ...experience,
+      },
+      tech_stack: {
+        ...EMPTY_CONTENT_LOCALE.tech_stack,
+        ...techStack,
+        language: this.normalizeStringArray(techStack['language'], EMPTY_CONTENT_LOCALE.tech_stack.language),
+        frontend: this.normalizeStringArray(techStack['frontend'], EMPTY_CONTENT_LOCALE.tech_stack.frontend),
+        backend: this.normalizeStringArray(techStack['backend'], EMPTY_CONTENT_LOCALE.tech_stack.backend),
+        database: this.normalizeStringArray(techStack['database'], EMPTY_CONTENT_LOCALE.tech_stack.database),
+        devops: this.normalizeStringArray(techStack['devops'], EMPTY_CONTENT_LOCALE.tech_stack.devops),
+      },
+      introductions: {
+        ...EMPTY_CONTENT_LOCALE.introductions,
+        ...this.normalizeIntroductions(introductions, cardContent),
+      },
+      projects: {
+        ...EMPTY_CONTENT_LOCALE.projects,
+        ...projects,
+        items: this.normalizeStringArray(projects['items'], EMPTY_CONTENT_LOCALE.projects.items),
+      },
+      card_content: cardContent,
+    };
+  }
+
+  private normalizeIntroductions(
+    introductions: Record<string, any>,
+    cardContent: Record<string, any>,
+  ): ContentLocale['introductions'] {
+    const normalized = {
+      ...EMPTY_CONTENT_LOCALE.introductions,
+      ...introductions,
+    };
+
+    const fallback30 =
+      this.readIntroTextFromCardContent(cardContent, 'intro_30') ??
+      this.readIntroTextFromCardContent(cardContent, 'intro') ??
+      this.readIntroTextFromCardContent(cardContent, 'introductions');
+
+    const fallback60 =
+      this.readIntroTextFromCardContent(cardContent, 'intro_60') ?? fallback30;
+
+    if (!normalized.pitch_30s?.trim() && fallback30) {
+      normalized.pitch_30s = fallback30;
+    }
+
+    if (!normalized.pitch_1min?.trim() && fallback60) {
+      normalized.pitch_1min = fallback60;
+    }
+
+    return normalized;
+  }
+
+  private readIntroTextFromCardContent(
+    cardContent: Record<string, any>,
+    key: string,
+  ): string | null {
+    const entry = cardContent[key];
+    if (!this.isRecord(entry)) {
+      return null;
+    }
+
+    if (typeof entry['text'] === 'string' && entry['text'].trim()) {
+      return entry['text'];
+    }
+
+    const elements = entry['elements'];
+    if (!Array.isArray(elements)) {
+      return null;
+    }
+
+    const textElement = elements.find((element) => {
+      if (!this.isRecord(element)) {
+        return false;
+      }
+
+      return element['type'] === 'text' && typeof element['text'] === 'string' && element['text'].trim();
+    }) as Record<string, any> | undefined;
+
+    return textElement?.['text'] ?? null;
+  }
+
+  private isRecord(value: unknown): value is Record<string, any> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private normalizeStringArray(value: unknown, fallback: string[]): string[] {
+    if (!Array.isArray(value)) {
+      return [...fallback];
+    }
+
+    return value.filter((item): item is string => typeof item === 'string');
+  }
+
+  private readNonEmptyString(value: unknown): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
   }
 
   isCardEditing(cardId: string): boolean {
@@ -732,7 +897,7 @@ export class ResumeComponent {
 
   private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ value: string; icon: string }> } {
     return {
-      name: 'New collection',
+      name: '',
       icon: 'pi pi-folder',
       items: [this.createDefaultTreeGroupItem(1)],
     };
@@ -740,40 +905,29 @@ export class ResumeComponent {
 
   private createDefaultTreeGroupItem(_nextIndex: number): { value: string; icon: string } {
     return {
-      value: 'New item',
+      value: '',
       icon: 'pi pi-circle',
     };
   }
 
-  private createDefaultTreeChild(): Card['elements'][number] {
-    return {
-      type: 'text',
-      text: 'New node',
-      children: [],
-    };
+  private createDefaultBadgeValue(): string {
+    return '';
   }
 
-  private getTreeNodeByPath(
-    elements: Card['elements'],
-    path: number[],
-  ): Card['elements'][number] | null {
-    if (path.length === 0) {
-      return null;
-    }
+  private createDefaultIconListValue(): string {
+    return '';
+  }
 
-    let currentElements = elements;
-    let currentNode: Card['elements'][number] | undefined;
-
-    for (const index of path) {
-      currentNode = currentElements[index];
-      if (!currentNode) {
-        return null;
-      }
-
-      currentElements = currentNode.children ?? [];
-    }
-
-    return currentNode ?? null;
+  private createDefaultTechCategory(): {
+    label: string;
+    value: string[];
+    severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary';
+  } {
+    return {
+      label: this.cardUi().newCollectionName,
+      value: [],
+      severity: 'info',
+    };
   }
 
   private updateDraftCard(cardId: string, updater: (draft: Card) => Card): void {
@@ -931,6 +1085,29 @@ export class ResumeComponent {
         return draft;
       }
 
+      if (path.length !== 1 && element.type !== 'grid-tree') {
+        return draft;
+      }
+
+      if (element.type === 'badges' && path.length === 1) {
+        element.items.push(this.createDefaultBadgeValue());
+        return draft;
+      }
+
+      if (element.type === 'icon-list' && path.length === 1) {
+        element.items.push(this.createDefaultIconListValue());
+        return draft;
+      }
+
+      if (element.type === 'grid-tech' && path.length === 1) {
+        element.items.push(this.createDefaultTechCategory());
+        return draft;
+      }
+
+      if (element.type === 'text') {
+        return draft;
+      }
+
       if (element.type === 'grid-tree' && path.length === 1) {
         element.groups.push(this.createDefaultTreeCollection());
         return draft;
@@ -946,14 +1123,6 @@ export class ResumeComponent {
         targetGroup.items.push(this.createDefaultTreeGroupItem(targetGroup.items.length + 1));
         return draft;
       }
-
-      const target = this.getTreeNodeByPath(draft.elements, path);
-      if (!target) {
-        return draft;
-      }
-
-      target.children ??= [];
-      target.children.push(this.createDefaultTreeChild());
       return draft;
     });
   }
@@ -1376,7 +1545,7 @@ export class ResumeComponent {
 
     return [
       {
-        name: 'Education Info',
+        name: this.uiCopy().educationGroupName,
         icon: 'pi pi-building-columns',
         items: [
           {

@@ -9,7 +9,9 @@
     "content-ui": {
       "introTitle": "Self Introduction",
       "educationTitle": "Education",
+      "educationGroupName": "Education Info",
       "expTitle": "Experience",
+      "experienceGroupName": "Experience",
       "stackTitle": "Tech Stack",
       "projectsTitle": "Project Achievements",
       "labels": {
@@ -25,7 +27,11 @@
       "exportingLabel": "Exporting"
     },
     "card-ui": {
-      "addLabel": "Add"
+      "addLabel": "Add",
+      "addItemLabel": "Add item",
+      "addCollectionLabel": "Add collection",
+      "newCollectionName": "New collection",
+      "newItemValue": "New item"
     },
     "topbar-ui": {
       "editorMenuLabel": "Editor menu",
@@ -45,9 +51,11 @@
       "title": "王顥倫 | 簡歷"
     },
     "content-ui": {
-      "introTitle": "自我---介紹",
+      "introTitle": "自我介紹",
       "educationTitle": "學歷背景",
+      "educationGroupName": "學歷資訊",
       "expTitle": "經歷概覽",
+      "experienceGroupName": "經歷",
       "stackTitle": "技術堆疊",
       "projectsTitle": "專案成就",
       "labels": {
@@ -63,7 +71,11 @@
       "exportingLabel": "匯出中"
     },
     "card-ui": {
-      "addLabel": "新增"
+      "addLabel": "新增",
+      "addItemLabel": "新增項目",
+      "addCollectionLabel": "新增群組",
+      "newCollectionName": "新群組",
+      "newItemValue": "新項目"
     },
     "topbar-ui": {
       "editorMenuLabel": "編輯選單",

@@ -66,6 +66,10 @@ export interface TreeGroupIconChange {
 /** 卡片介面顯示設定。 */
 export interface CardUi {
   addLabel: string;
+  addItemLabel: string;
+  addCollectionLabel: string;
+  newCollectionName: string;
+  newItemValue: string;
 }
 
 /** 新增樹節點事件資料。 */

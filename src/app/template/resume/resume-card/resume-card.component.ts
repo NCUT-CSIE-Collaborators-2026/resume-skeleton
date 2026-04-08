@@ -30,7 +30,13 @@ export class ResumeCardComponent {
   @Input() isAuthenticated = false;
   @Input() isEditing = false;
   @Input() isSaving = false;
-  @Input() cardUi: CardUi = { addLabel: 'Add' };
+  @Input() cardUi: CardUi = {
+    addLabel: 'Add',
+    addItemLabel: 'Add item',
+    addCollectionLabel: 'Add collection',
+    newCollectionName: 'New collection',
+    newItemValue: 'New item',
+  };
   @Input() pendingDeleteItemKeys: Set<string> | null = null;
 
   @Output() editAction = new EventEmitter<Card>();

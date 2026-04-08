@@ -90,6 +90,10 @@ export class TreeCardComponent {
   @Input() isEditing = false;
   @Input() isSaving = false;
   @Input() addLabel = 'Add';
+  @Input() addItemLabel = 'Add item';
+  @Input() addCollectionLabel = 'Add collection';
+  @Input() newCollectionName = 'New collection';
+  @Input() newItemValue = 'New item';
   @Input() pendingDeleteItemKeys: Set<string> | null = null;
   @Input() iconOptions: Array<{ icon: string; label: string }> = [];
 
