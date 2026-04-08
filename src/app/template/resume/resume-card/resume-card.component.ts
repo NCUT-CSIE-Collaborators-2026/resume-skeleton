@@ -8,10 +8,10 @@ import {
   BadgeItemChange,
   CardUi,
   DeleteItemChange,
-  GroupIconChange,
-  GroupItemChange,
-  GroupItemIconChange,
-  GroupNameChange,
+  TreeGroupIconChange,
+  TreeGroupItemChange,
+  TreeGroupItemIconChange,
+  TreeGroupNameChange,
   IconListItemChange,
   TechCategoryChange,
   TextElementChange,
@@ -39,10 +39,10 @@ export class ResumeCardComponent {
   @Output() badgeItemChange = new EventEmitter<BadgeItemChange>();
   @Output() iconListItemChange = new EventEmitter<IconListItemChange>();
   @Output() techCategoryChange = new EventEmitter<TechCategoryChange>();
-  @Output() groupItemChange = new EventEmitter<GroupItemChange>();
-  @Output() groupItemIconChange = new EventEmitter<GroupItemIconChange>();
-  @Output() groupNameChange = new EventEmitter<GroupNameChange>();
-  @Output() groupIconChange = new EventEmitter<GroupIconChange>();
+  @Output() treeGroupItemChange = new EventEmitter<TreeGroupItemChange>();
+  @Output() treeGroupItemIconChange = new EventEmitter<TreeGroupItemIconChange>();
+  @Output() treeGroupNameChange = new EventEmitter<TreeGroupNameChange>();
+  @Output() treeGroupIconChange = new EventEmitter<TreeGroupIconChange>();
   @Output() addItem = new EventEmitter<AddItemChange>();
   @Output() deleteItem = new EventEmitter<DeleteItemChange>();
 
@@ -122,41 +122,41 @@ export class ResumeCardComponent {
   }
 
   /** 觸發分組項目文字變更事件。 */
-  onGroupItemChange(
+  onTreeGroupItemChange(
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     itemIndex: number,
     value: string,
   ): void {
-    this.groupItemChange.emit({ cardId: this.card.id, elementIndex, groupIndex, itemIndex, value });
+    this.treeGroupItemChange.emit({ cardId: this.card.id, elementIndex, treeGroupIndex, itemIndex, value });
   }
 
   /** 觸發分組項目圖示變更事件。 */
-  onGroupItemIconChange(
+  onTreeGroupItemIconChange(
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     itemIndex: number,
     icon: string,
   ): void {
-    this.groupItemIconChange.emit({ cardId: this.card.id, elementIndex, groupIndex, itemIndex, icon });
+    this.treeGroupItemIconChange.emit({ cardId: this.card.id, elementIndex, treeGroupIndex, itemIndex, icon });
   }
 
   /** 觸發分組標題變更事件。 */
-  onGroupNameChange(
+  onTreeGroupNameChange(
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     value: string,
   ): void {
-    this.groupNameChange.emit({ cardId: this.card.id, elementIndex, groupIndex, value });
+    this.treeGroupNameChange.emit({ cardId: this.card.id, elementIndex, treeGroupIndex, value });
   }
 
   /** 觸發分組父層圖示變更事件。 */
-  onGroupIconChange(
+  onTreeGroupIconChange(
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     icon: string,
   ): void {
-    this.groupIconChange.emit({ cardId: this.card.id, elementIndex, groupIndex, icon });
+    this.treeGroupIconChange.emit({ cardId: this.card.id, elementIndex, treeGroupIndex, icon });
   }
 
 }

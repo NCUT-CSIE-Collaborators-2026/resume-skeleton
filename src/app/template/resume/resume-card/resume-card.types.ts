@@ -29,37 +29,37 @@ export interface TechCategoryChange {
   value: string;
 }
 
-/** 分組項目編輯事件資料。 */
-export interface GroupItemChange {
+/** 樹分組項目編輯事件資料。 */
+export interface TreeGroupItemChange {
   cardId: string;
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   itemIndex: number;
   value: string;
 }
 
-/** 分組項目圖示編輯事件資料。 */
-export interface GroupItemIconChange {
+/** 樹分組項目圖示編輯事件資料。 */
+export interface TreeGroupItemIconChange {
   cardId: string;
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   itemIndex: number;
   icon: string;
 }
 
-/** 分組標題編輯事件資料。 */
-export interface GroupNameChange {
+/** 樹分組標題編輯事件資料。 */
+export interface TreeGroupNameChange {
   cardId: string;
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   value: string;
 }
 
-/** 分組父層圖示編輯事件資料。 */
-export interface GroupIconChange {
+/** 樹分組父層圖示編輯事件資料。 */
+export interface TreeGroupIconChange {
   cardId: string;
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   icon: string;
 }
 
@@ -79,7 +79,7 @@ export interface DeleteItemChange {
   cardId: string;
   elementIndex: number;
   itemIndex?: number;
-  groupIndex?: number;
+  treeGroupIndex?: number;
   categoryIndex?: number;
-  deleteGroup?: boolean;
+  deleteTreeGroup?: boolean;
 }

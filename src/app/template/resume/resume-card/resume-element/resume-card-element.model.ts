@@ -12,20 +12,11 @@ type ResumeCardElementBase =
       gridLayout?: 'compact' | 'single';
     }
   | {
-      type: 'grid-education';
+      type: 'grid-tree';
       groups: Array<{
         name: string;
         icon: string;
-        items: Array<{ label: string; value: string; icon: string }>;
-      }>;
-      gridLayout?: 'compact' | 'single';
-    }
-  | {
-      type: 'grid-groups';
-      groups: Array<{
-        name: string;
-        icon: string;
-        items: Array<{ label: string; value: string; icon: string }>;
+        items: Array<{ value: string; icon: string }>;
       }>;
       gridLayout?: 'compact' | 'single';
     };

@@ -333,7 +333,6 @@ export class ResumeComponent {
       icon: 'pi pi-briefcase',
       items: [
         {
-          label: 'experience',
           value: exp,
           icon: 'pi pi-briefcase',
         },
@@ -381,7 +380,7 @@ export class ResumeComponent {
         layout: 6,
         elements: [
           {
-            type: 'grid-education',
+            type: 'grid-tree',
             groups: this.getEducationData(),
             gridLayout: 'compact',
           },
@@ -394,7 +393,7 @@ export class ResumeComponent {
         layout: 4,
         elements: [
           {
-            type: 'grid-groups',
+            type: 'grid-tree',
             groups: this.experienceGroups(),
             gridLayout: 'compact',
           },
@@ -459,7 +458,9 @@ export class ResumeComponent {
     }
 
     if (Array.isArray(stored.elements)) {
-      nextCard.elements = this.deepClone(stored.elements as Card['elements']);
+      nextCard.elements = this.normalizeLegacyElementTypes(
+        this.deepClone(stored.elements as Card['elements']),
+      );
     }
 
     return nextCard;
@@ -707,7 +708,29 @@ export class ResumeComponent {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
-  private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ label: string; value: string; icon: string }> } {
+  private normalizeLegacyElementTypes(elements: unknown[]): Card['elements'] {
+    return elements.map((element) => {
+      const candidate = element as { type?: string; children?: unknown[] };
+
+      if (candidate.type === 'grid-education' || candidate.type === 'grid-groups') {
+        return {
+          ...(element as object),
+          type: 'grid-tree',
+        } as Card['elements'][number];
+      }
+
+      if (Array.isArray(candidate.children) && candidate.children.length > 0) {
+        return {
+          ...(element as object),
+          children: this.normalizeLegacyElementTypes(candidate.children),
+        } as Card['elements'][number];
+      }
+
+      return element as Card['elements'][number];
+    }) as Card['elements'];
+  }
+
+  private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ value: string; icon: string }> } {
     return {
       name: 'New collection',
       icon: 'pi pi-folder',
@@ -715,9 +738,8 @@ export class ResumeComponent {
     };
   }
 
-  private createDefaultTreeGroupItem(nextIndex: number): { label: string; value: string; icon: string } {
+  private createDefaultTreeGroupItem(_nextIndex: number): { value: string; icon: string } {
     return {
-      label: `item-${nextIndex}`,
       value: 'New item',
       icon: 'pi pi-circle',
     };
@@ -830,72 +852,72 @@ export class ResumeComponent {
     });
   }
 
-  updateGroupItemValue(
+  updateTreeGroupItemValue(
     cardId: string,
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     itemIndex: number,
     value: string,
   ): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+      if (element?.type !== 'grid-tree') {
         return draft;
       }
 
-      element.groups[groupIndex].items[itemIndex].value = value;
+      element.groups[treeGroupIndex].items[itemIndex].value = value;
       return draft;
     });
   }
 
-  updateGroupItemIcon(
+  updateTreeGroupItemIcon(
     cardId: string,
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     itemIndex: number,
     icon: string,
   ): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+      if (element?.type !== 'grid-tree') {
         return draft;
       }
 
-      element.groups[groupIndex].items[itemIndex].icon = icon;
+      element.groups[treeGroupIndex].items[itemIndex].icon = icon;
       return draft;
     });
   }
 
-  updateGroupName(
+  updateTreeGroupName(
     cardId: string,
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     value: string,
   ): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+      if (element?.type !== 'grid-tree') {
         return draft;
       }
 
-      element.groups[groupIndex].name = value;
+      element.groups[treeGroupIndex].name = value;
       return draft;
     });
   }
 
-  updateGroupIcon(
+  updateTreeGroupIcon(
     cardId: string,
     elementIndex: number,
-    groupIndex: number,
+    treeGroupIndex: number,
     icon: string,
   ): void {
     this.updateDraftCard(cardId, (draft) => {
       const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-education' && element?.type !== 'grid-groups') {
+      if (element?.type !== 'grid-tree') {
         return draft;
       }
 
-      element.groups[groupIndex].icon = icon;
+      element.groups[treeGroupIndex].icon = icon;
       return draft;
     });
   }
@@ -909,17 +931,14 @@ export class ResumeComponent {
         return draft;
       }
 
-      if ((element.type === 'grid-education' || element.type === 'grid-groups') && path.length === 1) {
+      if (element.type === 'grid-tree' && path.length === 1) {
         element.groups.push(this.createDefaultTreeCollection());
         return draft;
       }
 
-      if (
-        (element.type === 'grid-education' || element.type === 'grid-groups') &&
-        path.length === 2
-      ) {
-        const groupIndex = path[1];
-        const targetGroup = element.groups[groupIndex];
+      if (element.type === 'grid-tree' && path.length === 2) {
+        const treeGroupIndex = path[1];
+        const targetGroup = element.groups[treeGroupIndex];
         if (!targetGroup) {
           return draft;
         }
@@ -943,13 +962,21 @@ export class ResumeComponent {
     cardId: string,
     elementIndex: number,
     itemIndex?: number,
-    groupIndex?: number,
+    treeGroupIndex?: number,
     categoryIndex?: number,
-    deleteGroup?: boolean,
+    deleteTreeGroup?: boolean,
   ): void {
     this.pendingDeleteItemKeys.update((pendingDeletes) => {
       const next = new Set(pendingDeletes[cardId] ?? []);
-      next.add(this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex, deleteGroup));
+      next.add(
+        this.getPendingDeleteItemKey(
+          elementIndex,
+          itemIndex,
+          treeGroupIndex,
+          categoryIndex,
+          deleteTreeGroup,
+        ),
+      );
 
       return {
         ...pendingDeletes,
@@ -962,12 +989,12 @@ export class ResumeComponent {
     cardId: string,
     elementIndex: number,
     itemIndex: number,
-    groupIndex?: number,
+    treeGroupIndex?: number,
     categoryIndex?: number,
   ): boolean {
     return (
       this.pendingDeleteItemKeys()[cardId]?.has(
-        this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex, categoryIndex),
+        this.getPendingDeleteItemKey(elementIndex, itemIndex, treeGroupIndex, categoryIndex),
       ) ?? false
     );
   }
@@ -1068,20 +1095,20 @@ export class ResumeComponent {
   private getPendingDeleteItemKey(
     elementIndex: number,
     itemIndex?: number,
-    groupIndex?: number,
+    treeGroupIndex?: number,
     categoryIndex?: number,
-    deleteGroup?: boolean,
+    deleteTreeGroup?: boolean,
   ): string {
-    if (deleteGroup && typeof groupIndex === 'number') {
-      return `${elementIndex}:group:${groupIndex}:delete`;
+    if (deleteTreeGroup && typeof treeGroupIndex === 'number') {
+      return `${elementIndex}:group:${treeGroupIndex}:delete`;
     }
 
     if (typeof categoryIndex === 'number') {
       return `${elementIndex}:category:${categoryIndex}`;
     }
 
-    if (typeof groupIndex === 'number' && typeof itemIndex === 'number') {
-      return `${elementIndex}:group:${groupIndex}:${itemIndex}`;
+    if (typeof treeGroupIndex === 'number' && typeof itemIndex === 'number') {
+      return `${elementIndex}:group:${treeGroupIndex}:${itemIndex}`;
     }
 
     if (typeof itemIndex === 'number') {
@@ -1121,22 +1148,22 @@ export class ResumeComponent {
         };
       }
 
-      if (element.type === 'grid-education' || element.type === 'grid-groups') {
+      if (element.type === 'grid-tree') {
         return {
           ...element,
-          groups: element.groups.filter((_, groupIndex) => {
+          groups: element.groups.filter((_, treeGroupIndex) => {
             // Check if the entire group is marked for deletion
             if (pendingDeletes.has(
-              this.getPendingDeleteItemKey(elementIndex, undefined, groupIndex, undefined, true),
+              this.getPendingDeleteItemKey(elementIndex, undefined, treeGroupIndex, undefined, true),
             )) {
               return false;
             }
             return true;
-          }).map((group, groupIndex) => ({
+          }).map((group, treeGroupIndex) => ({
             ...group,
             items: group.items.filter((_, itemIndex) => {
               return !pendingDeletes.has(
-                this.getPendingDeleteItemKey(elementIndex, itemIndex, groupIndex),
+                this.getPendingDeleteItemKey(elementIndex, itemIndex, treeGroupIndex),
               );
             }),
           })),
@@ -1353,17 +1380,14 @@ export class ResumeComponent {
         icon: 'pi pi-building-columns',
         items: [
           {
-            label: 'school',
             value: education.school,
             icon: 'pi pi-building-columns',
           },
           {
-            label: 'department',
             value: education.department,
             icon: 'pi pi-book',
           },
           {
-            label: 'degree',
             value: `${education.degree} | ${education.graduation_status}`,
             icon: 'pi pi-graduation-cap',
           },

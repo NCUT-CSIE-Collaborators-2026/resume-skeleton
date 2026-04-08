@@ -2,19 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 interface GroupItem {
-  label: string;
   value: string;
   icon: string;
 }
 
-interface Group {
+interface TreeGroup {
   name: string;
   icon: string;
   items: GroupItem[];
 }
 
 interface TreeNode {
-  label: string;
   value: string;
   icon: string;
   children: TreeNode[];
@@ -27,7 +25,7 @@ interface TreeNode {
   template: `
     <div class="group-list-container">
       <ul class="tree-root" [class.grid-single]="gridLayout === 'single'">
-        @for (node of treeNodes; track node.label; let nodeIndex = $index) {
+        @for (node of treeNodes; track $index; let nodeIndex = $index) {
           <ng-container
             [ngTemplateOutlet]="treeNode"
             [ngTemplateOutletContext]="{ $implicit: node, depth: 0, key: 'root-' + nodeIndex }"
@@ -44,7 +42,7 @@ interface TreeNode {
 
           @if (node.children.length) {
             <ul class="tree-children">
-              @for (child of node.children; track child.label; let childIndex = $index) {
+              @for (child of node.children; track $index; let childIndex = $index) {
                 <ng-container
                   [ngTemplateOutlet]="treeNode"
                   [ngTemplateOutletContext]="{ $implicit: child, depth: depth + 1, key: key + '-' + childIndex }"
@@ -119,16 +117,14 @@ interface TreeNode {
   ],
 })
 export class GroupListComponent {
-  @Input() groups: Group[] = [];
+  @Input() groups: TreeGroup[] = [];
   @Input() gridLayout?: 'compact' | 'single' = 'compact';
 
   get treeNodes(): TreeNode[] {
     return this.groups.map((group) => ({
-      label: group.name,
       value: group.name,
       icon: group.icon,
       children: group.items.map((item) => ({
-        label: item.value,
         value: item.value,
         icon: item.icon,
         children: [],

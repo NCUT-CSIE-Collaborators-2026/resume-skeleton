@@ -152,25 +152,25 @@
       </div>
     }
   }
-  @case ("grid-education") {
+  @case ("grid-tree") {
     @if (depth === 0 && isEditing) {
       <div class="edit-group-list">
         <ul class="group-tree-edit">
-          @for (group of element.groups; track group.name; let groupIndex = $index) {
-            @if (!isCardGroupPendingDelete(groupIndex)) {
+          @for (group of element.groups; track group.name; let treeGroupIndex = $index) {
+            @if (!isCardGroupPendingDelete(treeGroupIndex)) {
             <li class="group-tree-node group-tree-node--parent">
               <div class="edit-group-item">
                 <div class="edit-group-main">
                   <app-icon-select-menu
                     [icon]="group.icon"
                     [options]="iconOptions"
-                    (iconChange)="onGroupIconChange(groupIndex, $event)"
+                    (iconChange)="onTreeGroupIconChange(treeGroupIndex, $event)"
                   ></app-icon-select-menu>
                   <input
                     pInputText
                     class="edit-input group-collection-input"
                     [ngModel]="group.name"
-                    (ngModelChange)="onGroupNameChange(groupIndex, $event)"
+                    (ngModelChange)="onTreeGroupNameChange(treeGroupIndex, $event)"
                   />
                 </div>
                 <button
@@ -179,26 +179,26 @@
                   class="p-button-sm p-button-text p-button-danger item-delete-btn"
                   icon="pi pi-trash"
                   [disabled]="isSaving"
-                  (click)="onDeleteItem({ groupIndex, deleteGroup: true })"
+                  (click)="onDeleteItem({ treeGroupIndex, deleteTreeGroup: true })"
                 ></button>
               </div>
 
               <ul class="group-tree-children">
-                @for (item of group.items; track item.label; let itemIndex = $index) {
-                  @if (!isCardItemPendingDelete(itemIndex, groupIndex)) {
+                @for (item of group.items; track $index; let itemIndex = $index) {
+                  @if (!isCardItemPendingDelete(itemIndex, treeGroupIndex)) {
                     <li class="group-tree-node group-tree-node--child">
                       <div class="edit-group-item">
                         <div class="edit-group-main">
                           <app-icon-select-menu
                             [icon]="item.icon"
                             [options]="iconOptions"
-                            (iconChange)="onGroupItemIconChange(groupIndex, itemIndex, $event)"
+                            (iconChange)="onTreeGroupItemIconChange(treeGroupIndex, itemIndex, $event)"
                           ></app-icon-select-menu>
                           <input
                             pInputText
                             class="edit-input"
                             [ngModel]="item.value"
-                            (ngModelChange)="onGroupItemChange(groupIndex, itemIndex, $event)"
+                            (ngModelChange)="onTreeGroupItemChange(treeGroupIndex, itemIndex, $event)"
                           />
                         </div>
                         <button
@@ -207,7 +207,7 @@
                           class="p-button-sm p-button-text p-button-danger item-delete-btn"
                           icon="pi pi-trash"
                           [disabled]="isSaving"
-                          (click)="onDeleteItem({ itemIndex, groupIndex })"
+                          (click)="onDeleteItem({ itemIndex, treeGroupIndex })"
                         ></button>
                       </div>
                     </li>
@@ -222,99 +222,7 @@
                     icon="pi pi-plus"
                     [label]="addLabel + ' item'"
                     [disabled]="isSaving"
-                    (click)="onAddItem(path.concat(groupIndex))"
-                  ></button>
-                </li>
-              </ul>
-            </li>
-            }
-          }
-        </ul>
-        <button
-          pButton
-          type="button"
-          class="p-button-sm p-button-outlined add-item-btn"
-          icon="pi pi-plus"
-          [label]="addLabel + ' collection'"
-          [disabled]="isSaving"
-          (click)="onAddItem(path)"
-        ></button>
-      </div>
-    } @else {
-      <app-group-list [groups]="element.groups" [gridLayout]="element.gridLayout"></app-group-list>
-    }
-  }
-  @case ("grid-groups") {
-    @if (depth === 0 && isEditing) {
-      <div class="edit-group-list">
-        <ul class="group-tree-edit">
-          @for (group of element.groups; track group.name; let groupIndex = $index) {
-            @if (!isCardGroupPendingDelete(groupIndex)) {
-            <li class="group-tree-node group-tree-node--parent">
-              <div class="edit-group-item">
-                <div class="edit-group-main">
-                  <app-icon-select-menu
-                    [icon]="group.icon"
-                    [options]="iconOptions"
-                    (iconChange)="onGroupIconChange(groupIndex, $event)"
-                  ></app-icon-select-menu>
-                  <input
-                    pInputText
-                    class="edit-input group-collection-input"
-                    [ngModel]="group.name"
-                    (ngModelChange)="onGroupNameChange(groupIndex, $event)"
-                  />
-                </div>
-                <button
-                  pButton
-                  type="button"
-                  class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                  icon="pi pi-trash"
-                  [disabled]="isSaving"
-                  (click)="onDeleteItem({ groupIndex, deleteGroup: true })"
-                ></button>
-              </div>
-
-              <ul class="group-tree-children">
-                @for (item of group.items; track item.label; let itemIndex = $index) {
-                  @if (!isCardItemPendingDelete(itemIndex, groupIndex)) {
-                    <li class="group-tree-node group-tree-node--child">
-                      <div class="edit-group-item">
-                        <div class="edit-group-main">
-                          <app-icon-select-menu
-                            [icon]="item.icon"
-                            [options]="iconOptions"
-                            (iconChange)="onGroupItemIconChange(groupIndex, itemIndex, $event)"
-                          ></app-icon-select-menu>
-                          <input
-                            pInputText
-                            class="edit-input"
-                            [ngModel]="item.value"
-                            (ngModelChange)="onGroupItemChange(groupIndex, itemIndex, $event)"
-                          />
-                        </div>
-                        <button
-                          pButton
-                          type="button"
-                          class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                          icon="pi pi-trash"
-                          [disabled]="isSaving"
-                          (click)="onDeleteItem({ itemIndex, groupIndex })"
-                        ></button>
-                      </div>
-                    </li>
-                  }
-                }
-
-                <li class="group-tree-node group-tree-node--child group-tree-add-row">
-                  <button
-                    pButton
-                    type="button"
-                    class="p-button-sm p-button-outlined add-item-btn"
-                    icon="pi pi-plus"
-                    [label]="addLabel + ' item'"
-                    [disabled]="isSaving"
-                    (click)="onAddItem(path.concat(groupIndex))"
+                    (click)="onAddItem(path.concat(treeGroupIndex))"
                   ></button>
                 </li>
               </ul>
@@ -338,7 +246,7 @@
   }
 }
 
-    @if (isEditing && element.type !== 'grid-education' && element.type !== 'grid-groups') {
+    @if (isEditing && element.type !== 'grid-tree') {
       <button
         pButton
         type="button"
@@ -350,7 +258,7 @@
       ></button>
     }
 
-    @if (element.type !== 'grid-education' && element.type !== 'grid-groups' && element.children?.length) {
+    @if (element.type !== 'grid-tree' && element.children?.length) {
       <div class="tree-children" [class.tree-children--editing]="depth === 0 && isEditing">
         @for (child of element.children; track $index; let childIndex = $index) {
           <ng-container

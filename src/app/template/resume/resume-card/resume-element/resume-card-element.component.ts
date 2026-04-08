@@ -28,33 +28,33 @@ export interface ElementTechCategoryChange {
   value: string;
 }
 
-/** 分組項目文字變更事件。 */
-export interface ElementGroupItemChange {
+/** 樹分組項目文字變更事件。 */
+export interface ElementTreeGroupItemChange {
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   itemIndex: number;
   value: string;
 }
 
-/** 分組項目圖示變更事件。 */
-export interface ElementGroupItemIconChange {
+/** 樹分組項目圖示變更事件。 */
+export interface ElementTreeGroupItemIconChange {
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   itemIndex: number;
   icon: string;
 }
 
-/** 分組標題變更事件。 */
-export interface ElementGroupNameChange {
+/** 樹分組標題變更事件。 */
+export interface ElementTreeGroupNameChange {
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   value: string;
 }
 
-/** 分組父層圖示變更事件。 */
-export interface ElementGroupIconChange {
+/** 樹分組父層圖示變更事件。 */
+export interface ElementTreeGroupIconChange {
   elementIndex: number;
-  groupIndex: number;
+  treeGroupIndex: number;
   icon: string;
 }
 
@@ -62,9 +62,9 @@ export interface ElementGroupIconChange {
 export interface ElementDeleteItemChange {
   elementIndex: number;
   itemIndex?: number;
-  groupIndex?: number;
+  treeGroupIndex?: number;
   categoryIndex?: number;
-  deleteGroup?: boolean;
+  deleteTreeGroup?: boolean;
 }
 
 /** 單一樹卡節點渲染元件，封裝 switch 分支內容。 */
@@ -97,10 +97,10 @@ export class TreeCardComponent {
   @Output() badgeItemChange = new EventEmitter<ElementItemChange>();
   @Output() iconListItemChange = new EventEmitter<ElementItemChange>();
   @Output() techCategoryChange = new EventEmitter<ElementTechCategoryChange>();
-  @Output() groupItemChange = new EventEmitter<ElementGroupItemChange>();
-  @Output() groupItemIconChange = new EventEmitter<ElementGroupItemIconChange>();
-  @Output() groupNameChange = new EventEmitter<ElementGroupNameChange>();
-  @Output() groupIconChange = new EventEmitter<ElementGroupIconChange>();
+  @Output() treeGroupItemChange = new EventEmitter<ElementTreeGroupItemChange>();
+  @Output() treeGroupItemIconChange = new EventEmitter<ElementTreeGroupItemIconChange>();
+  @Output() treeGroupNameChange = new EventEmitter<ElementTreeGroupNameChange>();
+  @Output() treeGroupIconChange = new EventEmitter<ElementTreeGroupIconChange>();
   @Output() addItem = new EventEmitter<number[]>();
   @Output() deleteItem = new EventEmitter<ElementDeleteItemChange>();
 
@@ -115,16 +115,16 @@ export class TreeCardComponent {
   }
 
   /** 判斷指定項目是否處於待刪除狀態。 */
-  isCardItemPendingDelete(itemIndex: number, groupIndex?: number, categoryIndex?: number): boolean {
+  isCardItemPendingDelete(itemIndex: number, treeGroupIndex?: number, categoryIndex?: number): boolean {
     return this.pendingDeleteItemKeys?.has(
-      this.getPendingDeleteItemKey(itemIndex, groupIndex, categoryIndex),
+      this.getPendingDeleteItemKey(itemIndex, treeGroupIndex, categoryIndex),
     ) ?? false;
   }
 
   /** 判斷指定分組是否處於待刪除狀態。 */
-  isCardGroupPendingDelete(groupIndex: number): boolean {
+  isCardGroupPendingDelete(treeGroupIndex: number): boolean {
     return this.pendingDeleteItemKeys?.has(
-      this.getPendingDeleteGroupKey(groupIndex),
+      this.getPendingDeleteGroupKey(treeGroupIndex),
     ) ?? false;
   }
 
@@ -149,23 +149,23 @@ export class TreeCardComponent {
   }
 
   /** 觸發分組項目文字變更事件。 */
-  onGroupItemChange(groupIndex: number, itemIndex: number, value: string): void {
-    this.groupItemChange.emit({ elementIndex: this.elementIndex, groupIndex, itemIndex, value });
+  onTreeGroupItemChange(treeGroupIndex: number, itemIndex: number, value: string): void {
+    this.treeGroupItemChange.emit({ elementIndex: this.elementIndex, treeGroupIndex, itemIndex, value });
   }
 
-  /** 觸發分組項目圖示變更事件。 */
-  onGroupItemIconChange(groupIndex: number, itemIndex: number, icon: string): void {
-    this.groupItemIconChange.emit({ elementIndex: this.elementIndex, groupIndex, itemIndex, icon });
+  /** 觸發樹分組項目圖示變更事件。 */
+  onTreeGroupItemIconChange(treeGroupIndex: number, itemIndex: number, icon: string): void {
+    this.treeGroupItemIconChange.emit({ elementIndex: this.elementIndex, treeGroupIndex, itemIndex, icon });
   }
 
-  /** 觸發分組標題變更事件。 */
-  onGroupNameChange(groupIndex: number, value: string): void {
-    this.groupNameChange.emit({ elementIndex: this.elementIndex, groupIndex, value });
+  /** 觸發樹分組標題變更事件。 */
+  onTreeGroupNameChange(treeGroupIndex: number, value: string): void {
+    this.treeGroupNameChange.emit({ elementIndex: this.elementIndex, treeGroupIndex, value });
   }
 
-  /** 觸發分組父層圖示變更事件。 */
-  onGroupIconChange(groupIndex: number, icon: string): void {
-    this.groupIconChange.emit({ elementIndex: this.elementIndex, groupIndex, icon });
+  /** 觸發樹分組父層圖示變更事件。 */
+  onTreeGroupIconChange(treeGroupIndex: number, icon: string): void {
+    this.treeGroupIconChange.emit({ elementIndex: this.elementIndex, treeGroupIndex, icon });
   }
 
   /** 將分類值陣列轉為逗號分隔字串。 */
@@ -174,20 +174,20 @@ export class TreeCardComponent {
   }
 
   /** 產生待刪除項目的唯一鍵值。 */
-  private getPendingDeleteItemKey(itemIndex: number, groupIndex?: number, categoryIndex?: number): string {
+  private getPendingDeleteItemKey(itemIndex: number, treeGroupIndex?: number, categoryIndex?: number): string {
     if (typeof categoryIndex === 'number') {
       return `${this.elementIndex}:category:${categoryIndex}`;
     }
 
-    if (typeof groupIndex === 'number') {
-      return `${this.elementIndex}:group:${groupIndex}:${itemIndex}`;
+    if (typeof treeGroupIndex === 'number') {
+      return `${this.elementIndex}:group:${treeGroupIndex}:${itemIndex}`;
     }
 
     return `${this.elementIndex}:item:${itemIndex}`;
   }
 
   /** 產生待刪除分組的唯一鍵值。 */
-  private getPendingDeleteGroupKey(groupIndex: number): string {
-    return `${this.elementIndex}:group:${groupIndex}:delete`;
+  private getPendingDeleteGroupKey(treeGroupIndex: number): string {
+    return `${this.elementIndex}:group:${treeGroupIndex}:delete`;
   }
 }
