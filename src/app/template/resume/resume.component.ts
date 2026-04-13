@@ -543,7 +543,7 @@ export class ResumeComponent {
 
   readonly renderedCards = computed<Card[]>(() => {
     const drafts = this.cardDrafts();
-    return this.cardsWithAutoFill().map((card) => drafts[card.id] ?? card);
+    return this.cards().map((card) => drafts[card.id] ?? card);
   });
 
   private async loadContentFromApi(): Promise<void> {

@@ -94,9 +94,17 @@
 
 .resume-grid {
   margin-top: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 0.8rem;
+
+  > * {
+    --card-span: 12;
+    flex: var(--card-span) 1 calc((100% * var(--card-span) / 12) - 0.8rem);
+    max-width: 100%;
+    min-width: min(100%, 18rem);
+  }
 }
 
 .state-panel {
@@ -277,12 +285,8 @@
 }
 
 @media (max-width: 1024px) {
-  .resume-grid :is(.identity-card, .education-card, .experience-card),
-  .intro-card,
-  .stack-card,
-  .skills-card,
-  .project-card {
-    grid-column: span 6;
+  .resume-grid > * {
+    min-width: min(100%, 16rem);
   }
 }
 
@@ -444,7 +448,9 @@
   }
 
   .resume-shell:not(.a4-mode) .resume-grid > * {
-    grid-column: span 12 !important;
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
   }
 
   .resume-shell:not(.a4-mode) .stack-grid {

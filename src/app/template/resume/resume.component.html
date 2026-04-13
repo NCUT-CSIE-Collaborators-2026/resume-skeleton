@@ -29,7 +29,7 @@
       <div class="resume-grid">
         @for (card of renderedCards(); track getCardTrackKey(card.id)) {
           <app-resume-card
-            [style.grid-column]="'span ' + card.layout"
+            [style.--card-span]="card.layout"
             [card]="card"
             [isAuthenticated]="isAuthenticated()"
             [isEditing]="isCardEditing(card.id)"

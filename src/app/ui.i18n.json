@@ -8,14 +8,14 @@
     },
     "content-ui": {
       "introTitle": "Self Introduction",
-      "profileTitle":"Profile"
+      "profileTitle":"Profile",
       "educationTitle": "Education",
       "educationGroupName": "Education Info",
       "expTitle": "Experience",
       "experienceGroupName": "Experience",
       "stackTitle": "Tech Stack",
       "projectsTitle": "Project Achievements",
-      "verifyTitle": "Verify"
+      "verifyTitle": "Verify",
       "labels": {
         "language": "Language",
         "frontend": "Frontend",
@@ -53,7 +53,7 @@
       "title": "王顥倫 | 簡歷"
     },
     "content-ui": {
-      "profileTitle":"基本資料"
+      "profileTitle":"基本資料",
       "introTitle": "自我介紹",
       "educationTitle": "學歷背景",
       "educationGroupName": "學歷資訊",
@@ -61,7 +61,7 @@
       "experienceGroupName": "經歷",
       "stackTitle": "技術堆疊",
       "projectsTitle": "專案成就",
-      "verifyTitle": "認證"
+      "verifyTitle": "認證",
       "labels": {
         "language": "語言",
         "frontend": "前端",
