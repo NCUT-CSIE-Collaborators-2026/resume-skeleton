@@ -6,8 +6,17 @@ const runtimeApiUrl =
 const browserOrigin =
   typeof window !== 'undefined' ? window.location.origin : undefined;
 
+const browserHostname =
+  typeof window !== 'undefined' ? window.location.hostname : undefined;
+
+const defaultCloudApiUrl = 'https://resume-api-haolun-wang.9b117201.workers.dev';
+
+const resolvedApiUrl =
+  runtimeApiUrl ??
+  (browserHostname?.endsWith('.pages.dev') ? defaultCloudApiUrl : browserOrigin);
+
 export const environment = {
-  apiUrl: runtimeApiUrl ?? browserOrigin,
+  apiUrl: resolvedApiUrl,
   apiBasePath: '/api/resume/v0',
   apiEndpoints: {
     contentI18n: '/content.i18n',

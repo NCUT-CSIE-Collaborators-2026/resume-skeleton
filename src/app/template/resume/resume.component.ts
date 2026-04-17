@@ -257,7 +257,10 @@ export class ResumeComponent {
     private readonly messageService: MessageService,
   ) {
     void this.loadContentFromApi();
-    void this.authSessionService.loadSession(this.sessionApiUrl);
+    void this.authSessionService.loadSession(this.sessionApiUrl, {
+      retries: 3,
+      retryDelayMs: 350,
+    });
 
     // 同步文件語言屬性
     effect(() => {
