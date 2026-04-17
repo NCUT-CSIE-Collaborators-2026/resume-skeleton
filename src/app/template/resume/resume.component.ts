@@ -98,6 +98,11 @@ interface ContentLocale {
   };
   projects: {
     items: string[];
+    groups: Array<{
+      name: string;
+      icon: string;
+      items: Array<{ value: string; icon: string }>;
+    }>;
   };
   verify: {
     items: string[];
@@ -189,6 +194,7 @@ const EMPTY_CONTENT_LOCALE: ContentLocale = {
   },
   projects: {
     items: [],
+    groups: [],
   },
   verify: {
     items: [],
@@ -300,6 +306,23 @@ export class ResumeComponent {
   });
 
   readonly projectItems = computed(() => this.content().projects.items);
+  readonly projectGroups = computed(() => {
+    const groups = this.content().projects.groups;
+    if (groups.length > 0) {
+      return groups;
+    }
+
+    return [
+      {
+        name: this.uiCopy().projectTitle,
+        icon: 'pi pi-folder-open',
+        items: this.projectItems().map((item) => ({
+          value: item,
+          icon: 'pi pi-check-circle',
+        })),
+      },
+    ];
+  });
   readonly verifyItems = computed(() => this.content().verify.items);
 
   readonly barUi = computed<BarUi>(() => {
@@ -448,9 +471,9 @@ export class ResumeComponent {
         layout: 12,
         elements: [
           {
-            type: 'icon-list',
-            icon: 'pi pi-check-circle',
-            items: this.projectItems(),
+            type: 'grid-tree',
+            groups: this.projectGroups(),
+            gridLayout: 'single',
           },
         ],
       },
@@ -513,9 +536,14 @@ export class ResumeComponent {
     }
 
     if (Array.isArray(stored.elements)) {
-      nextCard.elements = this.normalizeLegacyElementTypes(
+      const normalizedElements = this.normalizeLegacyElementTypes(
         this.deepClone(stored.elements as Card['elements']),
       );
+
+      nextCard.elements =
+        card.id === 'projects'
+          ? this.normalizeProjectCardElements(normalizedElements)
+          : normalizedElements;
     }
 
     return nextCard;
@@ -653,6 +681,7 @@ export class ResumeComponent {
         ...EMPTY_CONTENT_LOCALE.projects,
         ...projects,
         items: this.normalizeStringArray(projects['items'], EMPTY_CONTENT_LOCALE.projects.items),
+        groups: this.normalizeTreeGroups(projects['groups']),
       },
       verify: {
         ...EMPTY_CONTENT_LOCALE.verify,
@@ -689,6 +718,52 @@ export class ResumeComponent {
     }
 
     return normalized;
+  }
+
+  private normalizeTreeGroups(value: unknown): Array<{
+    name: string;
+    icon: string;
+    items: Array<{ value: string; icon: string }>;
+  }> {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((group) => {
+        if (!this.isRecord(group)) {
+          return null;
+        }
+
+        const name = this.readNonEmptyString(group['name']) ?? '';
+        const icon = this.readNonEmptyString(group['icon']) ?? 'pi pi-folder-open';
+        const rawItems = Array.isArray(group['items']) ? group['items'] : [];
+        const items = rawItems
+          .map((item) => {
+            if (!this.isRecord(item)) {
+              return null;
+            }
+
+            const itemValue = this.readNonEmptyString(item['value']) ?? '';
+            const itemIcon = this.readNonEmptyString(item['icon']) ?? 'pi pi-check-circle';
+
+            return {
+              value: itemValue,
+              icon: itemIcon,
+            };
+          })
+          .filter((item): item is { value: string; icon: string } => item !== null);
+
+        return {
+          name,
+          icon,
+          items,
+        };
+      })
+      .filter(
+        (group): group is { name: string; icon: string; items: Array<{ value: string; icon: string }> } =>
+          group !== null,
+      );
   }
 
   private readIntroTextFromCardContent(
@@ -923,6 +998,29 @@ export class ResumeComponent {
 
       return element as Card['elements'][number];
     }) as Card['elements'];
+  }
+
+  private normalizeProjectCardElements(elements: Card['elements']): Card['elements'] {
+    return elements.map((element) => {
+      if (element.type !== 'icon-list') {
+        return element;
+      }
+
+      return {
+        type: 'grid-tree',
+        groups: [
+          {
+            name: this.uiCopy().projectTitle,
+            icon: 'pi pi-folder-open',
+            items: element.items.map((item) => ({
+              value: item,
+              icon: element.icon || 'pi pi-check-circle',
+            })),
+          },
+        ],
+        gridLayout: 'single',
+      };
+    });
   }
 
   private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ value: string; icon: string }> } {
