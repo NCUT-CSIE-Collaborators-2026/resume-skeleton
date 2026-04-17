@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { MenuModule, Menu } from 'primeng/menu';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { Menu, MenuModule } from 'primeng/menu';
+import { environment } from '../../../config/environment';
 
 /** 語言選項資料結構。 */
 export interface LanguageOption {
@@ -93,6 +94,8 @@ export class TopBarComponent implements OnChanges {
 
   /** 建立編輯者功能選單。 */
   private buildEditorMenuItems(): MenuItem[] {
+    const loginUrl = `${environment.apiUrl}${environment.apiBasePath}${environment.apiEndpoints.authGoogleLogin}`;
+
     if (this.editorUser) {
       return [
         {
@@ -101,56 +104,61 @@ export class TopBarComponent implements OnChanges {
           icon: 'pi pi-sign-out',
         },
       ];
-    } else {
-      return [
-        {
-          label: this.topBarUi?.loginLabel ?? 'Login',
-          icon: 'pi pi-sign-in',
-          url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
-          target: '_self',
-        },
-      ];
     }
+
+    return [
+      {
+        label: this.topBarUi?.loginLabel ?? 'Login',
+        icon: 'pi pi-sign-in',
+        url: loginUrl,
+        target: '_self',
+      },
+    ];
   }
 
   /** 建立行動版選單（語言、模式、匯出、登入狀態）。 */
   private buildMobileMenuItems(): MenuItem[] {
     const items: MenuItem[] = [];
+    const loginUrl = `${environment.apiUrl}${environment.apiBasePath}${environment.apiEndpoints.authGoogleLogin}`;
     const languageOptions = this.languageOptions ?? [];
-    languageOptions.forEach(option => {
+
+    languageOptions.forEach((option) => {
       items.push({
         label: option.label,
         command: () => this.onLanguageChange(option.code),
-        styleClass: `language-item ${this.activeLang === option.code ? 'active' : ''}`
+        styleClass: `language-item ${this.activeLang === option.code ? 'active' : ''}`,
       });
     });
+
     items.push({ separator: true });
     items.push({
       label: this.currentModeLabel,
       icon: 'pi pi-arrow-right',
       command: () => this.onA4ModeToggle(),
-      styleClass: this.isA4Mode ? 'active' : ''
+      styleClass: this.isA4Mode ? 'active' : '',
     });
     items.push({
       label: this.topBarUi?.exportPdfLabel ?? this.barUi?.exportPdfLabel ?? 'Export PDF',
       icon: this.isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download',
       command: () => this.onExportPdf(),
-      disabled: this.isExporting
+      disabled: this.isExporting,
     });
+
     if (this.editorUser) {
       items.push({
         label: this.topBarUi?.logoutLabel ?? 'Logout',
         icon: 'pi pi-sign-out',
-        command: () => this.onLogout()
+        command: () => this.onLogout(),
       });
     } else {
       items.push({
         label: this.topBarUi?.loginLabel ?? 'Login',
         icon: 'pi pi-google',
-        url: 'https://resume-api-haolun-wang.9b117201.workers.dev/api/resume/auth/google/login',
-        target: '_self'
+        url: loginUrl,
+        target: '_self',
       });
     }
+
     return items;
   }
 

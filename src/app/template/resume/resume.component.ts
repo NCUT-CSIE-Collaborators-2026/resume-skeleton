@@ -228,10 +228,11 @@ export class ResumeComponent {
   readonly cardRenderVersions = signal<Record<string, number>>({});
   readonly pendingDeleteItemKeys = signal<Record<string, Set<string>>>({});
 
-  private readonly contentApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentI18n}`;
-  private readonly sessionApiUrl = `${environment.apiUrl}${environment.apiEndpoints.authSession}`;
-  private readonly logoutApiUrl = `${environment.apiUrl}/api/resume/auth/logout`;
-  private readonly contentCardUpdateApiUrl = `${environment.apiUrl}${environment.apiEndpoints.contentCardUpdate}`;
+  private readonly apiBasePath = environment.apiBasePath;
+  private readonly contentApiUrl = `${environment.apiUrl}${this.apiBasePath}${environment.apiEndpoints.contentI18n}`;
+  private readonly sessionApiUrl = `${environment.apiUrl}${this.apiBasePath}${environment.apiEndpoints.authSession}`;
+  private readonly logoutApiUrl = `${environment.apiUrl}${this.apiBasePath}${environment.apiEndpoints.authLogout}`;
+  private readonly contentCardUpdateApiUrl = `${environment.apiUrl}${this.apiBasePath}${environment.apiEndpoints.contentCardUpdate}`;
   private readonly contentByLang = signal<Record<LangCode, ContentLocale>>({
     en: { ...EMPTY_CONTENT_LOCALE },
     zh_TW: { ...EMPTY_CONTENT_LOCALE },

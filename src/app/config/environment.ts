@@ -8,11 +8,12 @@ const browserOrigin =
 
 export const environment = {
   apiUrl: runtimeApiUrl ?? browserOrigin,
+  apiBasePath: '/api/resume/v0',
   apiEndpoints: {
-    contentI18n: '/api/resume/v0/content.i18n',
-    authSession: '/api/resume/v0/auth/session',
-    contentCardUpdate: '/api/resume/v0/content.card/update',
+    contentI18n: '/content.i18n',
+    authSession: '/auth/session',
+    authLogout: '/auth/logout',
+    authGoogleLogin: '/auth/google/login',
+    contentCardUpdate: '/content.card/update',
   },
 };
-
-
