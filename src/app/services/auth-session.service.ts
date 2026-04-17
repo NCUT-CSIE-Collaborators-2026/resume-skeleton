@@ -33,14 +33,26 @@ export class AuthSessionService {
       const payload = (await response.json()) as SessionResponse;
       const sessionUser = payload.user;
 
-      if (!payload.authenticated || !sessionUser || typeof sessionUser.name !== 'string') {
+      if (!payload.authenticated || !sessionUser) {
+        this.user.set(null);
+        return;
+      }
+
+      const normalizedName =
+        typeof sessionUser.name === 'string' && sessionUser.name.trim().length > 0
+          ? sessionUser.name.trim()
+          : typeof sessionUser.email === 'string' && sessionUser.email.trim().length > 0
+            ? sessionUser.email.trim()
+            : null;
+
+      if (!normalizedName) {
         this.user.set(null);
         return;
       }
 
       this.user.set({
         email: sessionUser.email,
-        name: sessionUser.name,
+        name: normalizedName,
         picture:
           typeof sessionUser.picture === 'string' && sessionUser.picture.length > 0
             ? sessionUser.picture
