@@ -432,7 +432,7 @@ export class ResumeComponent {
       {
         id: 'education',
         title: ui.educationTitle,
-        layout: 6,
+        layout: 4,
         elements: [
           {
             type: 'grid-tree',
@@ -458,7 +458,7 @@ export class ResumeComponent {
       {
         id: 'stack',
         title: ui.stackTitle,
-        layout: this.stackCardLayout(),
+        layout: 4,
         elements: [
           {
             type: 'grid-tech',
@@ -471,7 +471,7 @@ export class ResumeComponent {
       {
         id: 'projects',
         title: ui.projectTitle,
-        layout: 12,
+        layout: 6,
         elements: [
           {
             type: 'grid-tree',
@@ -484,7 +484,7 @@ export class ResumeComponent {
       {
         id: 'verify',
         title: ui.verifyTitle,
-        layout: 12,
+        layout: 6,
         elements: [
           {
             type: 'icon-list',
