@@ -7,11 +7,12 @@ const browserOrigin =
   typeof window !== 'undefined' ? window.location.origin : undefined;
 
 export const environment = {
-//   apiUrl: runtimeApiUrl ?? browserOrigin ?? '',
-  apiUrl: 'https://resume-api-haolun-wang.9b117201.workers.dev',
+  apiUrl: runtimeApiUrl ?? browserOrigin,
   apiEndpoints: {
-    contentI18n: '/api/resume/content.i18n',
-    authSession: '/api/resume/auth/session',
-    contentCardUpdate: '/api/resume/content.card/update',
+    contentI18n: '/api/resume/v0/content.i18n',
+    authSession: '/api/resume/v0/auth/session',
+    contentCardUpdate: '/api/resume/v0/content.card/update',
   },
 };
+
+

@@ -1,0 +1,15 @@
+const runtimeApiUrl =
+  typeof globalThis !== 'undefined'
+    ? (globalThis as { __APP_API_URL?: string }).__APP_API_URL
+    : undefined;
+
+export const environment = {
+  apiUrl:
+    runtimeApiUrl ??
+    'https://resume-api-haolun-wang.9b117201.workers.dev',
+  apiEndpoints: {
+    contentI18n: '/api/resume/content.i18n',
+    authSession: '/api/resume/auth/session',
+    contentCardUpdate: '/api/resume/content.card/update',
+  },
+};
