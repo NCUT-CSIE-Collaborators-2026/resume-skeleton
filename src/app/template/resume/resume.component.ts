@@ -1001,9 +1001,29 @@ export class ResumeComponent {
   }
 
   private normalizeProjectCardElements(elements: Card['elements']): Card['elements'] {
+    const topLevelProjectGroups = this.projectGroups();
+
     return elements.map((element) => {
+      if (element.type === 'grid-tree') {
+        return {
+          ...element,
+          groups: element.groups,
+          gridLayout: element.gridLayout ?? 'single',
+        };
+      }
+
       if (element.type !== 'icon-list') {
         return element;
+      }
+
+      // D1 正規資料來源以 projects.groups 為主；
+      // card_content.projects 若仍是舊 icon-list，優先回退到 top-level groups。
+      if (topLevelProjectGroups.length > 0) {
+        return {
+          type: 'grid-tree',
+          groups: this.deepClone(topLevelProjectGroups),
+          gridLayout: 'single',
+        };
       }
 
       return {
