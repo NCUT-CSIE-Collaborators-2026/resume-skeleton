@@ -34,6 +34,7 @@ interface I18nLocale {
     experienceGroupName: string;
     stackTitle: string;
     projectsTitle: string;
+    verifyTitle: string;
     labels: {
       language: string;
       frontend: string;
@@ -98,6 +99,9 @@ interface ContentLocale {
   projects: {
     items: string[];
   };
+  verify: {
+    items: string[];
+  };
   card_content?: Record<
     string,
     {
@@ -117,6 +121,7 @@ interface UiCopy {
   experienceGroupName: string;
   stackTitle: string;
   projectTitle: string;
+  verifyTitle: string;
   labels: {
     language: string;
     frontend: string;
@@ -183,6 +188,9 @@ const EMPTY_CONTENT_LOCALE: ContentLocale = {
     pitch_1min: '',
   },
   projects: {
+    items: [],
+  },
+  verify: {
     items: [],
   },
   card_content: {},
@@ -286,11 +294,13 @@ export class ResumeComponent {
       experienceGroupName: content['content-ui'].experienceGroupName,
       stackTitle: content['content-ui'].stackTitle,
       projectTitle: content['content-ui'].projectsTitle,
+      verifyTitle: content['content-ui'].verifyTitle,
       labels: content['content-ui'].labels,
     };
   });
 
   readonly projectItems = computed(() => this.content().projects.items);
+  readonly verifyItems = computed(() => this.content().verify.items);
 
   readonly barUi = computed<BarUi>(() => {
     const content = this.content();
@@ -444,6 +454,19 @@ export class ResumeComponent {
           },
         ],
       },
+      // 證照卡
+      {
+        id: 'verify',
+        title: ui.verifyTitle,
+        layout: 12,
+        elements: [
+          {
+            type: 'icon-list',
+            icon: 'pi pi-check-circle',
+            items: this.verifyItems(),
+          },
+        ],
+      },
     ];
 
     return baseCards.map((card) => this.applyStoredCardContent(card));
@@ -585,6 +608,7 @@ export class ResumeComponent {
     const techStack = this.isRecord(source['tech_stack']) ? source['tech_stack'] : {};
     const introductions = this.isRecord(source['introductions']) ? source['introductions'] : {};
     const projects = this.isRecord(source['projects']) ? source['projects'] : {};
+    const verify = this.isRecord(source['verify']) ? source['verify'] : {};
     const cardContent = this.isRecord(source['card_content']) ? source['card_content'] : {};
     const rootName = this.readNonEmptyString(source['name']);
     const rootTitle = this.readNonEmptyString(source['title']) ?? this.readNonEmptyString(source['tittle']);
@@ -629,6 +653,11 @@ export class ResumeComponent {
         ...EMPTY_CONTENT_LOCALE.projects,
         ...projects,
         items: this.normalizeStringArray(projects['items'], EMPTY_CONTENT_LOCALE.projects.items),
+      },
+      verify: {
+        ...EMPTY_CONTENT_LOCALE.verify,
+        ...verify,
+        items: this.normalizeStringArray(verify['items'], EMPTY_CONTENT_LOCALE.verify.items),
       },
       card_content: cardContent,
     };
