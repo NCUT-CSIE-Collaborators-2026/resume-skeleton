@@ -104,32 +104,74 @@
   }
   @case ("grid-tech") {
     @if (depth === 0 && isEditing) {
-      <div class="edit-tech-grid">
-        @for (category of element.items; track category.label; let categoryIndex = $index) {
-          @if (!isCardItemPendingDelete(categoryIndex, undefined, categoryIndex)) {
-            <div class="edit-tech-row">
-              <div class="edit-tech-main">
-                <span class="stack-label">{{ category.label }}</span>
-                <textarea
-                  pInputTextarea
-                  rows="2"
-                  class="edit-textarea"
-                  [ngModel]="getTechCategoryValueText(category.value)"
-                  [placeholder]="newItemValue"
-                  (ngModelChange)="onTechCategoryChange(categoryIndex, $event)"
-                ></textarea>
-              </div>
-              <button
-                pButton
-                type="button"
-                class="p-button-sm p-button-text p-button-danger item-delete-btn"
-                icon="pi pi-trash"
-                [disabled]="isSaving"
-                (click)="onDeleteItem({ itemIndex: categoryIndex, categoryIndex })"
-              ></button>
-            </div>
+      <div class="edit-group-list edit-tech-grid">
+        <ul class="group-tree-edit">
+          @for (category of element.items; track category.label; let categoryIndex = $index) {
+            @if (!isCardItemPendingDelete(categoryIndex, undefined, categoryIndex)) {
+              <li class="group-tree-node group-tree-node--parent">
+                <div class="edit-group-item">
+                  <div class="edit-group-main">
+                    <input
+                      pInputText
+                      class="edit-input group-collection-input"
+                      [ngModel]="category.label"
+                      [placeholder]="newCollectionName"
+                      (ngModelChange)="onTechCategoryLabelChange(categoryIndex, $event)"
+                    />
+                  </div>
+                  <button
+                    pButton
+                    type="button"
+                    class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                    icon="pi pi-trash"
+                    [disabled]="isSaving"
+                    (click)="onDeleteItem({ itemIndex: categoryIndex, categoryIndex })"
+                  ></button>
+                </div>
+
+                <ul class="group-tree-children">
+                  @for (tech of category.value; track $index; let techIndex = $index) {
+                    @if (!isCardItemPendingDelete(techIndex, categoryIndex)) {
+                      <li class="group-tree-node group-tree-node--child">
+                        <div class="edit-group-item">
+                          <div class="edit-group-main">
+                            <input
+                              pInputText
+                              class="edit-input"
+                              [ngModel]="tech"
+                              [placeholder]="newItemValue"
+                              (ngModelChange)="onTechCategoryItemChange(categoryIndex, techIndex, $event)"
+                            />
+                          </div>
+                          <button
+                            pButton
+                            type="button"
+                            class="p-button-sm p-button-text p-button-danger item-delete-btn"
+                            icon="pi pi-trash"
+                            [disabled]="isSaving"
+                            (click)="onDeleteTechCategoryItem(categoryIndex, techIndex)"
+                          ></button>
+                        </div>
+                      </li>
+                    }
+                  }
+
+                  <li class="group-tree-node group-tree-node--child group-tree-add-row">
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-sm p-button-outlined add-item-btn"
+                      icon="pi pi-plus"
+                      [label]="addItemLabel"
+                      [disabled]="isSaving"
+                      (click)="onAddTechCategoryItem(categoryIndex)"
+                    ></button>
+                  </li>
+                </ul>
+              </li>
+            }
           }
-        }
+        </ul>
         <button
           pButton
           type="button"

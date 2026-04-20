@@ -28,6 +28,13 @@ export interface ElementTechCategoryChange {
   value: string;
 }
 
+/** 技術分類標題變更事件。 */
+export interface ElementTechCategoryLabelChange {
+  elementIndex: number;
+  categoryIndex: number;
+  value: string;
+}
+
 /** 樹分組項目文字變更事件。 */
 export interface ElementTreeGroupItemChange {
   elementIndex: number;
@@ -101,6 +108,7 @@ export class TreeCardComponent {
   @Output() badgeItemChange = new EventEmitter<ElementItemChange>();
   @Output() iconListItemChange = new EventEmitter<ElementItemChange>();
   @Output() techCategoryChange = new EventEmitter<ElementTechCategoryChange>();
+  @Output() techCategoryLabelChange = new EventEmitter<ElementTechCategoryLabelChange>();
   @Output() treeGroupItemChange = new EventEmitter<ElementTreeGroupItemChange>();
   @Output() treeGroupItemIconChange = new EventEmitter<ElementTreeGroupItemIconChange>();
   @Output() treeGroupNameChange = new EventEmitter<ElementTreeGroupNameChange>();
@@ -150,6 +158,42 @@ export class TreeCardComponent {
   /** 觸發技術分類名稱變更事件。 */
   onTechCategoryChange(categoryIndex: number, value: string): void {
     this.techCategoryChange.emit({ elementIndex: this.elementIndex, categoryIndex, value });
+  }
+
+  /** 觸發技術分類標題變更事件。 */
+  onTechCategoryLabelChange(categoryIndex: number, value: string): void {
+    this.techCategoryLabelChange.emit({ elementIndex: this.elementIndex, categoryIndex, value });
+  }
+
+  /** 觸發技術分類子項變更事件。 */
+  onTechCategoryItemChange(categoryIndex: number, itemIndex: number, value: string): void {
+    if (this.element.type !== 'grid-tech') {
+      return;
+    }
+
+    const nextValues = [...this.element.items[categoryIndex].value];
+    nextValues[itemIndex] = value;
+    this.onTechCategoryChange(categoryIndex, nextValues.join(', '));
+  }
+
+  /** 新增技術分類子項。 */
+  onAddTechCategoryItem(categoryIndex: number): void {
+    if (this.element.type !== 'grid-tech') {
+      return;
+    }
+
+    const nextValues = [...this.element.items[categoryIndex].value, ''];
+    this.onTechCategoryChange(categoryIndex, nextValues.join(', '));
+  }
+
+  /** 刪除技術分類子項。 */
+  onDeleteTechCategoryItem(categoryIndex: number, itemIndex: number): void {
+    if (this.element.type !== 'grid-tech') {
+      return;
+    }
+
+    const nextValues = this.element.items[categoryIndex].value.filter((_, idx) => idx !== itemIndex);
+    this.onTechCategoryChange(categoryIndex, nextValues.join(', '));
   }
 
   /** 觸發分組項目文字變更事件。 */

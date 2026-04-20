@@ -449,8 +449,8 @@ export class ResumeComponent {
 
   // 技術堆疊卡片的動態寬度：根據項目數量自動調整
   readonly stackCardLayout = computed(() => {
-    const stackGroups = this.getTechStackGroups();
-    const stackItemsCount = stackGroups.reduce((count, group) => count + group.items.length, 0);
+    const stackItems = this.getTechStackData();
+    const stackItemsCount = stackItems.reduce((count, category) => count + category.value.length, 0);
     if (stackItemsCount > 8) return 8; // 超過8項，用8列
     if (stackItemsCount > 4) return 6; // 5-8項，用6列
     return 4; // 4項以下，用4列
@@ -508,9 +508,9 @@ export class ResumeComponent {
         layout: 6,
         elements: [
           {
-            type: 'grid-tree',
-            groups: this.getTechStackGroups(),
-            gridLayout: 'compact',
+            type: 'grid-tech',
+            items: this.getTechStackData(),
+            gridLayout: 'compact'
           },
         ],
       },
@@ -1531,6 +1531,23 @@ export class ResumeComponent {
     });
   }
 
+  updateTechCategoryLabel(
+    cardId: string,
+    elementIndex: number,
+    categoryIndex: number,
+    value: string,
+  ): void {
+    this.updateDraftCard(cardId, (draft) => {
+      const element = draft.elements[elementIndex];
+      if (element?.type !== 'grid-tech') {
+        return draft;
+      }
+
+      element.items[categoryIndex].label = value;
+      return draft;
+    });
+  }
+
   updateTreeGroupItemValue(
     cardId: string,
     elementIndex: number,
@@ -1834,11 +1851,20 @@ export class ResumeComponent {
       if (element.type === 'grid-tech') {
         return {
           ...element,
-          items: element.items.filter((_, categoryIndex) => {
-            return !pendingDeletes.has(
-              this.getPendingDeleteItemKey(elementIndex, categoryIndex, undefined, categoryIndex),
-            );
-          }),
+          items: element.items
+            .filter((_, categoryIndex) => {
+              return !pendingDeletes.has(
+                this.getPendingDeleteItemKey(elementIndex, categoryIndex, undefined, categoryIndex),
+              );
+            })
+            .map((category, categoryIndex) => ({
+              ...category,
+              value: category.value.filter((_, itemIndex) => {
+                return !pendingDeletes.has(
+                  this.getPendingDeleteItemKey(elementIndex, itemIndex, categoryIndex),
+                );
+              }),
+            })),
         };
       }
 
@@ -2031,64 +2057,35 @@ export class ResumeComponent {
   }
 
   // 技術堆疊資料驅動
-  private parseTechStackNode(raw: string): TreeListItem {
-    const normalized = raw.trim();
-    const parenthesisMatch = normalized.match(/^(.+?)\s*\((.+)\)$/);
-    if (parenthesisMatch) {
-      const name = parenthesisMatch[1].trim();
-      const detail = parenthesisMatch[2].trim();
-      return {
-        value: name,
-        icon: 'pi pi-code',
-        children: [{ value: detail, icon: 'pi pi-sitemap' }],
-      };
-    }
-
-    const versionMatch = normalized.match(/^(.+?)\s+([0-9][0-9A-Za-z+._-]*)$/);
-    if (versionMatch) {
-      return {
-        value: versionMatch[1].trim(),
-        icon: 'pi pi-code',
-        children: [{ value: versionMatch[2].trim(), icon: 'pi pi-tag' }],
-      };
-    }
-
-    return {
-      value: normalized,
-      icon: 'pi pi-code',
-      children: [{ value: 'core', icon: 'pi pi-sitemap' }],
-    };
-  }
-
-  getTechStackGroups() {
+  getTechStackData() {
     const stack = this.content().tech_stack;
     const labels = this.uiCopy().labels;
 
     return [
       {
-        name: labels.language,
-        icon: 'pi pi-code',
-        items: this.normalizeStringArray(stack.language, []).map((item) => this.parseTechStackNode(item)),
+        label: labels.language,
+        value: this.normalizeStringArray(stack.language, []),
+        severity: 'info' as const,
       },
       {
-        name: labels.frontend,
-        icon: 'pi pi-desktop',
-        items: this.normalizeStringArray(stack.frontend, []).map((item) => this.parseTechStackNode(item)),
+        label: labels.frontend,
+        value: this.normalizeStringArray(stack.frontend, []),
+        severity: 'success' as const,
       },
       {
-        name: labels.backend,
-        icon: 'pi pi-server',
-        items: this.normalizeStringArray(stack.backend, []).map((item) => this.parseTechStackNode(item)),
+        label: labels.backend,
+        value: this.normalizeStringArray(stack.backend, []),
+        severity: 'warning' as const,
       },
       {
-        name: labels.database,
-        icon: 'pi pi-database',
-        items: this.normalizeStringArray(stack.database, []).map((item) => this.parseTechStackNode(item)),
+        label: labels.database,
+        value: this.normalizeStringArray(stack.database, []),
+        severity: 'danger' as const,
       },
       {
-        name: labels.devops,
-        icon: 'pi pi-cog',
-        items: this.normalizeStringArray(stack.devops, []).map((item) => this.parseTechStackNode(item)),
+        label: labels.devops,
+        value: this.normalizeStringArray(stack.devops, []),
+        severity: 'secondary' as const,
       },
     ];
   }

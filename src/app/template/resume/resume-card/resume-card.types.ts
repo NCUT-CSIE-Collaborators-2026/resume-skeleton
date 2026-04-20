@@ -35,6 +35,14 @@ export interface TechCategoryChange {
   value: string;
 }
 
+/** 技術分類標題編輯事件資料。 */
+export interface TechCategoryLabelChange {
+  cardId: string;
+  elementIndex: number;
+  categoryIndex: number;
+  value: string;
+}
+
 /** 樹分組項目編輯事件資料。 */
 export interface TreeGroupItemChange {
   cardId: string;

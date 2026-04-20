@@ -15,6 +15,7 @@ import {
   TreeGroupNameChange,
   IconListItemChange,
   TechCategoryChange,
+  TechCategoryLabelChange,
   TextElementChange,
 } from './resume-card.types';
 
@@ -47,6 +48,7 @@ export class ResumeCardComponent {
   @Output() badgeItemChange = new EventEmitter<BadgeItemChange>();
   @Output() iconListItemChange = new EventEmitter<IconListItemChange>();
   @Output() techCategoryChange = new EventEmitter<TechCategoryChange>();
+  @Output() techCategoryLabelChange = new EventEmitter<TechCategoryLabelChange>();
   @Output() treeGroupItemChange = new EventEmitter<TreeGroupItemChange>();
   @Output() treeGroupItemIconChange = new EventEmitter<TreeGroupItemIconChange>();
   @Output() treeGroupNameChange = new EventEmitter<TreeGroupNameChange>();
@@ -132,6 +134,11 @@ export class ResumeCardComponent {
   /** 觸發技術分類名稱變更事件。 */
   onTechCategoryChange(elementIndex: number, categoryIndex: number, value: string): void {
     this.techCategoryChange.emit({ cardId: this.card.id, elementIndex, categoryIndex, value });
+  }
+
+  /** 觸發技術分類標題變更事件。 */
+  onTechCategoryLabelChange(elementIndex: number, categoryIndex: number, value: string): void {
+    this.techCategoryLabelChange.emit({ cardId: this.card.id, elementIndex, categoryIndex, value });
   }
 
   /** 觸發分組項目文字變更事件。 */
