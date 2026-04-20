@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { IconSelectMenuComponent } from '../../../../uikit/icon-select-menu.component';
 import { GroupListComponent } from '../../../../uikit/group-list.component';
@@ -83,6 +84,7 @@ export interface ElementDeleteItemChange {
     FormsModule,
     ButtonModule,
     InputTextModule,
+    TagModule,
     TextareaModule,
     GroupListComponent,
     IconSelectMenuComponent,
@@ -219,6 +221,15 @@ export class TreeCardComponent {
   /** 將分類值陣列轉為逗號分隔字串。 */
   getTechCategoryValueText(values: string[]): string {
     return values.join(', ');
+  }
+
+  /** 轉換 grid-tech 的 severity 到 PrimeNG p-tag severity。 */
+  toPTagSeverity(severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary'): 'info' | 'success' | 'warn' | 'danger' | 'secondary' {
+    if (severity === 'warning') {
+      return 'warn';
+    }
+
+    return severity;
   }
 
   /** 產生待刪除項目的唯一鍵值。 */

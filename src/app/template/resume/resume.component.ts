@@ -579,6 +579,10 @@ export class ResumeComponent {
       nextCard.subtitle = stored.subtitle;
     }
 
+    if (card.id === 'stack') {
+      return nextCard;
+    }
+
     if (Array.isArray(stored.elements)) {
       nextCard.elements = this.sanitizeCardElements(
         this.deepClone(stored.elements as Card['elements']),

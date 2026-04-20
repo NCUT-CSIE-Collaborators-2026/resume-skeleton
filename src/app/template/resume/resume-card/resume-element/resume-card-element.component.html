@@ -189,7 +189,7 @@
             <span class="stack-label">{{ category.label }}</span>
             <div class="stack-tags">
               @for (tech of category.value; track tech) {
-                <span class="tag" [class]="'tag-' + category.severity">{{ tech }}</span>
+                <p-tag [value]="tech" [severity]="toPTagSeverity(category.severity)"></p-tag>
               }
             </div>
           </div>
