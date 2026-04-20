@@ -526,19 +526,7 @@ export class ResumeComponent {
     const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
     const cards = Array.isArray(cardContent.cards) ? cardContent.cards : [];
     const storedFromArray = cards.find((entry) => entry?.id === key);
-    if (storedFromArray) {
-      return storedFromArray;
-    }
-
-    const stored = cardContent[key];
-    return this.isRecord(stored)
-      ? (stored as {
-          title?: string;
-          subtitle?: string;
-          elements?: Card['elements'];
-          topics?: string[];
-        })
-      : null;
+    return storedFromArray ?? null;
   }
 
   private applyStoredCardContent(card: Card): Card {
@@ -557,7 +545,9 @@ export class ResumeComponent {
     }
 
     if (Array.isArray(stored.elements)) {
-      nextCard.elements = this.deepClone(stored.elements as Card['elements']);
+      nextCard.elements = this.sanitizeCardElements(
+        this.deepClone(stored.elements as Card['elements']),
+      );
     }
 
     return nextCard;
@@ -648,14 +638,6 @@ export class ResumeComponent {
 
   private normalizeContentLocale(raw: unknown): ContentLocale {
     const source = this.isRecord(raw) ? raw : {};
-
-    const profile = this.isRecord(source['profile']) ? source['profile'] : {};
-    const education = this.isRecord(source['education']) ? source['education'] : {};
-    const experience = this.isRecord(source['experience']) ? source['experience'] : {};
-    const techStack = this.isRecord(source['tech_stack']) ? source['tech_stack'] : {};
-    const introductions = this.isRecord(source['introductions']) ? source['introductions'] : {};
-    const projects = this.isRecord(source['projects']) ? source['projects'] : {};
-    const verify = this.isRecord(source['verify']) ? source['verify'] : {};
     const cardContent = this.isRecord(source['card_content']) ? source['card_content'] : {};
     const cardEntries = this.normalizeCardContentEntries(cardContent);
 
@@ -681,93 +663,74 @@ export class ResumeComponent {
         name:
           this.readNonEmptyString(profileCard['name']) ??
           this.readNonEmptyString(profileCard['displayName']) ??
-          this.readNonEmptyString(profile['name']) ??
-          profileBadgeValues[3] ??
           '',
         title:
           this.readNonEmptyString(profileCard['headline']) ??
           this.readNonEmptyString(profileCard['title']) ??
-          this.readNonEmptyString(profile['title']) ??
-          this.readNonEmptyString(profile['status']) ??
           '',
-        gender: this.readNonEmptyString(profile['gender']) ?? profileBadgeValues[0] ?? '',
-        age: this.readNonEmptyString(profile['age']) ?? profileBadgeValues[1] ?? '',
-        status:
-          this.readNonEmptyString(profileCard['subtitle']) ??
-          this.readNonEmptyString(profile['status']) ??
-          '',
-        mbti: this.readNonEmptyString(profile['mbti']) ?? profileBadgeValues[2] ?? '',
+        gender: profileBadgeValues[0] ?? '',
+        age: profileBadgeValues[1] ?? '',
+        status: this.readNonEmptyString(profileCard['subtitle']) ?? '',
+        mbti: profileBadgeValues[2] ?? '',
       },
       education: {
         ...EMPTY_CONTENT_LOCALE.education,
-        school: this.readNonEmptyString(education['school']) ?? this.readTreeGroupName(educationGroups, 0) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
-        department: this.readNonEmptyString(education['department']) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
-        degree: this.readNonEmptyString(education['degree']) ?? this.readTreeGroupItemValue(educationGroups, 0, 1) ?? this.readTreeGroupItemValue(educationGroups, 0, 2, '|') ?? '',
+        school: this.readTreeGroupName(educationGroups, 0) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
+        department: this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
+        degree: this.readTreeGroupItemValue(educationGroups, 0, 1) ?? this.readTreeGroupItemValue(educationGroups, 0, 2, '|') ?? '',
         graduation_status:
-          this.readNonEmptyString(education['graduation_status']) ??
           this.readTreeGroupItemValue(educationGroups, 0, 2) ??
           this.readTreeGroupItemValue(educationGroups, 0, 2, '|', 1) ??
           '',
       },
       experience: {
         ...EMPTY_CONTENT_LOCALE.experience,
-        intern_title:
-          this.readNonEmptyString(experience['intern_title']) ??
-          this.readTreeGroupItemValue(experienceGroups, 0, 0) ??
-          '',
-        assistant_title:
-          this.readNonEmptyString(experience['assistant_title']) ??
-          this.readTreeGroupItemValue(experienceGroups, 1, 0) ??
-          '',
-        military_title:
-          this.readNonEmptyString(experience['military_title']) ??
-          this.readTreeGroupItemValue(experienceGroups, 2, 0) ??
-          '',
+        intern_title: this.readTreeGroupItemValue(experienceGroups, 0, 0) ?? '',
+        assistant_title: this.readTreeGroupItemValue(experienceGroups, 1, 0) ?? '',
+        military_title: this.readTreeGroupItemValue(experienceGroups, 2, 0) ?? '',
       },
       tech_stack: {
         ...EMPTY_CONTENT_LOCALE.tech_stack,
         language: this.normalizeStringArray(
-          techStack['language'] ?? techStackItems.language,
+          techStackItems.language,
           EMPTY_CONTENT_LOCALE.tech_stack.language,
         ),
         frontend: this.normalizeStringArray(
-          techStack['frontend'] ?? techStackItems.frontend,
+          techStackItems.frontend,
           EMPTY_CONTENT_LOCALE.tech_stack.frontend,
         ),
         backend: this.normalizeStringArray(
-          techStack['backend'] ?? techStackItems.backend,
+          techStackItems.backend,
           EMPTY_CONTENT_LOCALE.tech_stack.backend,
         ),
         database: this.normalizeStringArray(
-          techStack['database'] ?? techStackItems.database,
+          techStackItems.database,
           EMPTY_CONTENT_LOCALE.tech_stack.database,
         ),
         devops: this.normalizeStringArray(
-          techStack['devops'] ?? techStackItems.devops,
+          techStackItems.devops,
           EMPTY_CONTENT_LOCALE.tech_stack.devops,
         ),
       },
       introductions: {
         ...EMPTY_CONTENT_LOCALE.introductions,
         pitch_30s:
-          this.readNonEmptyString(introductions['pitch_30s']) ??
           this.readCardTextFromEntry(intro30Card) ??
           this.readCardTextFromEntry(intro60Card) ??
           '',
         pitch_1min:
-          this.readNonEmptyString(introductions['pitch_1min']) ??
           this.readCardTextFromEntry(intro60Card) ??
           this.readCardTextFromEntry(intro30Card) ??
           '',
       },
       projects: {
         ...EMPTY_CONTENT_LOCALE.projects,
-        items: this.normalizeStringArray(projects['items'] ?? this.extractFlatTreeItems(projectsGroups), EMPTY_CONTENT_LOCALE.projects.items),
-        groups: this.normalizeTreeGroups(projects['groups'] ?? projectsGroups),
+        items: this.normalizeStringArray(this.extractFlatTreeItems(projectsGroups), EMPTY_CONTENT_LOCALE.projects.items),
+        groups: this.normalizeTreeGroups(projectsGroups),
       },
       verify: {
         ...EMPTY_CONTENT_LOCALE.verify,
-        items: this.normalizeStringArray(verify['items'] ?? verifyItems, EMPTY_CONTENT_LOCALE.verify.items),
+        items: this.normalizeStringArray(verifyItems, EMPTY_CONTENT_LOCALE.verify.items),
       },
       card_content: {
         ...cardContent,
@@ -778,19 +741,8 @@ export class ResumeComponent {
 
   private normalizeCardContentEntries(raw: Record<string, unknown>): CardContentEntry[] {
     const cards = Array.isArray(raw['cards']) ? raw['cards'] : [];
-
-    if (cards.length > 0) {
-      return cards
-        .map((entry) => this.normalizeCardContentEntry(entry))
-        .filter((entry): entry is CardContentEntry => entry !== null);
-    }
-
-    return Object.entries(raw)
-      .filter(([key, value]) => key !== 'cards' && this.isRecord(value))
-      .map(([key, value]) => {
-        const record = value as Record<string, unknown>;
-        return this.normalizeCardContentEntry({ id: key, ...record });
-      })
+    return cards
+      .map((entry) => this.normalizeCardContentEntry(entry))
       .filter((entry): entry is CardContentEntry => entry !== null);
   }
 
@@ -829,7 +781,7 @@ export class ResumeComponent {
 
   private normalizeCardElements(value: unknown): Card['elements'] | undefined {
     if (Array.isArray(value)) {
-      return this.deepClone(value as Card['elements']);
+      return this.sanitizeCardElements(this.deepClone(value as Card['elements']));
     }
 
     if (typeof value !== 'string') {
@@ -844,26 +796,79 @@ export class ResumeComponent {
     try {
       const parsed = JSON.parse(trimmed);
       return Array.isArray(parsed)
-        ? this.deepClone(parsed as Card['elements'])
+        ? this.sanitizeCardElements(this.deepClone(parsed as Card['elements']))
         : undefined;
     } catch {
       return undefined;
     }
   }
 
+  private sanitizeCardElements(elements: Card['elements']): Card['elements'] {
+    return elements
+      .map((element) => {
+        if (!this.isRecord(element)) {
+          return null;
+        }
+
+        const elementRecord = element as Record<string, unknown>;
+
+        const type = this.readNonEmptyString(elementRecord['type']) ?? '';
+        const nextElement: Record<string, unknown> = {
+          ...elementRecord,
+          type,
+        };
+
+        if (type === 'grid-tree') {
+          nextElement['groups'] = this.normalizeTreeGroups(elementRecord['groups']);
+        }
+
+        if (type === 'grid-tech' && Array.isArray(elementRecord['items'])) {
+          const rawItems = elementRecord['items'] as Array<Record<string, unknown>>;
+          nextElement['items'] = rawItems
+            .map((item) => {
+              if (!this.isRecord(item)) {
+                return null;
+              }
+
+              const values = this.normalizeStringArray(item['value'], []);
+              if (values.length === 0) {
+                return null;
+              }
+
+              return {
+                label: this.readNonEmptyString(item['label']) ?? '',
+                value: values,
+                severity: this.readNonEmptyString(item['severity']) ?? 'secondary',
+              };
+            })
+            .filter((item): item is { label: string; value: string[]; severity: string } => item !== null);
+        }
+
+        if (type === 'icon-list') {
+          nextElement['items'] = this.normalizeStringArray(elementRecord['items'], []);
+        }
+
+        if (type === 'badges') {
+          nextElement['items'] = this.normalizeStringArray(elementRecord['items'], []);
+        }
+
+        if (type === 'text') {
+          nextElement['text'] = this.readNonEmptyString(elementRecord['text']) ?? '';
+        }
+
+        return nextElement;
+      })
+      .filter((element): element is Card['elements'][number] => element !== null);
+  }
+
   private getCardContentEntry(
-    raw: Record<string, unknown>,
+    _raw: Record<string, unknown>,
     entries: CardContentEntry[],
     cardId: string,
   ): Record<string, unknown> {
     const normalizedKey = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
     const arrayEntry = entries.find((entry) => entry.id === normalizedKey);
-    if (arrayEntry) {
-      return arrayEntry as unknown as Record<string, unknown>;
-    }
-
-    const legacyEntry = raw[normalizedKey];
-    return this.isRecord(legacyEntry) ? legacyEntry : {};
+    return arrayEntry ? (arrayEntry as unknown as Record<string, unknown>) : {};
   }
 
   private extractBadgeValues(entry: Record<string, any>): string[] {
@@ -1042,6 +1047,7 @@ export class ResumeComponent {
         const name = this.readNonEmptyString(group['name']) ?? '';
         const icon = this.readNonEmptyString(group['icon']) ?? 'pi pi-folder-open';
         const rawItems = Array.isArray(group['items']) ? group['items'] : [];
+        const seenItemValues = new Set<string>();
         const items = rawItems
           .map((item) => {
             if (!this.isRecord(item)) {
@@ -1049,6 +1055,15 @@ export class ResumeComponent {
             }
 
             const itemValue = this.readNonEmptyString(item['value']) ?? '';
+            if (itemValue.length === 0) {
+              return null;
+            }
+
+            if (seenItemValues.has(itemValue)) {
+              return null;
+            }
+
+            seenItemValues.add(itemValue);
             const itemIcon = this.readNonEmptyString(item['icon']) ?? 'pi pi-check-circle';
 
             return {
@@ -1079,7 +1094,22 @@ export class ResumeComponent {
       return [...fallback];
     }
 
-    return value.filter((item): item is string => typeof item === 'string');
+    const seen = new Set<string>();
+    return value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter((item) => {
+        if (item.length === 0) {
+          return false;
+        }
+
+        if (seen.has(item)) {
+          return false;
+        }
+
+        seen.add(item);
+        return true;
+      });
   }
 
   private readNonEmptyString(value: unknown): string | null {
