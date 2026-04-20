@@ -115,6 +115,9 @@ interface CardContentEntry {
   id: string;
   title?: string;
   subtitle?: string;
+  name?: string;
+  headline?: string;
+  text?: string;
   elements?: Card['elements'];
   topics?: string[];
 }
@@ -339,6 +342,31 @@ export class ResumeComponent {
     ];
   });
   readonly verifyItems = computed(() => this.content().verify.items);
+  readonly verifyGroups = computed(() => {
+    const items = this.verifyItems();
+    if (items.length === 0) {
+      return [];
+    }
+
+    return items.map((item, index) => {
+      const parts = item
+        .split('|')
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
+
+      const name = parts[0] ?? `Certification ${index + 1}`;
+      const childItems = (parts.length > 1 ? parts.slice(1) : [item]).map((value) => ({
+        value,
+        icon: 'pi pi-check-circle',
+      }));
+
+      return {
+        name,
+        icon: 'pi pi-shield',
+        items: childItems,
+      };
+    });
+  });
 
   readonly barUi = computed<BarUi>(() => {
     const content = this.content();
@@ -376,7 +404,7 @@ export class ResumeComponent {
     const content = this.content();
     return {
       name: content.profile.name || 'Profile',
-      title: content.profile.title || content.profile.status || this.uiCopy().profileTitle,
+      title: content.profile.title || this.uiCopy().profileTitle,
     };
   });
 
@@ -499,9 +527,9 @@ export class ResumeComponent {
         layout: 6,
         elements: [
           {
-            type: 'icon-list',
-            icon: 'pi pi-check-circle',
-            items: this.verifyItems(),
+            type: 'grid-tree',
+            groups: this.verifyGroups(),
+            gridLayout: 'single',
           },
         ],
       },
@@ -655,7 +683,7 @@ export class ResumeComponent {
     const experienceGroups = this.extractTreeGroups(experienceCard);
     const techStackItems = this.extractTechStackItems(techStackCard);
     const projectsGroups = this.extractTreeGroups(projectsCard);
-    const verifyItems = this.extractIconListItems(verifyCard);
+    const verifyItems = this.extractVerifyItems(verifyCard);
 
     return {
       profile: {
@@ -774,6 +802,9 @@ export class ResumeComponent {
       id,
       title: this.readNonEmptyString(raw['title']) ?? undefined,
       subtitle: this.readNonEmptyString(raw['subtitle']) ?? undefined,
+      name: this.readNonEmptyString(raw['name']) ?? undefined,
+      headline: this.readNonEmptyString(raw['headline']) ?? undefined,
+      text: this.readNonEmptyString(raw['text']) ?? undefined,
       elements: resolvedElements,
       topics,
     };
@@ -904,7 +935,27 @@ export class ResumeComponent {
     return this.normalizeTreeGroups(treeElement['groups']);
   }
 
-  private extractIconListItems(entry: Record<string, any>): string[] {
+  private extractVerifyItems(entry: Record<string, any>): string[] {
+    const treeGroups = this.extractTreeGroups(entry);
+    if (treeGroups.length > 0) {
+      const fromTree = treeGroups.flatMap((group, index) => {
+        const childValues = group.items
+          .map((item) => item.value)
+          .filter((value) => value.trim().length > 0);
+        const parentName = group.name.trim().length > 0 ? group.name : `Certification ${index + 1}`;
+
+        if (childValues.length === 0) {
+          return [parentName];
+        }
+
+        return [`${parentName} | ${childValues.join(' | ')}`];
+      });
+
+      if (fromTree.length > 0) {
+        return this.normalizeStringArray(fromTree, []);
+      }
+    }
+
     const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
     const iconListElement = elements.find(
       (element) => this.isRecord(element) && element['type'] === 'icon-list',
