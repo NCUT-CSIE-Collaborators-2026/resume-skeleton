@@ -108,14 +108,20 @@ interface ContentLocale {
   verify: {
     items: string[];
   };
-  card_content?: Record<
-    string,
-    {
-      title?: string;
-      subtitle?: string;
-      elements?: Card['elements'];
-    }
-  >;
+  card_content?: CardContentCollection;
+}
+
+interface CardContentEntry {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  elements?: Card['elements'];
+  topics?: string[];
+}
+
+interface CardContentCollection {
+  cards: CardContentEntry[];
+  [key: string]: unknown;
 }
 
 type ResumeLocale = I18nLocale & ContentLocale;
@@ -202,7 +208,9 @@ const EMPTY_CONTENT_LOCALE: ContentLocale = {
   verify: {
     items: [],
   },
-  card_content: {},
+  card_content: {
+    cards: [],
+  },
 };
 
 @Component({
@@ -367,8 +375,8 @@ export class ResumeComponent {
   readonly profileInfo = computed(() => {
     const content = this.content();
     return {
-      name: content.profile.name,
-      title: content.profile.title,
+      name: content.profile.name || 'Profile',
+      title: content.profile.title || content.profile.status || this.uiCopy().profileTitle,
     };
   });
 
@@ -507,6 +515,7 @@ export class ResumeComponent {
         title?: string;
         subtitle?: string;
         elements?: Card['elements'];
+        topics?: string[];
       }
     | null {
     const cardContent = this.content().card_content;
@@ -515,9 +524,21 @@ export class ResumeComponent {
     }
 
     const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
+    const cards = Array.isArray(cardContent.cards) ? cardContent.cards : [];
+    const storedFromArray = cards.find((entry) => entry?.id === key);
+    if (storedFromArray) {
+      return storedFromArray;
+    }
 
     const stored = cardContent[key];
-    return stored ?? null;
+    return this.isRecord(stored)
+      ? (stored as {
+          title?: string;
+          subtitle?: string;
+          elements?: Card['elements'];
+          topics?: string[];
+        })
+      : null;
   }
 
   private applyStoredCardContent(card: Card): Card {
@@ -596,7 +617,12 @@ export class ResumeComponent {
     this.contentError.set(null);
 
     try {
-      const response = await fetch(this.contentApiUrl);
+      const url = new URL(this.contentApiUrl, window.location.origin);
+      url.searchParams.set('_ts', Date.now().toString());
+
+      const response = await fetch(url.toString(), {
+        cache: 'no-store',
+      });
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
       }
@@ -631,58 +657,371 @@ export class ResumeComponent {
     const projects = this.isRecord(source['projects']) ? source['projects'] : {};
     const verify = this.isRecord(source['verify']) ? source['verify'] : {};
     const cardContent = this.isRecord(source['card_content']) ? source['card_content'] : {};
-    const rootName = this.readNonEmptyString(source['name']);
-    const rootTitle = this.readNonEmptyString(source['title']) ?? this.readNonEmptyString(source['tittle']);
+    const cardEntries = this.normalizeCardContentEntries(cardContent);
 
-    const normalizedProfile = {
-      ...EMPTY_CONTENT_LOCALE.profile,
-      ...profile,
-    };
+    const profileCard = this.getCardContentEntry(cardContent, cardEntries, 'profile');
+    const educationCard = this.getCardContentEntry(cardContent, cardEntries, 'education');
+    const experienceCard = this.getCardContentEntry(cardContent, cardEntries, 'experience');
+    const techStackCard = this.getCardContentEntry(cardContent, cardEntries, 'stack');
+    const intro30Card = this.getCardContentEntry(cardContent, cardEntries, 'intro_30');
+    const intro60Card = this.getCardContentEntry(cardContent, cardEntries, 'intro_60');
+    const projectsCard = this.getCardContentEntry(cardContent, cardEntries, 'projects');
+    const verifyCard = this.getCardContentEntry(cardContent, cardEntries, 'verify');
 
-    if (!normalizedProfile.name && rootName) {
-      normalizedProfile.name = rootName;
-    }
-
-    if (!normalizedProfile.title && rootTitle) {
-      normalizedProfile.title = rootTitle;
-    }
+    const profileBadgeValues = this.extractBadgeValues(profileCard);
+    const educationGroups = this.extractTreeGroups(educationCard);
+    const experienceGroups = this.extractTreeGroups(experienceCard);
+    const techStackItems = this.extractTechStackItems(techStackCard);
+    const projectsGroups = this.extractTreeGroups(projectsCard);
+    const verifyItems = this.extractIconListItems(verifyCard);
 
     return {
-      profile: normalizedProfile,
+      profile: {
+        ...EMPTY_CONTENT_LOCALE.profile,
+        name:
+          this.readNonEmptyString(profileCard['name']) ??
+          this.readNonEmptyString(profileCard['displayName']) ??
+          this.readNonEmptyString(profile['name']) ??
+          profileBadgeValues[3] ??
+          '',
+        title:
+          this.readNonEmptyString(profileCard['headline']) ??
+          this.readNonEmptyString(profileCard['title']) ??
+          this.readNonEmptyString(profile['title']) ??
+          this.readNonEmptyString(profile['status']) ??
+          '',
+        gender: this.readNonEmptyString(profile['gender']) ?? profileBadgeValues[0] ?? '',
+        age: this.readNonEmptyString(profile['age']) ?? profileBadgeValues[1] ?? '',
+        status:
+          this.readNonEmptyString(profileCard['subtitle']) ??
+          this.readNonEmptyString(profile['status']) ??
+          '',
+        mbti: this.readNonEmptyString(profile['mbti']) ?? profileBadgeValues[2] ?? '',
+      },
       education: {
         ...EMPTY_CONTENT_LOCALE.education,
-        ...education,
+        school: this.readNonEmptyString(education['school']) ?? this.readTreeGroupName(educationGroups, 0) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
+        department: this.readNonEmptyString(education['department']) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
+        degree: this.readNonEmptyString(education['degree']) ?? this.readTreeGroupItemValue(educationGroups, 0, 1) ?? this.readTreeGroupItemValue(educationGroups, 0, 2, '|') ?? '',
+        graduation_status:
+          this.readNonEmptyString(education['graduation_status']) ??
+          this.readTreeGroupItemValue(educationGroups, 0, 2) ??
+          this.readTreeGroupItemValue(educationGroups, 0, 2, '|', 1) ??
+          '',
       },
       experience: {
         ...EMPTY_CONTENT_LOCALE.experience,
-        ...experience,
+        intern_title:
+          this.readNonEmptyString(experience['intern_title']) ??
+          this.readTreeGroupItemValue(experienceGroups, 0, 0) ??
+          '',
+        assistant_title:
+          this.readNonEmptyString(experience['assistant_title']) ??
+          this.readTreeGroupItemValue(experienceGroups, 1, 0) ??
+          '',
+        military_title:
+          this.readNonEmptyString(experience['military_title']) ??
+          this.readTreeGroupItemValue(experienceGroups, 2, 0) ??
+          '',
       },
       tech_stack: {
         ...EMPTY_CONTENT_LOCALE.tech_stack,
-        ...techStack,
-        language: this.normalizeStringArray(techStack['language'], EMPTY_CONTENT_LOCALE.tech_stack.language),
-        frontend: this.normalizeStringArray(techStack['frontend'], EMPTY_CONTENT_LOCALE.tech_stack.frontend),
-        backend: this.normalizeStringArray(techStack['backend'], EMPTY_CONTENT_LOCALE.tech_stack.backend),
-        database: this.normalizeStringArray(techStack['database'], EMPTY_CONTENT_LOCALE.tech_stack.database),
-        devops: this.normalizeStringArray(techStack['devops'], EMPTY_CONTENT_LOCALE.tech_stack.devops),
+        language: this.normalizeStringArray(
+          techStack['language'] ?? techStackItems.language,
+          EMPTY_CONTENT_LOCALE.tech_stack.language,
+        ),
+        frontend: this.normalizeStringArray(
+          techStack['frontend'] ?? techStackItems.frontend,
+          EMPTY_CONTENT_LOCALE.tech_stack.frontend,
+        ),
+        backend: this.normalizeStringArray(
+          techStack['backend'] ?? techStackItems.backend,
+          EMPTY_CONTENT_LOCALE.tech_stack.backend,
+        ),
+        database: this.normalizeStringArray(
+          techStack['database'] ?? techStackItems.database,
+          EMPTY_CONTENT_LOCALE.tech_stack.database,
+        ),
+        devops: this.normalizeStringArray(
+          techStack['devops'] ?? techStackItems.devops,
+          EMPTY_CONTENT_LOCALE.tech_stack.devops,
+        ),
       },
       introductions: {
         ...EMPTY_CONTENT_LOCALE.introductions,
-        ...introductions,
+        pitch_30s:
+          this.readNonEmptyString(introductions['pitch_30s']) ??
+          this.readCardTextFromEntry(intro30Card) ??
+          this.readCardTextFromEntry(intro60Card) ??
+          '',
+        pitch_1min:
+          this.readNonEmptyString(introductions['pitch_1min']) ??
+          this.readCardTextFromEntry(intro60Card) ??
+          this.readCardTextFromEntry(intro30Card) ??
+          '',
       },
       projects: {
         ...EMPTY_CONTENT_LOCALE.projects,
-        ...projects,
-        items: this.normalizeStringArray(projects['items'], EMPTY_CONTENT_LOCALE.projects.items),
-        groups: this.normalizeTreeGroups(projects['groups']),
+        items: this.normalizeStringArray(projects['items'] ?? this.extractFlatTreeItems(projectsGroups), EMPTY_CONTENT_LOCALE.projects.items),
+        groups: this.normalizeTreeGroups(projects['groups'] ?? projectsGroups),
       },
       verify: {
         ...EMPTY_CONTENT_LOCALE.verify,
-        ...verify,
-        items: this.normalizeStringArray(verify['items'], EMPTY_CONTENT_LOCALE.verify.items),
+        items: this.normalizeStringArray(verify['items'] ?? verifyItems, EMPTY_CONTENT_LOCALE.verify.items),
       },
-      card_content: cardContent,
+      card_content: {
+        ...cardContent,
+        cards: cardEntries,
+      },
     };
+  }
+
+  private normalizeCardContentEntries(raw: Record<string, unknown>): CardContentEntry[] {
+    const cards = Array.isArray(raw['cards']) ? raw['cards'] : [];
+
+    if (cards.length > 0) {
+      return cards
+        .map((entry) => this.normalizeCardContentEntry(entry))
+        .filter((entry): entry is CardContentEntry => entry !== null);
+    }
+
+    return Object.entries(raw)
+      .filter(([key, value]) => key !== 'cards' && this.isRecord(value))
+      .map(([key, value]) => {
+        const record = value as Record<string, unknown>;
+        return this.normalizeCardContentEntry({ id: key, ...record });
+      })
+      .filter((entry): entry is CardContentEntry => entry !== null);
+  }
+
+  private normalizeCardContentEntry(raw: unknown): CardContentEntry | null {
+    if (!this.isRecord(raw)) {
+      return null;
+    }
+
+    const id = this.readNonEmptyString(raw['id']);
+    if (!id) {
+      return null;
+    }
+
+    const topics = Array.isArray(raw['topics'])
+      ? raw['topics']
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+
+    const normalizedElements = this.normalizeCardElements(raw['elements']);
+    const resolvedElements =
+      normalizedElements ??
+      ((id === 'intro_30' || id === 'intro_60')
+        ? ([{ type: 'text', text: '' }] as Card['elements'])
+        : undefined);
+
+    return {
+      id,
+      title: this.readNonEmptyString(raw['title']) ?? undefined,
+      subtitle: this.readNonEmptyString(raw['subtitle']) ?? undefined,
+      elements: resolvedElements,
+      topics,
+    };
+  }
+
+  private normalizeCardElements(value: unknown): Card['elements'] | undefined {
+    if (Array.isArray(value)) {
+      return this.deepClone(value as Card['elements']);
+    }
+
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed.startsWith('[')) {
+      return undefined;
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed)
+        ? this.deepClone(parsed as Card['elements'])
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private getCardContentEntry(
+    raw: Record<string, unknown>,
+    entries: CardContentEntry[],
+    cardId: string,
+  ): Record<string, unknown> {
+    const normalizedKey = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
+    const arrayEntry = entries.find((entry) => entry.id === normalizedKey);
+    if (arrayEntry) {
+      return arrayEntry as unknown as Record<string, unknown>;
+    }
+
+    const legacyEntry = raw[normalizedKey];
+    return this.isRecord(legacyEntry) ? legacyEntry : {};
+  }
+
+  private extractBadgeValues(entry: Record<string, any>): string[] {
+    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
+    const badgeElement = elements.find(
+      (element) => this.isRecord(element) && element['type'] === 'badges',
+    );
+
+    if (!this.isRecord(badgeElement) || !Array.isArray(badgeElement['items'])) {
+      return [];
+    }
+
+    return badgeElement['items']
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  private extractTreeGroups(entry: Record<string, any>): Array<{
+    name: string;
+    icon: string;
+    items: Array<{ value: string; icon: string }>;
+  }> {
+    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
+    const treeElement = elements.find(
+      (element) => this.isRecord(element) && element['type'] === 'grid-tree',
+    );
+
+    if (!this.isRecord(treeElement) || !Array.isArray(treeElement['groups'])) {
+      return [];
+    }
+
+    return this.normalizeTreeGroups(treeElement['groups']);
+  }
+
+  private extractIconListItems(entry: Record<string, any>): string[] {
+    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
+    const iconListElement = elements.find(
+      (element) => this.isRecord(element) && element['type'] === 'icon-list',
+    );
+
+    if (!this.isRecord(iconListElement) || !Array.isArray(iconListElement['items'])) {
+      return [];
+    }
+
+    return iconListElement['items']
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  private extractTechStackItems(entry: Record<string, any>): {
+    language: string[];
+    frontend: string[];
+    backend: string[];
+    database: string[];
+    devops: string[];
+  } {
+    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
+    const techElement = elements.find(
+      (element) => this.isRecord(element) && element['type'] === 'grid-tech',
+    );
+
+    if (!this.isRecord(techElement) || !Array.isArray(techElement['items'])) {
+      return {
+        language: [],
+        frontend: [],
+        backend: [],
+        database: [],
+        devops: [],
+      };
+    }
+
+    const categories = {
+      language: [] as string[],
+      frontend: [] as string[],
+      backend: [] as string[],
+      database: [] as string[],
+      devops: [] as string[],
+    };
+
+    const techItems = techElement['items'] as Array<Record<string, unknown>>;
+    const keys = ['language', 'frontend', 'backend', 'database', 'devops'] as const;
+
+    techItems.forEach((item, index) => {
+      const key = keys[index];
+      if (!key || !Array.isArray(item['value'])) {
+        return;
+      }
+
+      categories[key] = this.normalizeStringArray(item['value'], []);
+    });
+
+    return categories;
+  }
+
+  private readCardTextFromEntry(entry: Record<string, any>): string | null {
+    if (typeof entry['text'] === 'string' && entry['text'].trim().length > 0) {
+      return entry['text'].trim();
+    }
+
+    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
+    const textElement = elements.find(
+      (element) =>
+        this.isRecord(element) &&
+        element['type'] === 'text' &&
+        typeof element['text'] === 'string' &&
+        element['text'].trim().length > 0,
+    ) as Record<string, any> | undefined;
+
+    return textElement?.['text']?.trim?.() ?? null;
+  }
+
+  private readTreeGroupItemValue(
+    groups: Array<{
+      name: string;
+      icon: string;
+      items: Array<{ value: string; icon: string }>;
+    }>,
+    groupIndex: number,
+    itemIndex: number,
+    separator?: string,
+    splitIndex = 0,
+  ): string | null {
+    const group = groups[groupIndex];
+    const item = group?.items[itemIndex];
+    if (!item?.value) {
+      return null;
+    }
+
+    if (!separator) {
+      return item.value;
+    }
+
+    const parts = item.value.split(separator).map((value) => value.trim());
+    return parts[splitIndex] ?? null;
+  }
+
+  private readTreeGroupName(
+    groups: Array<{
+      name: string;
+      icon: string;
+      items: Array<{ value: string; icon: string }>;
+    }>,
+    groupIndex: number,
+  ): string | null {
+    const group = groups[groupIndex];
+    return group?.name?.trim?.() || null;
+  }
+
+  private extractFlatTreeItems(
+    groups: Array<{
+      name: string;
+      icon: string;
+      items: Array<{ value: string; icon: string }>;
+    }>,
+  ): string[] {
+    return groups.flatMap((group) => group.items.map((item) => item.value));
   }
 
   private normalizeTreeGroups(value: unknown): Array<{
