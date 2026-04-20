@@ -1,4 +1,4 @@
-@import '../../styles/_variables';
+@use '../../styles/_variables' as *;
 :host {
   display: block;
   // CSS 變數用於尺寸統一管理

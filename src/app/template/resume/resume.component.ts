@@ -27,6 +27,7 @@ interface I18nLocale {
     title: string;
   };
   'content-ui': {
+    profileTitle: string;
     introTitle: string;
     educationTitle: string;
     educationGroupName: string;
@@ -110,6 +111,7 @@ interface ContentLocale {
   card_content?: Record<
     string,
     {
+      title?: string;
       subtitle?: string;
       elements?: Card['elements'];
     }
@@ -119,6 +121,7 @@ interface ContentLocale {
 type ResumeLocale = I18nLocale & ContentLocale;
 
 interface UiCopy {
+  profileTitle: string;
   introTitle: string;
   educationTitle: string;
   educationGroupName: string;
@@ -296,6 +299,7 @@ export class ResumeComponent {
   readonly uiCopy = computed<UiCopy>(() => {
     const content = this.content();
     return {
+      profileTitle: content['content-ui'].profileTitle,
       introTitle: content['content-ui'].introTitle,
       educationTitle: content['content-ui'].educationTitle,
       educationGroupName: content['content-ui'].educationGroupName,
@@ -416,7 +420,7 @@ export class ResumeComponent {
       // 個人資料卡
       {
         id: 'profile',
-        title: 'Profile',
+        title: ui.profileTitle,
         subtitle: content.profile.status,
         layout: 4,
         elements: [{ type: 'badges', items: this.profileBadges() }],
@@ -432,7 +436,7 @@ export class ResumeComponent {
       {
         id: 'education',
         title: ui.educationTitle,
-        layout: 4,
+        layout: 2,
         elements: [
           {
             type: 'grid-tree',
@@ -445,7 +449,7 @@ export class ResumeComponent {
       {
         id: 'experience',
         title: ui.expTitle,
-        layout: 4,
+        layout: 2,
         elements: [
           {
             type: 'grid-tree',
@@ -458,7 +462,7 @@ export class ResumeComponent {
       {
         id: 'stack',
         title: ui.stackTitle,
-        layout: 4,
+        layout: 6,
         elements: [
           {
             type: 'grid-tech',
@@ -500,6 +504,7 @@ export class ResumeComponent {
 
   private getStoredCardContent(cardId: string):
     | {
+        title?: string;
         subtitle?: string;
         elements?: Card['elements'];
       }
@@ -509,19 +514,7 @@ export class ResumeComponent {
       return null;
     }
 
-    let key = cardId;
-    if (cardId === 'intro') {
-      const modeKey = `intro_${this.introMode()}`;
-      const alternateModeKey = this.introMode() === '30' ? 'intro_60' : 'intro_30';
-      key = modeKey;
-
-      const fallbackKey = [modeKey, 'intro', 'introductions', alternateModeKey].find(
-        (candidate) => this.isRecord(cardContent[candidate]),
-      );
-      if (fallbackKey) {
-        key = fallbackKey;
-      }
-    }
+    const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
 
     const stored = cardContent[key];
     return stored ?? null;
@@ -534,19 +527,16 @@ export class ResumeComponent {
     }
 
     const nextCard: Card = { ...card };
+    if (typeof stored.title === 'string' && stored.title.trim().length > 0) {
+      nextCard.title = stored.title;
+    }
+
     if (typeof stored.subtitle === 'string') {
       nextCard.subtitle = stored.subtitle;
     }
 
     if (Array.isArray(stored.elements)) {
-      const normalizedElements = this.normalizeLegacyElementTypes(
-        this.deepClone(stored.elements as Card['elements']),
-      );
-
-      nextCard.elements =
-        card.id === 'projects'
-          ? this.normalizeProjectCardElements(normalizedElements)
-          : normalizedElements;
+      nextCard.elements = this.deepClone(stored.elements as Card['elements']);
     }
 
     return nextCard;
@@ -678,7 +668,7 @@ export class ResumeComponent {
       },
       introductions: {
         ...EMPTY_CONTENT_LOCALE.introductions,
-        ...this.normalizeIntroductions(introductions, cardContent),
+        ...introductions,
       },
       projects: {
         ...EMPTY_CONTENT_LOCALE.projects,
@@ -693,34 +683,6 @@ export class ResumeComponent {
       },
       card_content: cardContent,
     };
-  }
-
-  private normalizeIntroductions(
-    introductions: Record<string, any>,
-    cardContent: Record<string, any>,
-  ): ContentLocale['introductions'] {
-    const normalized = {
-      ...EMPTY_CONTENT_LOCALE.introductions,
-      ...introductions,
-    };
-
-    const fallback30 =
-      this.readIntroTextFromCardContent(cardContent, 'intro_30') ??
-      this.readIntroTextFromCardContent(cardContent, 'intro') ??
-      this.readIntroTextFromCardContent(cardContent, 'introductions');
-
-    const fallback60 =
-      this.readIntroTextFromCardContent(cardContent, 'intro_60') ?? fallback30;
-
-    if (!normalized.pitch_30s?.trim() && fallback30) {
-      normalized.pitch_30s = fallback30;
-    }
-
-    if (!normalized.pitch_1min?.trim() && fallback60) {
-      normalized.pitch_1min = fallback60;
-    }
-
-    return normalized;
   }
 
   private normalizeTreeGroups(value: unknown): Array<{
@@ -767,35 +729,6 @@ export class ResumeComponent {
         (group): group is { name: string; icon: string; items: Array<{ value: string; icon: string }> } =>
           group !== null,
       );
-  }
-
-  private readIntroTextFromCardContent(
-    cardContent: Record<string, any>,
-    key: string,
-  ): string | null {
-    const entry = cardContent[key];
-    if (!this.isRecord(entry)) {
-      return null;
-    }
-
-    if (typeof entry['text'] === 'string' && entry['text'].trim()) {
-      return entry['text'];
-    }
-
-    const elements = entry['elements'];
-    if (!Array.isArray(elements)) {
-      return null;
-    }
-
-    const textElement = elements.find((element) => {
-      if (!this.isRecord(element)) {
-        return false;
-      }
-
-      return element['type'] === 'text' && typeof element['text'] === 'string' && element['text'].trim();
-    }) as Record<string, any> | undefined;
-
-    return textElement?.['text'] ?? null;
   }
 
   private isRecord(value: unknown): value is Record<string, any> {
@@ -979,71 +912,6 @@ export class ResumeComponent {
 
   private deepClone<T>(value: T): T {
     return JSON.parse(JSON.stringify(value)) as T;
-  }
-
-  private normalizeLegacyElementTypes(elements: unknown[]): Card['elements'] {
-    return elements.map((element) => {
-      const candidate = element as { type?: string; children?: unknown[] };
-
-      if (candidate.type === 'grid-education' || candidate.type === 'grid-groups') {
-        return {
-          ...(element as object),
-          type: 'grid-tree',
-        } as Card['elements'][number];
-      }
-
-      if (Array.isArray(candidate.children) && candidate.children.length > 0) {
-        return {
-          ...(element as object),
-          children: this.normalizeLegacyElementTypes(candidate.children),
-        } as Card['elements'][number];
-      }
-
-      return element as Card['elements'][number];
-    }) as Card['elements'];
-  }
-
-  private normalizeProjectCardElements(elements: Card['elements']): Card['elements'] {
-    const topLevelProjectGroups = this.projectGroups();
-
-    return elements.map((element) => {
-      if (element.type === 'grid-tree') {
-        return {
-          ...element,
-          groups: element.groups,
-          gridLayout: element.gridLayout ?? 'single',
-        };
-      }
-
-      if (element.type !== 'icon-list') {
-        return element;
-      }
-
-      // D1 正規資料來源以 projects.groups 為主；
-      // card_content.projects 若仍是舊 icon-list，優先回退到 top-level groups。
-      if (topLevelProjectGroups.length > 0) {
-        return {
-          type: 'grid-tree',
-          groups: this.deepClone(topLevelProjectGroups),
-          gridLayout: 'single',
-        };
-      }
-
-      return {
-        type: 'grid-tree',
-        groups: [
-          {
-            name: this.uiCopy().projectTitle,
-            icon: 'pi pi-folder-open',
-            items: element.items.map((item) => ({
-              value: item,
-              icon: element.icon || 'pi pi-check-circle',
-            })),
-          },
-        ],
-        gridLayout: 'single',
-      };
-    });
   }
 
   private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ value: string; icon: string }> } {
