@@ -1,3 +1,9 @@
+type ResumeTreeNode = {
+  value: string;
+  icon: string;
+  children?: ResumeTreeNode[];
+};
+
 type ResumeCardElementBase =
   | { type: 'text'; text: string }
   | { type: 'badges'; items: string[] }
@@ -16,7 +22,7 @@ type ResumeCardElementBase =
       groups: Array<{
         name: string;
         icon: string;
-        items: Array<{ value: string; icon: string }>;
+        items: ResumeTreeNode[];
       }>;
       gridLayout?: 'compact' | 'single';
     };

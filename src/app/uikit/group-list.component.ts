@@ -4,6 +4,7 @@ import { Component, Input } from '@angular/core';
 interface GroupItem {
   value: string;
   icon: string;
+  children?: GroupItem[];
 }
 
 interface TreeGroup {
@@ -121,14 +122,16 @@ export class GroupListComponent {
   @Input() gridLayout?: 'compact' | 'single' = 'compact';
 
   get treeNodes(): TreeNode[] {
+    const toNode = (item: GroupItem): TreeNode => ({
+      value: item.value,
+      icon: item.icon,
+      children: Array.isArray(item.children) ? item.children.map(toNode) : [],
+    });
+
     return this.groups.map((group) => ({
       value: group.name,
       icon: group.icon,
-      children: group.items.map((item) => ({
-        value: item.value,
-        icon: item.icon,
-        children: [],
-      })),
+      children: group.items.map(toNode),
     }));
   }
 }

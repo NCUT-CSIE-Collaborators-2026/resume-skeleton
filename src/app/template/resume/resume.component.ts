@@ -66,6 +66,12 @@ interface I18nLocale {
   };
 }
 
+interface TreeListItem {
+  value: string;
+  icon: string;
+  children?: TreeListItem[];
+}
+
 interface ContentLocale {
   profile: {
     name: string;
@@ -102,7 +108,7 @@ interface ContentLocale {
     groups: Array<{
       name: string;
       icon: string;
-      items: Array<{ value: string; icon: string }>;
+      items: TreeListItem[];
     }>;
   };
   verify: {
@@ -443,9 +449,10 @@ export class ResumeComponent {
 
   // 技術堆疊卡片的動態寬度：根據項目數量自動調整
   readonly stackCardLayout = computed(() => {
-    const stackItems = this.getTechStackData();
-    if (stackItems.length > 6) return 8; // 超過6項，用8列
-    if (stackItems.length > 4) return 6; // 5-6項，用6列
+    const stackGroups = this.getTechStackGroups();
+    const stackItemsCount = stackGroups.reduce((count, group) => count + group.items.length, 0);
+    if (stackItemsCount > 8) return 8; // 超過8項，用8列
+    if (stackItemsCount > 4) return 6; // 5-8項，用6列
     return 4; // 4項以下，用4列
   });
 
@@ -501,8 +508,8 @@ export class ResumeComponent {
         layout: 6,
         elements: [
           {
-            type: 'grid-tech',
-            items: this.getTechStackData(),
+            type: 'grid-tree',
+            groups: this.getTechStackGroups(),
             gridLayout: 'compact',
           },
         ],
@@ -921,7 +928,7 @@ export class ResumeComponent {
   private extractTreeGroups(entry: Record<string, any>): Array<{
     name: string;
     icon: string;
-    items: Array<{ value: string; icon: string }>;
+    items: TreeListItem[];
   }> {
     const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
     const treeElement = elements.find(
@@ -978,6 +985,11 @@ export class ResumeComponent {
     database: string[];
     devops: string[];
   } {
+    const fromTree = this.extractTechStackItemsFromTree(entry);
+    if (Object.values(fromTree).some((values) => values.length > 0)) {
+      return fromTree;
+    }
+
     const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
     const techElement = elements.find(
       (element) => this.isRecord(element) && element['type'] === 'grid-tech',
@@ -1016,6 +1028,68 @@ export class ResumeComponent {
     return categories;
   }
 
+  private extractTechStackItemsFromTree(entry: Record<string, any>): {
+    language: string[];
+    frontend: string[];
+    backend: string[];
+    database: string[];
+    devops: string[];
+  } {
+    const categories = {
+      language: [] as string[],
+      frontend: [] as string[],
+      backend: [] as string[],
+      database: [] as string[],
+      devops: [] as string[],
+    };
+
+    const groups = this.extractTreeGroups(entry);
+    if (groups.length === 0) {
+      return categories;
+    }
+
+    groups.forEach((group) => {
+      const key = this.resolveTechStackKey(group.name);
+      if (!key) {
+        return;
+      }
+
+      const values = group.items.map((item) => {
+        const childText = Array.isArray(item.children) && item.children.length > 0
+          ? ` ${item.children.map((child) => child.value).join(' ')}`
+          : '';
+        return `${item.value}${childText}`.trim();
+      });
+
+      categories[key] = this.normalizeStringArray(values, []);
+    });
+
+    return categories;
+  }
+
+  private resolveTechStackKey(groupName: string): 'language' | 'frontend' | 'backend' | 'database' | 'devops' | null {
+    const normalized = groupName.trim().toLowerCase();
+    const labels = this.uiCopy().labels;
+
+    if (normalized === labels.language.trim().toLowerCase() || normalized === 'language' || normalized === '語言') {
+      return 'language';
+    }
+    if (normalized === labels.frontend.trim().toLowerCase() || normalized === 'frontend' || normalized === '前端') {
+      return 'frontend';
+    }
+    if (normalized === labels.backend.trim().toLowerCase() || normalized === 'backend' || normalized === '後端') {
+      return 'backend';
+    }
+    if (normalized === labels.database.trim().toLowerCase() || normalized === 'database' || normalized === '資料庫') {
+      return 'database';
+    }
+    if (normalized === labels.devops.trim().toLowerCase() || normalized === 'devops') {
+      return 'devops';
+    }
+
+    return null;
+  }
+
   private readCardTextFromEntry(entry: Record<string, any>): string | null {
     if (typeof entry['text'] === 'string' && entry['text'].trim().length > 0) {
       return entry['text'].trim();
@@ -1037,7 +1111,7 @@ export class ResumeComponent {
     groups: Array<{
       name: string;
       icon: string;
-      items: Array<{ value: string; icon: string }>;
+      items: TreeListItem[];
     }>,
     groupIndex: number,
     itemIndex: number,
@@ -1062,7 +1136,7 @@ export class ResumeComponent {
     groups: Array<{
       name: string;
       icon: string;
-      items: Array<{ value: string; icon: string }>;
+      items: TreeListItem[];
     }>,
     groupIndex: number,
   ): string | null {
@@ -1074,16 +1148,46 @@ export class ResumeComponent {
     groups: Array<{
       name: string;
       icon: string;
-      items: Array<{ value: string; icon: string }>;
+      items: TreeListItem[];
     }>,
   ): string[] {
     return groups.flatMap((group) => group.items.map((item) => item.value));
   }
 
+  private normalizeTreeItems(value: unknown): TreeListItem[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    const seenItemValues = new Set<string>();
+    return value
+      .map((item) => {
+        if (!this.isRecord(item)) {
+          return null;
+        }
+
+        const itemValue = this.readNonEmptyString(item['value']) ?? '';
+        if (itemValue.length === 0 || seenItemValues.has(itemValue)) {
+          return null;
+        }
+
+        seenItemValues.add(itemValue);
+        const itemIcon = this.readNonEmptyString(item['icon']) ?? 'pi pi-check-circle';
+        const children = this.normalizeTreeItems(item['children']);
+
+        return {
+          value: itemValue,
+          icon: itemIcon,
+          ...(children.length > 0 ? { children } : {}),
+        };
+      })
+      .filter((item): item is TreeListItem => item !== null);
+  }
+
   private normalizeTreeGroups(value: unknown): Array<{
     name: string;
     icon: string;
-    items: Array<{ value: string; icon: string }>;
+    items: TreeListItem[];
   }> {
     if (!Array.isArray(value)) {
       return [];
@@ -1097,32 +1201,7 @@ export class ResumeComponent {
 
         const name = this.readNonEmptyString(group['name']) ?? '';
         const icon = this.readNonEmptyString(group['icon']) ?? 'pi pi-folder-open';
-        const rawItems = Array.isArray(group['items']) ? group['items'] : [];
-        const seenItemValues = new Set<string>();
-        const items = rawItems
-          .map((item) => {
-            if (!this.isRecord(item)) {
-              return null;
-            }
-
-            const itemValue = this.readNonEmptyString(item['value']) ?? '';
-            if (itemValue.length === 0) {
-              return null;
-            }
-
-            if (seenItemValues.has(itemValue)) {
-              return null;
-            }
-
-            seenItemValues.add(itemValue);
-            const itemIcon = this.readNonEmptyString(item['icon']) ?? 'pi pi-check-circle';
-
-            return {
-              value: itemValue,
-              icon: itemIcon,
-            };
-          })
-          .filter((item): item is { value: string; icon: string } => item !== null);
+        const items = this.normalizeTreeItems(group['items']);
 
         return {
           name,
@@ -1131,7 +1210,7 @@ export class ResumeComponent {
         };
       })
       .filter(
-        (group): group is { name: string; icon: string; items: Array<{ value: string; icon: string }> } =>
+        (group): group is { name: string; icon: string; items: TreeListItem[] } =>
           group !== null,
       );
   }
@@ -1334,7 +1413,7 @@ export class ResumeComponent {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
-  private createDefaultTreeCollection(): { name: string; icon: string; items: Array<{ value: string; icon: string }> } {
+  private createDefaultTreeCollection(): { name: string; icon: string; items: TreeListItem[] } {
     return {
       name: '',
       icon: 'pi pi-folder',
@@ -1342,7 +1421,7 @@ export class ResumeComponent {
     };
   }
 
-  private createDefaultTreeGroupItem(_nextIndex: number): { value: string; icon: string } {
+  private createDefaultTreeGroupItem(_nextIndex: number): TreeListItem {
     return {
       value: '',
       icon: 'pi pi-circle',
@@ -1952,35 +2031,64 @@ export class ResumeComponent {
   }
 
   // 技術堆疊資料驅動
-  getTechStackData() {
+  private parseTechStackNode(raw: string): TreeListItem {
+    const normalized = raw.trim();
+    const parenthesisMatch = normalized.match(/^(.+?)\s*\((.+)\)$/);
+    if (parenthesisMatch) {
+      const name = parenthesisMatch[1].trim();
+      const detail = parenthesisMatch[2].trim();
+      return {
+        value: name,
+        icon: 'pi pi-code',
+        children: [{ value: detail, icon: 'pi pi-sitemap' }],
+      };
+    }
+
+    const versionMatch = normalized.match(/^(.+?)\s+([0-9][0-9A-Za-z+._-]*)$/);
+    if (versionMatch) {
+      return {
+        value: versionMatch[1].trim(),
+        icon: 'pi pi-code',
+        children: [{ value: versionMatch[2].trim(), icon: 'pi pi-tag' }],
+      };
+    }
+
+    return {
+      value: normalized,
+      icon: 'pi pi-code',
+      children: [{ value: 'core', icon: 'pi pi-sitemap' }],
+    };
+  }
+
+  getTechStackGroups() {
     const stack = this.content().tech_stack;
     const labels = this.uiCopy().labels;
 
     return [
       {
-        label: labels.language,
-        value: stack.language,
-        severity: 'info' as const,
+        name: labels.language,
+        icon: 'pi pi-code',
+        items: this.normalizeStringArray(stack.language, []).map((item) => this.parseTechStackNode(item)),
       },
       {
-        label: labels.frontend,
-        value: stack.frontend,
-        severity: 'success' as const,
+        name: labels.frontend,
+        icon: 'pi pi-desktop',
+        items: this.normalizeStringArray(stack.frontend, []).map((item) => this.parseTechStackNode(item)),
       },
       {
-        label: labels.backend,
-        value: stack.backend,
-        severity: 'warning' as const,
+        name: labels.backend,
+        icon: 'pi pi-server',
+        items: this.normalizeStringArray(stack.backend, []).map((item) => this.parseTechStackNode(item)),
       },
       {
-        label: labels.database,
-        value: stack.database,
-        severity: 'danger' as const,
+        name: labels.database,
+        icon: 'pi pi-database',
+        items: this.normalizeStringArray(stack.database, []).map((item) => this.parseTechStackNode(item)),
       },
       {
-        label: labels.devops,
-        value: stack.devops,
-        severity: 'secondary' as const,
+        name: labels.devops,
+        icon: 'pi pi-cog',
+        items: this.normalizeStringArray(stack.devops, []).map((item) => this.parseTechStackNode(item)),
       },
     ];
   }
