@@ -38,6 +38,7 @@
             [pendingDeleteItemKeys]="getPendingDeleteItemKeys(card.id)"
             (editAction)="onCardEditAction($event)"
             (cancelEdit)="onCardCancelEdit($event)"
+            (titleChange)="updateCardTitle($event.cardId, $event.value)"
             (addItem)="addCardItem($event.cardId, $event.path)"
             (deleteItem)="deleteCardItem($event.cardId, $event.elementIndex, $event.itemIndex, $event.treeGroupIndex, $event.categoryIndex, $event.deleteTreeGroup)"
             (textElementChange)="updateTextElement($event.cardId, $event.elementIndex, $event.value)"

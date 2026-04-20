@@ -27,15 +27,15 @@ interface I18nLocale {
     title: string;
   };
   'content-ui': {
-    profileTitle: string;
-    introTitle: string;
-    educationTitle: string;
-    educationGroupName: string;
-    expTitle: string;
-    experienceGroupName: string;
-    stackTitle: string;
-    projectsTitle: string;
-    verifyTitle: string;
+    profileCardTitle: string;
+    introCardTitle: string;
+    educationCardTitle: string;
+    educationGroupTitle: string;
+    experienceCardTitle: string;
+    experienceGroupTitle: string;
+    stackCardTitle: string;
+    projectsCardTitle: string;
+    verifyCardTitle: string;
     labels: {
       language: string;
       frontend: string;
@@ -299,15 +299,15 @@ export class ResumeComponent {
   readonly uiCopy = computed<UiCopy>(() => {
     const content = this.content();
     return {
-      profileTitle: content['content-ui'].profileTitle,
-      introTitle: content['content-ui'].introTitle,
-      educationTitle: content['content-ui'].educationTitle,
-      educationGroupName: content['content-ui'].educationGroupName,
-      expTitle: content['content-ui'].expTitle,
-      experienceGroupName: content['content-ui'].experienceGroupName,
-      stackTitle: content['content-ui'].stackTitle,
-      projectTitle: content['content-ui'].projectsTitle,
-      verifyTitle: content['content-ui'].verifyTitle,
+      profileTitle: content['content-ui'].profileCardTitle,
+      introTitle: content['content-ui'].introCardTitle,
+      educationTitle: content['content-ui'].educationCardTitle,
+      educationGroupName: content['content-ui'].educationGroupTitle,
+      expTitle: content['content-ui'].experienceCardTitle,
+      experienceGroupName: content['content-ui'].experienceGroupTitle,
+      stackTitle: content['content-ui'].stackCardTitle,
+      projectTitle: content['content-ui'].projectsCardTitle,
+      verifyTitle: content['content-ui'].verifyCardTitle,
       labels: content['content-ui'].labels,
     };
   });
@@ -967,6 +967,13 @@ export class ResumeComponent {
       }
 
       element.text = value;
+      return draft;
+    });
+  }
+
+  updateCardTitle(cardId: string, value: string): void {
+    this.updateDraftCard(cardId, (draft) => {
+      draft.title = value;
       return draft;
     });
   }

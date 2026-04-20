@@ -5,6 +5,12 @@ export interface TextElementChange {
   value: string;
 }
 
+/** 卡片標題編輯事件資料。 */
+export interface CardTitleChange {
+  cardId: string;
+  value: string;
+}
+
 /** 徽章項目編輯事件資料。 */
 export interface BadgeItemChange {
   cardId: string;

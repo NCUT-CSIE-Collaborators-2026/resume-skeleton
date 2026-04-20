@@ -6,6 +6,7 @@ import { TreeCardComponent } from './resume-element/resume-card-element.componen
 import {
   AddItemChange,
   BadgeItemChange,
+  CardTitleChange,
   CardUi,
   DeleteItemChange,
   TreeGroupIconChange,
@@ -41,6 +42,7 @@ export class ResumeCardComponent {
 
   @Output() editAction = new EventEmitter<Card>();
   @Output() cancelEdit = new EventEmitter<string>();
+  @Output() titleChange = new EventEmitter<CardTitleChange>();
   @Output() textElementChange = new EventEmitter<TextElementChange>();
   @Output() badgeItemChange = new EventEmitter<BadgeItemChange>();
   @Output() iconListItemChange = new EventEmitter<IconListItemChange>();
@@ -95,6 +97,11 @@ export class ResumeCardComponent {
   /** 觸發取消編輯動作。 */
   onCancelEdit(): void {
     this.cancelEdit.emit(this.card.id);
+  }
+
+  /** 觸發卡片標題變更事件。 */
+  onTitleChange(value: string): void {
+    this.titleChange.emit({ cardId: this.card.id, value });
   }
 
   /** 觸發新增項目事件。 */
