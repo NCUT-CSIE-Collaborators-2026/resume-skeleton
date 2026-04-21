@@ -34,7 +34,7 @@ import { CommonModule } from '@angular/common';
 
     .card-title {
       margin: 0 0 1rem 0;
-      font-size: 1.125rem;
+      font-size: 0.788rem;
       font-weight: 600;
       color: #1a1a1a;
     }

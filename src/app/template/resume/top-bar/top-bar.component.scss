@@ -88,7 +88,7 @@
   color: $color-primary-dark;
   font-size: $size-text-md;
   font-weight: $font-weight-bold;
-  max-width: 10.5rem;
+  max-width: 10rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -145,7 +145,7 @@
 .headline {
   margin: 0.6rem 0 0;
   color: $color-primary-light;
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: 1rem;
   white-space: nowrap;
   overflow-y: visible;
   text-overflow: ellipsis;

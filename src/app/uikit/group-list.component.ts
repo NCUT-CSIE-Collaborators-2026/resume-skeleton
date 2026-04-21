@@ -89,7 +89,7 @@ interface TreeNode {
         padding: 0.35rem 0.5rem;
         border-radius: 0.5rem;
         color: #243b53;
-        font-size: 0.875rem;
+        font-size: 0.613rem;
         line-height: 1.25;
         transition: all 0.2s ease;
 
@@ -100,7 +100,7 @@ interface TreeNode {
 
       .tree-line i {
         flex-shrink: 0;
-        font-size: 0.95rem;
+        font-size: 0.665rem;
         color: #1f2937;
         width: 1rem;
         text-align: center;

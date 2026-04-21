@@ -39,10 +39,12 @@
   backdrop-filter: blur(4px);
 
   // A4 模式：固定寬度與最小高度，超過時允許換頁但維持比例
+  // 寬度 200mm (A4 - 邊距) = 756px @ 96DPI
+  // 高度 287mm (A4 - 邊距) = 1085px @ 96DPI
   .a4-mode & {
-    width: 960px; // 960px × 80%
-    min-height: 1357px; // 最小高度保持A4比例，超過時自動擴展
-    height: auto; // 內容超過時自動增高
+    width: 756px;
+    min-height: 1085px;
+    height: auto;
   }
 
   // PDF 導出模式：純白背景，移除所有視覺效果

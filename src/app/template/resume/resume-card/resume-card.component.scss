@@ -14,28 +14,7 @@
   );
   box-shadow: 0 20px 40px rgba(121, 121, 121, 0.14);
   animation: reveal 560ms ease both;
-  padding: clamp(0.267rem, 0.833vw, 0.5rem);
-  // PDF 導出時防止卡片被切割
-  page-break-inside: avoid;
-  break-inside: avoid;
-
-  :host-context(.a4-mode) & {
-    flex: 0 0 auto !important;
-    width: 100% !important;
-  }
-}
-
-:host-context(.a4-mode) .stack-grid {
-  flex: 0 0 auto !important;
-}
-
-:host-context(.a4-mode) .stack-item {
-  flex: 0 0 auto !important;
-  min-width: auto !important;
-}
-
-:host-context(.a4-mode) .education-grid {
-  flex: 0 0 auto !important;
+  padding: 0.8rem;
 }
 
 .card-header {
@@ -43,7 +22,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
 }
 
 .card-button-group {
@@ -77,12 +56,11 @@
 
 .card-title {
   margin: 0;
-  padding-left: 0.5rem;
   width: auto;
   min-width: 0;
   flex: 1 1 auto;
   color: #102a43;
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -95,9 +73,8 @@
   flex: 1 1 auto;
   border: 1px solid #d9e2ec;
   border-radius: 10px;
-  padding: 0.42rem 0.55rem;
   color: #102a43;
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.2;
   background-color: rgba(255, 255, 255, 0.92);
@@ -112,7 +89,7 @@
 .card-subtitle {
   margin: 0 0 0.75rem;
   color: #334e68;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 
 .badge-row {

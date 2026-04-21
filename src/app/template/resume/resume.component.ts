@@ -720,15 +720,15 @@ export class ResumeComponent {
 
     this.isExporting.set(true);
 
+    // 儲存導出前的原始狀態
+    const wasA4Mode = this.isA4Mode();
+    const source = this.resumeCanvas.nativeElement;
+    const shell = source.closest('.resume-shell') as HTMLElement;
+
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const source = this.resumeCanvas.nativeElement;
-      const shell = source.closest('.resume-shell') as HTMLElement;
 
-      // 暫時儲存 A4 模式狀態
-      const wasA4Mode = this.isA4Mode();
-
-      // 強制啟用 A4 模式：在 .resume-shell 上添加 a4-mode 類（這是樣式定義的地方）
+      // 强制啟用 A4 模式以便克隆時能看到 A4 樣式
       this.isA4Mode.set(true);
       if (shell) {
         shell.classList.add('a4-mode');
@@ -737,26 +737,52 @@ export class ResumeComponent {
       // 等待 DOM 更新和樣式應用
       await new Promise((resolve) => setTimeout(resolve, 150));
 
-      // 隱藏不需要的控制元素
-      const controlsToHide = source.querySelectorAll<HTMLElement>(
+      // 克隆源元素以避免修改原始 DOM
+      const clonedSource = source.cloneNode(true) as HTMLElement;
+
+      // 隱藏克隆中的控制元素
+      const controlsToHide = clonedSource.querySelectorAll<HTMLElement>(
         '.desktop-toolbar, .action-panel, .action-panel--mobile, .editor-chip, .editor-menu, .lang-btn, .a4-btn, .download-btn',
       );
-      const originalDisplays = new Map<HTMLElement, string>();
       controlsToHide.forEach((control) => {
-        originalDisplays.set(control, control.style.display);
         control.style.display = 'none';
       });
 
       // 添加 PDF 模式樣式類
-      source.classList.add('resume-canvas--pdf');
+      clonedSource.classList.add('resume-canvas--pdf');
 
-      // 強制移除動畫
-      source.querySelectorAll<HTMLElement>('*').forEach((element) => {
+      // 只移除所有元素的動畫和過渡，不干涉布局
+      clonedSource.querySelectorAll<HTMLElement>('*').forEach((element) => {
         element.style.setProperty('animation', 'none', 'important');
         element.style.setProperty('transition', 'none', 'important');
         element.style.setProperty('opacity', '1', 'important');
         element.style.setProperty('filter', 'none', 'important');
       });
+
+      // 計算正確的內容尺寸
+      // A4 = 210mm × 297mm, margin = 5mm, 內容區 = 200mm × 287mm
+      // 需要轉換成像素值讓 html2canvas 捕捉時與 PDF 內容區大小一致
+      const mmToPixel = 96 / 25.4; // 96 DPI，標準瀏覽器 DPI
+      const pdfMarginMm = 5;
+      const a4WidthMm = 210;
+      const a4HeightMm = 297;
+      const contentWidthMm = a4WidthMm - 2 * pdfMarginMm; // 200mm
+      const contentHeightMm = a4HeightMm - 2 * pdfMarginMm; // 287mm
+      const windowWidthPx = Math.round(contentWidthMm * mmToPixel); // ≈ 756px
+      const singlePageHeightPx = Math.round(contentHeightMm * mmToPixel); // ≈ 1085px
+
+      // 臨時插入 DOM 以測量在 A4 寬度下的實際高度（允許多頁）
+      const offscreenContainer = document.createElement('div');
+      offscreenContainer.style.position = 'absolute';
+      offscreenContainer.style.left = '-9999px';
+      offscreenContainer.style.top = '-9999px';
+      offscreenContainer.style.width = `${windowWidthPx}px`;
+      offscreenContainer.style.visibility = 'hidden';
+      offscreenContainer.appendChild(clonedSource);
+      document.body.appendChild(offscreenContainer);
+
+      // 取得實際的內容高度（這會反映多頁的完整內容）
+      const actualHeight = clonedSource.offsetHeight || clonedSource.scrollHeight;
 
       // html2pdf 會在 HTML 級別進行分頁，使用 page-break-inside 規則防止切割
       const options = {
@@ -767,25 +793,37 @@ export class ResumeComponent {
           scale: 2, 
           useCORS: true, 
           backgroundColor: '#ffffff',
-          windowHeight: source.scrollHeight, // 確保完整高度被捕捉
+          windowWidth: windowWidthPx,
+          windowHeight: actualHeight, // 使用實際測量的高度，允許多頁
+          ignoreElements: (element: HTMLElement) => {
+            // 隱藏不需要的元素
+            const classList = element.className || '';
+            return classList.includes('desktop-toolbar') || 
+                   classList.includes('action-panel') ||
+                   classList.includes('editor-chip') ||
+                   classList.includes('lang-btn') ||
+                   classList.includes('a4-btn') ||
+                   classList.includes('download-btn');
+          },
         },
         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-        pagebreak: { mode: ['avoid-all'] }, // 盡量避免在元素中間分頁
+        pagebreak: { mode: ['avoid-all'] },
       };
 
-      await html2pdf().set(options).from(source).save();
+      await html2pdf().set(options).from(clonedSource).save();
 
-      // 恢復樣式與狀態
-      source.classList.remove('resume-canvas--pdf');
-      if (shell) {
-        shell.classList.remove('a4-mode');
-      }
-      controlsToHide.forEach((control) => {
-        const originalDisplay = originalDisplays.get(control) || '';
-        control.style.display = originalDisplay;
-      });
-      this.isA4Mode.set(wasA4Mode);
+      // 清理：從 DOM 移除臨時容器
+      document.body.removeChild(offscreenContainer);
     } finally {
+      // 立即恢復原始狀態，無論成功或失敗
+      this.isA4Mode.set(wasA4Mode);
+      if (shell) {
+        if (wasA4Mode) {
+          shell.classList.add('a4-mode');
+        } else {
+          shell.classList.remove('a4-mode');
+        }
+      }
       this.isExporting.set(false);
     }
   }

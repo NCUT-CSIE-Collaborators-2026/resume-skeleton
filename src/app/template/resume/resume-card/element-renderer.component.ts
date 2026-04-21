@@ -94,7 +94,7 @@ import { ResumeCardElement, ResumeTreeNode, NodeCardItem } from './element.types
     }
 
     i {
-      font-size: 1rem;
+      font-size: 0.7rem;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -372,7 +372,6 @@ export class TreeNodeComponent {
   `,
   styles: [`
     .element-text, .element-badges, .element-icon-list, .element-grid-tree {
-      margin: 0.5rem 0;
       padding: 0.5rem;
     }
 
@@ -386,13 +385,14 @@ export class TreeNodeComponent {
 
     .text-element p {
       margin: 0;
+      font-size: 0.8rem;
       line-height: 1.6;
     }
 
     textarea {
       width: 100%;
       min-height: 80px;
-      padding: 0.5rem;
+      padding: 0 0.5rem;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
@@ -401,15 +401,14 @@ export class TreeNodeComponent {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin: 0.5rem 0;
     }
 
     .badge {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
+      padding: 0rem 0.75rem;
       background: #f0f0f0;
       border-radius: 16px;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
     }
 
     .badge input {
@@ -431,20 +430,20 @@ export class TreeNodeComponent {
     }
 
     .icon-list-item i {
-      font-size: 1.25rem;
+      font-size: 0.8rem;
     }
 
     .tree-groups {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.25rem;
     }
 
     .tree-group {
       flex: 1;
-      min-width: 250px;
-      padding: 0.75rem;
+      min-width: max(250px,30%);
+      padding: 0 0.75rem;
       background: #f9f9f9;
       border-radius: 4px;
       border-left: 3px solid #1976d2;
@@ -458,13 +457,13 @@ export class TreeNodeComponent {
     }
 
     .group-icon {
-      font-size: 1.25rem;
+      font-size: 0.9rem;
       color: #1976d2;
     }
 
     .group-name {
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
     }
 
@@ -477,7 +476,7 @@ export class TreeNodeComponent {
 
     .tree-item {
       margin: 0.3rem 0;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
 
     .tree-node {
@@ -577,7 +576,7 @@ export class TreeNodeComponent {
     }
 
     .item-icon {
-      font-size: 1rem;
+      font-size: 0.8rem;
       color: #666;
       flex-shrink: 0;
       margin-top: 0.25rem;
@@ -585,10 +584,10 @@ export class TreeNodeComponent {
 
     .badge-name {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
+      padding: 0rem 0.75rem;
       background: #e3f2fd;
       border-radius: 16px;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       font-weight: 500;
       color: #1976d2;
     }
