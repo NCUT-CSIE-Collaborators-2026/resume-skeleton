@@ -13,6 +13,8 @@ import { MessageService } from 'primeng/api';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { ResumeCardComponent } from './resume-card/resume-card.component';
 import { Card } from './resume.model';
+import { ResumeContentNormalizer } from './resume-content-normalizer';
+import { CardContentEntry, TreeListItem } from './resume-content.types';
 import i18nData from '../../ui.i18n.json';
 import { environment } from '../../config/environment';
 import { AuthSessionService } from '../../services/auth-session.service';
@@ -66,12 +68,6 @@ interface I18nLocale {
   };
 }
 
-interface TreeListItem {
-  value: string;
-  icon: string;
-  children?: TreeListItem[];
-}
-
 interface ContentLocale {
   profile: {
     name: string;
@@ -114,23 +110,10 @@ interface ContentLocale {
   verify: {
     items: string[];
   };
-  card_content?: CardContentCollection;
-}
-
-interface CardContentEntry {
-  id: string;
-  title?: string;
-  subtitle?: string;
-  name?: string;
-  headline?: string;
-  text?: string;
-  elements?: Card['elements'];
-  topics?: string[];
-}
-
-interface CardContentCollection {
-  cards: CardContentEntry[];
-  [key: string]: unknown;
+  card_content?: {
+    cards: CardContentEntry[];
+    [key: string]: unknown;
+  };
 }
 
 type ResumeLocale = I18nLocale & ContentLocale;
@@ -271,6 +254,9 @@ export class ResumeComponent {
     en: { ...EMPTY_CONTENT_LOCALE },
     zh_TW: { ...EMPTY_CONTENT_LOCALE },
   });
+  private readonly contentNormalizer = new ResumeContentNormalizer(
+    () => this.introMode(),
+  );
 
   constructor(
     private readonly authSessionService: AuthSessionService,
@@ -312,6 +298,8 @@ export class ResumeComponent {
     ...UI_I18N[this.activeLang()],
     ...this.contentByLang()[this.activeLang()],
   }));
+
+  readonly cardContentById = computed(() => this.indexCardContentEntries(this.content().card_content?.cards ?? []));
 
   readonly uiCopy = computed<UiCopy>(() => {
     const content = this.content();
@@ -447,102 +435,10 @@ export class ResumeComponent {
       : this.content().introductions.pitch_1min,
   );
 
-  // 技術堆疊卡片的動態寬度：根據項目數量自動調整
-  readonly stackCardLayout = computed(() => {
-    const stackItems = this.getTechStackData();
-    const stackItemsCount = stackItems.reduce((count, category) => count + category.value.length, 0);
-    if (stackItemsCount > 8) return 8; // 超過8項，用8列
-    if (stackItemsCount > 4) return 6; // 5-8項，用6列
-    return 4; // 4項以下，用4列
-  });
-
   readonly cards = computed<Card[]>(() => {
-    const content = this.content();
-    const ui = this.uiCopy();
-    const baseCards: Card[] = [
-      // 個人資料卡
-      {
-        id: 'profile',
-        title: ui.profileTitle,
-        subtitle: content.profile.status,
-        layout: 4,
-        elements: [{ type: 'badges', items: this.profileBadges() }],
-      },
-      // 介紹卡
-      {
-        id: 'intro',
-        title: ui.introTitle,
-        layout: 6,
-        elements: [{ type: 'text', text: this.introText() }],
-      },
-      // 教育卡
-      {
-        id: 'education',
-        title: ui.educationTitle,
-        layout: 2,
-        elements: [
-          {
-            type: 'grid-tree',
-            groups: this.getEducationData(),
-            gridLayout: 'compact',
-          },
-        ],
-      },
-      // 經驗卡
-      {
-        id: 'experience',
-        title: ui.expTitle,
-        layout: 2,
-        elements: [
-          {
-            type: 'grid-tree',
-            groups: this.experienceGroups(),
-            gridLayout: 'compact',
-          },
-        ],
-      },
-      // 技術堆疊卡
-      {
-        id: 'stack',
-        title: ui.stackTitle,
-        layout: 6,
-        elements: [
-          {
-            type: 'grid-tech',
-            items: this.getTechStackData(),
-            gridLayout: 'compact'
-          },
-        ],
-      },
-      // 專案卡
-      {
-        id: 'projects',
-        title: ui.projectTitle,
-        layout: 6,
-        elements: [
-          {
-            type: 'grid-tree',
-            groups: this.projectGroups(),
-            gridLayout: 'single',
-          },
-        ],
-      },
-      // 證照卡
-      {
-        id: 'verify',
-        title: ui.verifyTitle,
-        layout: 6,
-        elements: [
-          {
-            type: 'grid-tree',
-            groups: this.verifyGroups(),
-            gridLayout: 'single',
-          },
-        ],
-      },
-    ];
+    const cardEntries = this.content().card_content?.cards ?? [];
 
-    return baseCards.map((card) => this.applyStoredCardContent(card));
+    return cardEntries.map((entry, index) => this.buildCardFromEntry(entry, index));
   });
 
   private getStoredCardContent(cardId: string):
@@ -558,9 +454,8 @@ export class ResumeComponent {
       return null;
     }
 
-    const key = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
     const cards = Array.isArray(cardContent.cards) ? cardContent.cards : [];
-    const storedFromArray = cards.find((entry) => entry?.id === key);
+    const storedFromArray = cards.find((entry) => entry?.id === cardId);
     return storedFromArray ?? null;
   }
 
@@ -579,12 +474,8 @@ export class ResumeComponent {
       nextCard.subtitle = stored.subtitle;
     }
 
-    if (card.id === 'stack') {
-      return nextCard;
-    }
-
     if (Array.isArray(stored.elements)) {
-      nextCard.elements = this.sanitizeCardElements(
+      nextCard.elements = this.contentNormalizer.sanitizeCardElements(
         this.deepClone(stored.elements as Card['elements']),
       );
     }
@@ -676,583 +567,7 @@ export class ResumeComponent {
   }
 
   private normalizeContentLocale(raw: unknown): ContentLocale {
-    const source = this.isRecord(raw) ? raw : {};
-    const cardContent = this.isRecord(source['card_content']) ? source['card_content'] : {};
-    const cardEntries = this.normalizeCardContentEntries(cardContent);
-
-    const profileCard = this.getCardContentEntry(cardContent, cardEntries, 'profile');
-    const educationCard = this.getCardContentEntry(cardContent, cardEntries, 'education');
-    const experienceCard = this.getCardContentEntry(cardContent, cardEntries, 'experience');
-    const techStackCard = this.getCardContentEntry(cardContent, cardEntries, 'stack');
-    const intro30Card = this.getCardContentEntry(cardContent, cardEntries, 'intro_30');
-    const intro60Card = this.getCardContentEntry(cardContent, cardEntries, 'intro_60');
-    const projectsCard = this.getCardContentEntry(cardContent, cardEntries, 'projects');
-    const verifyCard = this.getCardContentEntry(cardContent, cardEntries, 'verify');
-
-    const profileBadgeValues = this.extractBadgeValues(profileCard);
-    const educationGroups = this.extractTreeGroups(educationCard);
-    const experienceGroups = this.extractTreeGroups(experienceCard);
-    const techStackItems = this.extractTechStackItems(techStackCard);
-    const projectsGroups = this.extractTreeGroups(projectsCard);
-    const verifyItems = this.extractVerifyItems(verifyCard);
-
-    return {
-      profile: {
-        ...EMPTY_CONTENT_LOCALE.profile,
-        name:
-          this.readNonEmptyString(profileCard['name']) ??
-          this.readNonEmptyString(profileCard['displayName']) ??
-          '',
-        title:
-          this.readNonEmptyString(profileCard['headline']) ??
-          this.readNonEmptyString(profileCard['title']) ??
-          '',
-        gender: profileBadgeValues[0] ?? '',
-        age: profileBadgeValues[1] ?? '',
-        status: this.readNonEmptyString(profileCard['subtitle']) ?? '',
-        mbti: profileBadgeValues[2] ?? '',
-      },
-      education: {
-        ...EMPTY_CONTENT_LOCALE.education,
-        school: this.readTreeGroupName(educationGroups, 0) ?? this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
-        department: this.readTreeGroupItemValue(educationGroups, 0, 0) ?? '',
-        degree: this.readTreeGroupItemValue(educationGroups, 0, 1) ?? this.readTreeGroupItemValue(educationGroups, 0, 2, '|') ?? '',
-        graduation_status:
-          this.readTreeGroupItemValue(educationGroups, 0, 2) ??
-          this.readTreeGroupItemValue(educationGroups, 0, 2, '|', 1) ??
-          '',
-      },
-      experience: {
-        ...EMPTY_CONTENT_LOCALE.experience,
-        intern_title: this.readTreeGroupItemValue(experienceGroups, 0, 0) ?? '',
-        assistant_title: this.readTreeGroupItemValue(experienceGroups, 1, 0) ?? '',
-        military_title: this.readTreeGroupItemValue(experienceGroups, 2, 0) ?? '',
-      },
-      tech_stack: {
-        ...EMPTY_CONTENT_LOCALE.tech_stack,
-        language: this.normalizeStringArray(
-          techStackItems.language,
-          EMPTY_CONTENT_LOCALE.tech_stack.language,
-        ),
-        frontend: this.normalizeStringArray(
-          techStackItems.frontend,
-          EMPTY_CONTENT_LOCALE.tech_stack.frontend,
-        ),
-        backend: this.normalizeStringArray(
-          techStackItems.backend,
-          EMPTY_CONTENT_LOCALE.tech_stack.backend,
-        ),
-        database: this.normalizeStringArray(
-          techStackItems.database,
-          EMPTY_CONTENT_LOCALE.tech_stack.database,
-        ),
-        devops: this.normalizeStringArray(
-          techStackItems.devops,
-          EMPTY_CONTENT_LOCALE.tech_stack.devops,
-        ),
-      },
-      introductions: {
-        ...EMPTY_CONTENT_LOCALE.introductions,
-        pitch_30s:
-          this.readCardTextFromEntry(intro30Card) ??
-          this.readCardTextFromEntry(intro60Card) ??
-          '',
-        pitch_1min:
-          this.readCardTextFromEntry(intro60Card) ??
-          this.readCardTextFromEntry(intro30Card) ??
-          '',
-      },
-      projects: {
-        ...EMPTY_CONTENT_LOCALE.projects,
-        items: this.normalizeStringArray(this.extractFlatTreeItems(projectsGroups), EMPTY_CONTENT_LOCALE.projects.items),
-        groups: this.normalizeTreeGroups(projectsGroups),
-      },
-      verify: {
-        ...EMPTY_CONTENT_LOCALE.verify,
-        items: this.normalizeStringArray(verifyItems, EMPTY_CONTENT_LOCALE.verify.items),
-      },
-      card_content: {
-        ...cardContent,
-        cards: cardEntries,
-      },
-    };
-  }
-
-  private normalizeCardContentEntries(raw: Record<string, unknown>): CardContentEntry[] {
-    const cards = Array.isArray(raw['cards']) ? raw['cards'] : [];
-    return cards
-      .map((entry) => this.normalizeCardContentEntry(entry))
-      .filter((entry): entry is CardContentEntry => entry !== null);
-  }
-
-  private normalizeCardContentEntry(raw: unknown): CardContentEntry | null {
-    if (!this.isRecord(raw)) {
-      return null;
-    }
-
-    const id = this.readNonEmptyString(raw['id']);
-    if (!id) {
-      return null;
-    }
-
-    const topics = Array.isArray(raw['topics'])
-      ? raw['topics']
-          .filter((item): item is string => typeof item === 'string')
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
-      : [];
-
-    const normalizedElements = this.normalizeCardElements(raw['elements']);
-    const resolvedElements =
-      normalizedElements ??
-      ((id === 'intro_30' || id === 'intro_60')
-        ? ([{ type: 'text', text: '' }] as Card['elements'])
-        : undefined);
-
-    return {
-      id,
-      title: this.readNonEmptyString(raw['title']) ?? undefined,
-      subtitle: this.readNonEmptyString(raw['subtitle']) ?? undefined,
-      name: this.readNonEmptyString(raw['name']) ?? undefined,
-      headline: this.readNonEmptyString(raw['headline']) ?? undefined,
-      text: this.readNonEmptyString(raw['text']) ?? undefined,
-      elements: resolvedElements,
-      topics,
-    };
-  }
-
-  private normalizeCardElements(value: unknown): Card['elements'] | undefined {
-    if (Array.isArray(value)) {
-      return this.sanitizeCardElements(this.deepClone(value as Card['elements']));
-    }
-
-    if (typeof value !== 'string') {
-      return undefined;
-    }
-
-    const trimmed = value.trim();
-    if (!trimmed.startsWith('[')) {
-      return undefined;
-    }
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      return Array.isArray(parsed)
-        ? this.sanitizeCardElements(this.deepClone(parsed as Card['elements']))
-        : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  private sanitizeCardElements(elements: Card['elements']): Card['elements'] {
-    return elements
-      .map((element) => {
-        if (!this.isRecord(element)) {
-          return null;
-        }
-
-        const elementRecord = element as Record<string, unknown>;
-
-        const type = this.readNonEmptyString(elementRecord['type']) ?? '';
-        const nextElement: Record<string, unknown> = {
-          ...elementRecord,
-          type,
-        };
-
-        if (type === 'grid-tree') {
-          nextElement['groups'] = this.normalizeTreeGroups(elementRecord['groups']);
-        }
-
-        if (type === 'grid-tech' && Array.isArray(elementRecord['items'])) {
-          const rawItems = elementRecord['items'] as Array<Record<string, unknown>>;
-          nextElement['items'] = rawItems
-            .map((item) => {
-              if (!this.isRecord(item)) {
-                return null;
-              }
-
-              const values = this.normalizeStringArray(item['value'], []);
-              if (values.length === 0) {
-                return null;
-              }
-
-              return {
-                label: this.readNonEmptyString(item['label']) ?? '',
-                value: values,
-                severity: this.readNonEmptyString(item['severity']) ?? 'secondary',
-              };
-            })
-            .filter((item): item is { label: string; value: string[]; severity: string } => item !== null);
-        }
-
-        if (type === 'icon-list') {
-          nextElement['items'] = this.normalizeStringArray(elementRecord['items'], []);
-        }
-
-        if (type === 'badges') {
-          nextElement['items'] = this.normalizeStringArray(elementRecord['items'], []);
-        }
-
-        if (type === 'text') {
-          nextElement['text'] = this.readNonEmptyString(elementRecord['text']) ?? '';
-        }
-
-        return nextElement;
-      })
-      .filter((element): element is Card['elements'][number] => element !== null);
-  }
-
-  private getCardContentEntry(
-    _raw: Record<string, unknown>,
-    entries: CardContentEntry[],
-    cardId: string,
-  ): Record<string, unknown> {
-    const normalizedKey = cardId === 'intro' ? `intro_${this.introMode()}` : cardId;
-    const arrayEntry = entries.find((entry) => entry.id === normalizedKey);
-    return arrayEntry ? (arrayEntry as unknown as Record<string, unknown>) : {};
-  }
-
-  private extractBadgeValues(entry: Record<string, any>): string[] {
-    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
-    const badgeElement = elements.find(
-      (element) => this.isRecord(element) && element['type'] === 'badges',
-    );
-
-    if (!this.isRecord(badgeElement) || !Array.isArray(badgeElement['items'])) {
-      return [];
-    }
-
-    return badgeElement['items']
-      .filter((item): item is string => typeof item === 'string')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
-  private extractTreeGroups(entry: Record<string, any>): Array<{
-    name: string;
-    icon: string;
-    items: TreeListItem[];
-  }> {
-    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
-    const treeElement = elements.find(
-      (element) => this.isRecord(element) && element['type'] === 'grid-tree',
-    );
-
-    if (!this.isRecord(treeElement) || !Array.isArray(treeElement['groups'])) {
-      return [];
-    }
-
-    return this.normalizeTreeGroups(treeElement['groups']);
-  }
-
-  private extractVerifyItems(entry: Record<string, any>): string[] {
-    const treeGroups = this.extractTreeGroups(entry);
-    if (treeGroups.length > 0) {
-      const fromTree = treeGroups.flatMap((group, index) => {
-        const childValues = group.items
-          .map((item) => item.value)
-          .filter((value) => value.trim().length > 0);
-        const parentName = group.name.trim().length > 0 ? group.name : `Certification ${index + 1}`;
-
-        if (childValues.length === 0) {
-          return [parentName];
-        }
-
-        return [`${parentName} | ${childValues.join(' | ')}`];
-      });
-
-      if (fromTree.length > 0) {
-        return this.normalizeStringArray(fromTree, []);
-      }
-    }
-
-    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
-    const iconListElement = elements.find(
-      (element) => this.isRecord(element) && element['type'] === 'icon-list',
-    );
-
-    if (!this.isRecord(iconListElement) || !Array.isArray(iconListElement['items'])) {
-      return [];
-    }
-
-    return iconListElement['items']
-      .filter((item): item is string => typeof item === 'string')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
-  private extractTechStackItems(entry: Record<string, any>): {
-    language: string[];
-    frontend: string[];
-    backend: string[];
-    database: string[];
-    devops: string[];
-  } {
-    const fromTree = this.extractTechStackItemsFromTree(entry);
-    if (Object.values(fromTree).some((values) => values.length > 0)) {
-      return fromTree;
-    }
-
-    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
-    const techElement = elements.find(
-      (element) => this.isRecord(element) && element['type'] === 'grid-tech',
-    );
-
-    if (!this.isRecord(techElement) || !Array.isArray(techElement['items'])) {
-      return {
-        language: [],
-        frontend: [],
-        backend: [],
-        database: [],
-        devops: [],
-      };
-    }
-
-    const categories = {
-      language: [] as string[],
-      frontend: [] as string[],
-      backend: [] as string[],
-      database: [] as string[],
-      devops: [] as string[],
-    };
-
-    const techItems = techElement['items'] as Array<Record<string, unknown>>;
-    const keys = ['language', 'frontend', 'backend', 'database', 'devops'] as const;
-
-    techItems.forEach((item, index) => {
-      const key = keys[index];
-      if (!key || !Array.isArray(item['value'])) {
-        return;
-      }
-
-      categories[key] = this.normalizeStringArray(item['value'], []);
-    });
-
-    return categories;
-  }
-
-  private extractTechStackItemsFromTree(entry: Record<string, any>): {
-    language: string[];
-    frontend: string[];
-    backend: string[];
-    database: string[];
-    devops: string[];
-  } {
-    const categories = {
-      language: [] as string[],
-      frontend: [] as string[],
-      backend: [] as string[],
-      database: [] as string[],
-      devops: [] as string[],
-    };
-
-    const groups = this.extractTreeGroups(entry);
-    if (groups.length === 0) {
-      return categories;
-    }
-
-    groups.forEach((group) => {
-      const key = this.resolveTechStackKey(group.name);
-      if (!key) {
-        return;
-      }
-
-      const values = group.items.map((item) => {
-        const childText = Array.isArray(item.children) && item.children.length > 0
-          ? ` ${item.children.map((child) => child.value).join(' ')}`
-          : '';
-        return `${item.value}${childText}`.trim();
-      });
-
-      categories[key] = this.normalizeStringArray(values, []);
-    });
-
-    return categories;
-  }
-
-  private resolveTechStackKey(groupName: string): 'language' | 'frontend' | 'backend' | 'database' | 'devops' | null {
-    const normalized = groupName.trim().toLowerCase();
-    const labels = this.uiCopy().labels;
-
-    if (normalized === labels.language.trim().toLowerCase() || normalized === 'language' || normalized === '語言') {
-      return 'language';
-    }
-    if (normalized === labels.frontend.trim().toLowerCase() || normalized === 'frontend' || normalized === '前端') {
-      return 'frontend';
-    }
-    if (normalized === labels.backend.trim().toLowerCase() || normalized === 'backend' || normalized === '後端') {
-      return 'backend';
-    }
-    if (normalized === labels.database.trim().toLowerCase() || normalized === 'database' || normalized === '資料庫') {
-      return 'database';
-    }
-    if (normalized === labels.devops.trim().toLowerCase() || normalized === 'devops') {
-      return 'devops';
-    }
-
-    return null;
-  }
-
-  private readCardTextFromEntry(entry: Record<string, any>): string | null {
-    if (typeof entry['text'] === 'string' && entry['text'].trim().length > 0) {
-      return entry['text'].trim();
-    }
-
-    const elements = Array.isArray(entry['elements']) ? entry['elements'] : [];
-    const textElement = elements.find(
-      (element) =>
-        this.isRecord(element) &&
-        element['type'] === 'text' &&
-        typeof element['text'] === 'string' &&
-        element['text'].trim().length > 0,
-    ) as Record<string, any> | undefined;
-
-    return textElement?.['text']?.trim?.() ?? null;
-  }
-
-  private readTreeGroupItemValue(
-    groups: Array<{
-      name: string;
-      icon: string;
-      items: TreeListItem[];
-    }>,
-    groupIndex: number,
-    itemIndex: number,
-    separator?: string,
-    splitIndex = 0,
-  ): string | null {
-    const group = groups[groupIndex];
-    const item = group?.items[itemIndex];
-    if (!item?.value) {
-      return null;
-    }
-
-    if (!separator) {
-      return item.value;
-    }
-
-    const parts = item.value.split(separator).map((value) => value.trim());
-    return parts[splitIndex] ?? null;
-  }
-
-  private readTreeGroupName(
-    groups: Array<{
-      name: string;
-      icon: string;
-      items: TreeListItem[];
-    }>,
-    groupIndex: number,
-  ): string | null {
-    const group = groups[groupIndex];
-    return group?.name?.trim?.() || null;
-  }
-
-  private extractFlatTreeItems(
-    groups: Array<{
-      name: string;
-      icon: string;
-      items: TreeListItem[];
-    }>,
-  ): string[] {
-    return groups.flatMap((group) => group.items.map((item) => item.value));
-  }
-
-  private normalizeTreeItems(value: unknown): TreeListItem[] {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    const seenItemValues = new Set<string>();
-    return value
-      .map((item) => {
-        if (!this.isRecord(item)) {
-          return null;
-        }
-
-        const itemValue = this.readNonEmptyString(item['value']) ?? '';
-        if (itemValue.length === 0 || seenItemValues.has(itemValue)) {
-          return null;
-        }
-
-        seenItemValues.add(itemValue);
-        const itemIcon = this.readNonEmptyString(item['icon']) ?? 'pi pi-check-circle';
-        const children = this.normalizeTreeItems(item['children']);
-
-        return {
-          value: itemValue,
-          icon: itemIcon,
-          ...(children.length > 0 ? { children } : {}),
-        };
-      })
-      .filter((item): item is TreeListItem => item !== null);
-  }
-
-  private normalizeTreeGroups(value: unknown): Array<{
-    name: string;
-    icon: string;
-    items: TreeListItem[];
-  }> {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value
-      .map((group) => {
-        if (!this.isRecord(group)) {
-          return null;
-        }
-
-        const name = this.readNonEmptyString(group['name']) ?? '';
-        const icon = this.readNonEmptyString(group['icon']) ?? 'pi pi-folder-open';
-        const items = this.normalizeTreeItems(group['items']);
-
-        return {
-          name,
-          icon,
-          items,
-        };
-      })
-      .filter(
-        (group): group is { name: string; icon: string; items: TreeListItem[] } =>
-          group !== null,
-      );
-  }
-
-  private isRecord(value: unknown): value is Record<string, any> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-  }
-
-  private normalizeStringArray(value: unknown, fallback: string[]): string[] {
-    if (!Array.isArray(value)) {
-      return [...fallback];
-    }
-
-    const seen = new Set<string>();
-    return value
-      .filter((item): item is string => typeof item === 'string')
-      .map((item) => item.trim())
-      .filter((item) => {
-        if (item.length === 0) {
-          return false;
-        }
-
-        if (seen.has(item)) {
-          return false;
-        }
-
-        seen.add(item);
-        return true;
-      });
-  }
-
-  private readNonEmptyString(value: unknown): string | null {
-    if (typeof value !== 'string') {
-      return null;
-    }
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
+    return this.contentNormalizer.normalizeContentLocale(raw, EMPTY_CONTENT_LOCALE) as ContentLocale;
   }
 
   isCardEditing(cardId: string): boolean {
@@ -2061,62 +1376,61 @@ export class ResumeComponent {
   }
 
   // 技術堆疊資料驅動
-  getTechStackData() {
-    const stack = this.content().tech_stack;
-    const labels = this.uiCopy().labels;
-
-    return [
-      {
-        label: labels.language,
-        value: this.normalizeStringArray(stack.language, []),
-        severity: 'info' as const,
-      },
-      {
-        label: labels.frontend,
-        value: this.normalizeStringArray(stack.frontend, []),
-        severity: 'success' as const,
-      },
-      {
-        label: labels.backend,
-        value: this.normalizeStringArray(stack.backend, []),
-        severity: 'warning' as const,
-      },
-      {
-        label: labels.database,
-        value: this.normalizeStringArray(stack.database, []),
-        severity: 'danger' as const,
-      },
-      {
-        label: labels.devops,
-        value: this.normalizeStringArray(stack.devops, []),
-        severity: 'secondary' as const,
-      },
-    ];
+  private indexCardContentEntries(entries: CardContentEntry[]): Record<string, CardContentEntry> {
+    return entries.reduce<Record<string, CardContentEntry>>((index, entry) => {
+      index[entry.id] = entry;
+      return index;
+    }, {});
   }
 
-  // 教育資料驅動
-  getEducationData() {
-    const education = this.content().education;
+  private buildCardFromEntry(entry: CardContentEntry, index: number): Card {
+    const elements = Array.isArray(entry.elements)
+      ? this.contentNormalizer.sanitizeCardElements(this.deepClone(entry.elements))
+      : [];
+    const type = this.resolveCardType(entry, elements);
 
-    return [
-      {
-        name: this.uiCopy().educationGroupName,
-        icon: 'pi pi-building-columns',
-        items: [
-          {
-            value: education.school,
-            icon: 'pi pi-building-columns',
-          },
-          {
-            value: education.department,
-            icon: 'pi pi-book',
-          },
-          {
-            value: `${education.degree} | ${education.graduation_status}`,
-            icon: 'pi pi-graduation-cap',
-          },
-        ],
-      },
-    ];
+    return {
+      id: entry.id,
+      type,
+      title: typeof entry.title === 'string' ? entry.title : '',
+      subtitle: entry.subtitle,
+      layout: this.resolveCardLayout(entry, elements, index),
+      elements,
+    };
+  }
+
+  private resolveCardType(entry: CardContentEntry, elements: Card['elements']): string {
+    const explicitType = typeof entry.type === 'string' && entry.type.trim().length > 0
+      ? entry.type.trim()
+      : null;
+
+    if (explicitType) {
+      return explicitType;
+    }
+
+    return elements[0]?.type ?? 'text';
+  }
+
+  private resolveCardLayout(entry: CardContentEntry, elements: Card['elements'], index: number): number {
+    const firstElement = elements[0];
+    const firstType = firstElement?.type;
+
+    if (firstType === 'grid-tree') {
+      return firstElement.gridLayout === 'compact' ? 2 : 6;
+    }
+
+    if (firstType === 'grid-tech') {
+      return 6;
+    }
+
+    if (firstType === 'icon-list') {
+      return 6;
+    }
+
+    if (firstType === 'badges' || firstType === 'text') {
+      return index === 0 ? 4 : 6;
+    }
+
+    return 4;
   }
 }

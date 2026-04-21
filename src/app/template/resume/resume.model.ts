@@ -4,6 +4,7 @@ export type CardElement = ResumeCardElement;
 
 export interface Card {
   id: string;
+  type: string;
   title: string;
   subtitle?: string;
   layout: number;
