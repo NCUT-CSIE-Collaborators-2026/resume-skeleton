@@ -9,15 +9,6 @@ type ResumeCardElementBase =
   | { type: 'badges'; items: string[] }
   | { type: 'icon-list'; icon: string; items: string[] }
   | {
-      type: 'grid-tech';
-      items: Array<{
-        label: string;
-        value: string[];
-        severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary';
-      }>;
-      gridLayout?: 'compact' | 'single';
-    }
-  | {
       type: 'grid-tree';
       groups: Array<{
         name: string;

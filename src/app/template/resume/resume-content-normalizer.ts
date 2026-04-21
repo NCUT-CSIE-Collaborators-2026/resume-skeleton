@@ -2,11 +2,7 @@ import { Card } from './resume.model';
 import {
   CardContentEntry,
   TreeGroup,
-  TreeListItem,
-  StackCategoryLabelMatchers,
-  StackCategoryKey,
-  StackCategoryValueMap,
-  STACK_CATEGORY_KEYS,
+  TreeListItem
 } from './resume-content.types';
 
 type IntroMode = '30' | '60';
@@ -36,43 +32,16 @@ export class ResumeContentNormalizer {
       .map((item) => this.asNode(item))
       .filter((item): item is ResumeNode => item !== null);
 
-    const byId = new Map<string, ResumeNode>();
     const cards: CardContentEntry[] = [];
 
     sourceNodes.forEach((node, index) => {
-      if (node.id && !byId.has(node.id)) {
-        byId.set(node.id, node);
-      }
-
-      if (node.type === 'headline') {
-        return;
-      }
-
-      const cardEntry = this.toCardEntry(node, index, byId);
+      const cardEntry = this.toCardEntry(node, index, new Map());
       if (cardEntry) {
         cards.push(cardEntry);
       }
     });
 
-    const stackLabelMatchers = this.buildStackCategoryLabelMatchers(emptyContentLocale);
-
-    const header = sourceNodes.find((node) => node.type === 'headline') ?? null;
-    const profileNode = byId.get('profile') ?? sourceNodes.find((node) => node.type === 'badge-card') ?? null;
-    const educationNode = byId.get('education') ?? sourceNodes.find((node) => node.name === '學歷背景') ?? null;
-    const experienceNode = byId.get('experience') ?? sourceNodes.find((node) => node.name === '經歷概覽') ?? null;
-    const skillsNode = byId.get('skills') ?? sourceNodes.find((node) => node.name === '技術堆疊') ?? null;
-    const projectsNode = byId.get('projects') ?? sourceNodes.find((node) => node.name === '專案') ?? null;
-    const verifyNode = byId.get('verify') ?? sourceNodes.find((node) => node.name === '專業證照') ?? null;
-    const introductionNode = byId.get('introduction') ?? sourceNodes.find((node) => node.type === 'toggle-card') ?? null;
-
     return {
-      profile: this.buildProfileSection(header, profileNode, emptyContentLocale['profile']),
-      education: this.buildEducationSection(this.nodeToTreeGroups(educationNode), emptyContentLocale['education']),
-      experience: this.buildExperienceSection(this.nodeToTreeGroups(experienceNode), emptyContentLocale['experience']),
-      tech_stack: this.buildStackSection(skillsNode, stackLabelMatchers, emptyContentLocale['tech_stack']),
-      introductions: this.buildIntroductionsSection(introductionNode, emptyContentLocale['introductions']),
-      projects: this.buildProjectsSection(projectsNode, emptyContentLocale['projects']),
-      verify: this.buildVerifySection(verifyNode, emptyContentLocale['verify']),
       card_content: {
         cards,
       },
@@ -116,10 +85,6 @@ export class ResumeContentNormalizer {
           nextElement['groups'] = this.normalizeTreeGroups(elementRecord['groups']);
         }
 
-        if (type === 'grid-tech') {
-          nextElement['items'] = this.normalizeGridTechItems(elementRecord['items']);
-        }
-
         if (type === 'icon-list' || type === 'badges') {
           nextElement['items'] = this.normalizeStringArray(elementRecord['items'], []);
         }
@@ -143,6 +108,17 @@ export class ResumeContentNormalizer {
 
     if (byId.has(cardId) && node.id === undefined) {
       return null;
+    }
+
+    // headline 類型：從 items[0].name 提取副標題
+    if (node.type === 'headline') {
+      const jobTitle = (node.items ?? [])[0]?.name ?? '';
+      return {
+        id: cardId,
+        type: 'headline',
+        title: node.name,
+        subtitle: jobTitle,
+      };
     }
 
     const elements = this.nodeToCardElements(node);
@@ -177,9 +153,8 @@ export class ResumeContentNormalizer {
 
     if (this.isStackCard(node)) {
       return [{
-        type: 'grid-tech',
-        items: this.stackNodeToTechItems(node),
-        gridLayout: 'compact',
+        type: 'node-card',
+        items: (node.items ?? []) as any,
       }];
     }
 
@@ -200,81 +175,6 @@ export class ResumeContentNormalizer {
     return count > 1 ? 'single' : 'compact';
   }
 
-  private buildProfileSection(
-    headerNode: ResumeNode | null,
-    profileNode: ResumeNode | null,
-    fallback: SectionPayload,
-  ): SectionPayload {
-    const badges = (profileNode?.items ?? []).map((item) => item.name);
-    return {
-      ...fallback,
-      name: headerNode?.name ?? fallback['name'] ?? '',
-      title: headerNode?.items?.[0]?.name ?? fallback['title'] ?? '',
-      status: badges[0] ?? '',
-      gender: badges[1] ?? '',
-      age: badges[2] ?? '',
-      mbti: badges[3] ?? '',
-    };
-  }
-
-  private buildEducationSection(groups: TreeGroup[], fallback: SectionPayload): SectionPayload {
-    return {
-      ...fallback,
-      school: this.readTreeGroupName(groups, 0) ?? this.readTreeGroupItemValue(groups, 0, 0) ?? '',
-      department: this.readTreeGroupItemValue(groups, 0, 0) ?? '',
-      degree: this.readTreeGroupItemValue(groups, 0, 1) ?? '',
-      graduation_status: this.readTreeGroupItemValue(groups, 0, 2) ?? '',
-    };
-  }
-
-  private buildExperienceSection(groups: TreeGroup[], fallback: SectionPayload): SectionPayload {
-    return {
-      ...fallback,
-      intern_title: this.readTreeGroupItemValue(groups, 0, 0) ?? '',
-      assistant_title: this.readTreeGroupItemValue(groups, 1, 0) ?? '',
-      military_title: this.readTreeGroupItemValue(groups, 2, 0) ?? '',
-    };
-  }
-
-  private buildStackSection(
-    stackNode: ResumeNode | null,
-    labelMatchers: StackCategoryLabelMatchers,
-    fallback: SectionPayload,
-  ): SectionPayload {
-    const next: StackCategoryValueMap = {
-      language: [],
-      frontend: [],
-      backend: [],
-      database: [],
-      devops: [],
-    };
-
-    (stackNode?.items ?? []).forEach((category) => {
-      const key = this.matchStackCategoryKey(category.name, labelMatchers);
-      if (!key) {
-        return;
-      }
-
-      next[key] = (category.items ?? []).map((item) => item.name).filter((item) => item.trim().length > 0);
-    });
-
-    return {
-      ...fallback,
-      ...next,
-    };
-  }
-
-  private buildIntroductionsSection(introductionNode: ResumeNode | null, fallback: SectionPayload): SectionPayload {
-    const intro30 = introductionNode?.items?.find((item) => item.name === '30')?.items?.[0]?.name ?? '';
-    const intro60 = introductionNode?.items?.find((item) => item.name === '60')?.items?.[0]?.name ?? '';
-
-    return {
-      ...fallback,
-      pitch_30s: intro30,
-      pitch_1min: intro60,
-    };
-  }
-
   private resolveToggleCardText(node: ResumeNode): string {
     const mode = this.introModeProvider();
     const toggles = node.items ?? [];
@@ -289,25 +189,6 @@ export class ResumeContentNormalizer {
       default:
         return toggle60?.items?.[0]?.name ?? toggle30?.items?.[0]?.name ?? '';
     }
-  }
-
-  private buildProjectsSection(projectsNode: ResumeNode | null, fallback: SectionPayload): SectionPayload {
-    const groups = this.nodeToTreeGroups(projectsNode);
-    const items = groups.flatMap((group) => group.items.map((item) => item.value));
-    return {
-      ...fallback,
-      items,
-      groups,
-    };
-  }
-
-  private buildVerifySection(verifyNode: ResumeNode | null, fallback: SectionPayload): SectionPayload {
-    const groups = this.nodeToTreeGroups(verifyNode);
-    const items = groups.map((group) => [group.name, ...group.items.map((item) => item.value)].join(' | '));
-    return {
-      ...fallback,
-      items,
-    };
   }
 
   private nodeToTreeGroups(node: ResumeNode | null): TreeGroup[] {
@@ -337,30 +218,6 @@ export class ResumeContentNormalizer {
       }));
   }
 
-  private normalizeGridTechItems(rawItems: unknown): Array<{ label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' }> {
-    if (!Array.isArray(rawItems)) {
-      return [];
-    }
-
-    return rawItems
-      .map((item) => {
-        const itemRecord = this.asRecord(item);
-        if (!itemRecord) {
-          return null;
-        }
-
-        const label = this.readNonEmptyString(itemRecord['label']) ?? '';
-        const value = this.normalizeStringArray(itemRecord['value'], []);
-        const severity = this.readSeverity(itemRecord['severity']);
-
-        if (!label) {
-          return null;
-        }
-
-        return { label, value, severity };
-      })
-      .filter((item): item is { label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' } => item !== null);
-  }
 
   private normalizeTreeGroups(rawGroups: unknown): TreeGroup[] {
     if (!Array.isArray(rawGroups)) {
@@ -405,57 +262,7 @@ export class ResumeContentNormalizer {
       .filter((item): item is TreeListItem => item !== null);
   }
 
-  private buildStackCategoryLabelMatchers(source: SectionPayload): StackCategoryLabelMatchers {
-    const contentUi = this.asRecord(source['content-ui']);
-    const labels = contentUi ? this.asRecord(contentUi['labels']) : null;
 
-    return STACK_CATEGORY_KEYS.reduce<StackCategoryLabelMatchers>((acc, key) => {
-      const candidates = new Set<string>();
-      candidates.add(key.toLowerCase());
-      const localized = labels ? this.readNonEmptyString(labels[key]) : null;
-      if (localized) {
-        candidates.add(localized.toLowerCase());
-      }
-      acc[key] = candidates;
-      return acc;
-    }, {
-      language: new Set<string>(),
-      frontend: new Set<string>(),
-      backend: new Set<string>(),
-      database: new Set<string>(),
-      devops: new Set<string>(),
-    });
-  }
-
-  private matchStackCategoryKey(label: string, matchers: StackCategoryLabelMatchers): StackCategoryKey | null {
-    const normalized = label.trim().toLowerCase();
-    if (!normalized) {
-      return null;
-    }
-
-    const found = STACK_CATEGORY_KEYS.find((key) => matchers[key].has(normalized));
-    return found ?? null;
-  }
-
-  private stackNodeToTechItems(node: ResumeNode): Array<{ label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' }> {
-    return (node.items ?? [])
-      .map((category) => {
-        const values = (category.items ?? []).map((item) => item.name).filter((name) => name.trim().length > 0);
-        const firstType = category.items?.[0]?.type ?? 'secondary';
-        const severity = this.readSeverity(firstType);
-
-        if (!category.name || values.length === 0) {
-          return null;
-        }
-
-        return {
-          label: category.name,
-          value: values,
-          severity,
-        };
-      })
-      .filter((item): item is { label: string; value: string[]; severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary' } => item !== null);
-  }
 
   private isStackCard(node: ResumeNode): boolean {
     return node.id === 'skills' || (node.items ?? []).every((item) => item.type === 'badge-node');
@@ -476,25 +283,6 @@ export class ResumeContentNormalizer {
       .replace(/[^\w\u4e00-\u9fff]+/g, '_')
       .replace(/^_+|_+$/g, '');
     return base.length > 0 ? base : `card_${index + 1}`;
-  }
-
-  private readTreeGroupName(groups: TreeGroup[], groupIndex: number): string | null {
-    const group = groups[groupIndex];
-    if (!group) {
-      return null;
-    }
-
-    return group.name && group.name.trim().length > 0 ? group.name : null;
-  }
-
-  private readTreeGroupItemValue(groups: TreeGroup[], groupIndex: number, itemIndex: number): string | null {
-    const group = groups[groupIndex];
-    if (!group || !group.items[itemIndex]) {
-      return null;
-    }
-
-    const value = group.items[itemIndex].value;
-    return value && value.trim().length > 0 ? value : null;
   }
 
   private asNode(value: unknown): ResumeNode | null {

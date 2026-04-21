@@ -28,35 +28,6 @@ interface I18nLocale {
     lang: string;
     title: string;
   };
-  'content-ui': {
-    profileCardTitle: string;
-    introCardTitle: string;
-    educationCardTitle: string;
-    educationGroupTitle: string;
-    experienceCardTitle: string;
-    experienceGroupTitle: string;
-    stackCardTitle: string;
-    projectsCardTitle: string;
-    verifyCardTitle: string;
-    labels: {
-      language: string;
-      frontend: string;
-      backend: string;
-      database: string;
-      devops: string;
-    };
-  };
-  'bar-ui': {
-    exportPdfLabel: string;
-    exportingLabel: string;
-  };
-  'card-ui': {
-    addLabel: string;
-    addItemLabel: string;
-    addCollectionLabel: string;
-    newCollectionName: string;
-    newItemValue: string;
-  };
   'topbar-ui': {
     editorMenuLabel: string;
     loginLabel: string;
@@ -69,47 +40,6 @@ interface I18nLocale {
 }
 
 interface ContentLocale {
-  profile: {
-    name: string;
-    title: string;
-    gender: string;
-    age: string;
-    status: string;
-    mbti: string;
-  };
-  education: {
-    school: string;
-    department: string;
-    degree: string;
-    graduation_status: string;
-  };
-  experience: {
-    intern_title: string;
-    assistant_title: string;
-    military_title: string;
-  };
-  tech_stack: {
-    language: string[];
-    frontend: string[];
-    backend: string[];
-    database: string[];
-    devops: string[];
-  };
-  introductions: {
-    pitch_30s: string;
-    pitch_1min: string;
-  };
-  projects: {
-    items: string[];
-    groups: Array<{
-      name: string;
-      icon: string;
-      items: TreeListItem[];
-    }>;
-  };
-  verify: {
-    items: string[];
-  };
   card_content?: {
     cards: CardContentEntry[];
     [key: string]: unknown;
@@ -117,38 +47,6 @@ interface ContentLocale {
 }
 
 type ResumeLocale = I18nLocale & ContentLocale;
-
-interface UiCopy {
-  profileTitle: string;
-  introTitle: string;
-  educationTitle: string;
-  educationGroupName: string;
-  expTitle: string;
-  experienceGroupName: string;
-  stackTitle: string;
-  projectTitle: string;
-  verifyTitle: string;
-  labels: {
-    language: string;
-    frontend: string;
-    backend: string;
-    database: string;
-    devops: string;
-  };
-}
-
-interface BarUi {
-  exportPdfLabel: string;
-  exportingLabel: string;
-}
-
-interface CardUi {
-  addLabel: string;
-  addItemLabel: string;
-  addCollectionLabel: string;
-  newCollectionName: string;
-  newItemValue: string;
-}
 
 interface TopBarUi {
   editorMenuLabel: string;
@@ -163,43 +61,6 @@ interface TopBarUi {
 const UI_I18N = i18nData as Record<LangCode, I18nLocale>;
 
 const EMPTY_CONTENT_LOCALE: ContentLocale = {
-  profile: {
-    name: '',
-    title: '',
-    gender: '',
-    age: '',
-    status: '',
-    mbti: '',
-  },
-  education: {
-    school: '',
-    department: '',
-    degree: '',
-    graduation_status: '',
-  },
-  experience: {
-    intern_title: '',
-    assistant_title: '',
-    military_title: '',
-  },
-  tech_stack: {
-    language: [],
-    frontend: [],
-    backend: [],
-    database: [],
-    devops: [],
-  },
-  introductions: {
-    pitch_30s: '',
-    pitch_1min: '',
-  },
-  projects: {
-    items: [],
-    groups: [],
-  },
-  verify: {
-    items: [],
-  },
   card_content: {
     cards: [],
   },
@@ -301,86 +162,6 @@ export class ResumeComponent {
 
   readonly cardContentById = computed(() => this.indexCardContentEntries(this.content().card_content?.cards ?? []));
 
-  readonly uiCopy = computed<UiCopy>(() => {
-    const content = this.content();
-    return {
-      profileTitle: content['content-ui'].profileCardTitle,
-      introTitle: content['content-ui'].introCardTitle,
-      educationTitle: content['content-ui'].educationCardTitle,
-      educationGroupName: content['content-ui'].educationGroupTitle,
-      expTitle: content['content-ui'].experienceCardTitle,
-      experienceGroupName: content['content-ui'].experienceGroupTitle,
-      stackTitle: content['content-ui'].stackCardTitle,
-      projectTitle: content['content-ui'].projectsCardTitle,
-      verifyTitle: content['content-ui'].verifyCardTitle,
-      labels: content['content-ui'].labels,
-    };
-  });
-
-  readonly projectItems = computed(() => this.content().projects.items);
-  readonly projectGroups = computed(() => {
-    const groups = this.content().projects.groups;
-    if (groups.length > 0) {
-      return groups;
-    }
-
-    return [
-      {
-        name: this.uiCopy().projectTitle,
-        icon: 'pi pi-folder-open',
-        items: this.projectItems().map((item) => ({
-          value: item,
-          icon: 'pi pi-check-circle',
-        })),
-      },
-    ];
-  });
-  readonly verifyItems = computed(() => this.content().verify.items);
-  readonly verifyGroups = computed(() => {
-    const items = this.verifyItems();
-    if (items.length === 0) {
-      return [];
-    }
-
-    return items.map((item, index) => {
-      const parts = item
-        .split('|')
-        .map((part) => part.trim())
-        .filter((part) => part.length > 0);
-
-      const name = parts[0] ?? `Certification ${index + 1}`;
-      const childItems = (parts.length > 1 ? parts.slice(1) : [item]).map((value) => ({
-        value,
-        icon: 'pi pi-check-circle',
-      }));
-
-      return {
-        name,
-        icon: 'pi pi-shield',
-        items: childItems,
-      };
-    });
-  });
-
-  readonly barUi = computed<BarUi>(() => {
-    const content = this.content();
-    return {
-      exportPdfLabel: content['bar-ui'].exportPdfLabel,
-      exportingLabel: content['bar-ui'].exportingLabel,
-    };
-  });
-
-  readonly cardUi = computed<CardUi>(() => {
-    const content = this.content();
-    return {
-      addLabel: content['card-ui'].addLabel,
-      addItemLabel: content['card-ui'].addItemLabel,
-      addCollectionLabel: content['card-ui'].addCollectionLabel,
-      newCollectionName: content['card-ui'].newCollectionName,
-      newItemValue: content['card-ui'].newItemValue,
-    };
-  });
-
   readonly topBarUi = computed<TopBarUi>(() => {
     const content = this.content();
     return {
@@ -394,51 +175,29 @@ export class ResumeComponent {
     };
   });
 
+
+
   readonly profileInfo = computed(() => {
-    const content = this.content();
+    const cardEntries = this.content().card_content?.cards ?? [];
+    
+    // 查找 headline 和 profile 卡片
+    const headline = cardEntries.find((entry) => entry.type === 'headline');
+    const profileCard = cardEntries.find((entry) => entry.id === 'profile');
+    
+    // 优先使用 headline 的 title，否则使用 profile 卡片
     return {
-      name: content.profile.name || 'Profile',
-      title: content.profile.title || this.uiCopy().profileTitle,
+      name: headline?.title || profileCard?.name || 'Profile',
+      title: headline?.subtitle || profileCard?.title || 'Profile',
     };
   });
-
-  readonly profileBadges = computed(() => [
-    this.content().profile.gender,
-    this.content().profile.age,
-    this.content().profile.mbti,
-  ]);
-
-  readonly experiences = computed(() => [
-    this.content().experience.intern_title,
-    this.content().experience.assistant_title,
-    this.content().experience.military_title,
-  ]);
-
-  // 經驗資料轉換為groups格式（3個GROUP，各有1筆資料）
-  readonly experienceGroups = computed(() => {
-    const exps = this.experiences();
-    return exps.map((exp) => ({
-      name: this.uiCopy().experienceGroupName,
-      icon: 'pi pi-briefcase',
-      items: [
-        {
-          value: exp,
-          icon: 'pi pi-briefcase',
-        },
-      ],
-    }));
-  });
-
-  readonly introText = computed(() =>
-    this.introMode() === '30'
-      ? this.content().introductions.pitch_30s
-      : this.content().introductions.pitch_1min,
-  );
 
   readonly cards = computed<Card[]>(() => {
     const cardEntries = this.content().card_content?.cards ?? [];
 
-    return cardEntries.map((entry, index) => this.buildCardFromEntry(entry, index));
+    // 过滤掉 headline 类型的卡片，只返回真实卡片
+    return cardEntries
+      .filter((entry) => entry.type !== 'headline')
+      .map((entry, index) => this.buildCardFromEntry(entry, index));
   });
 
   private getStoredCardContent(cardId: string):
@@ -614,6 +373,33 @@ export class ResumeComponent {
     }));
   }
 
+  /**
+   * 統一的元素變更處理
+   * 接收完整的更新元素，直接替換到卡片草稿中
+   */
+  onElementChange(element: any): void {
+    if (!element || !element.cardId) {
+      console.warn('Element change received without cardId');
+      return;
+    }
+
+    const cardId = element.cardId;
+    const elementIndex = element.elementIndex;
+
+    if (elementIndex === undefined) {
+      console.warn('Element change received without elementIndex');
+      return;
+    }
+
+    this.updateDraftCard(cardId, (draft) => {
+      // Replace the entire element in the draft
+      if (draft.elements[elementIndex]) {
+        draft.elements[elementIndex] = element;
+      }
+      return draft;
+    });
+  }
+
   getCardTrackKey(cardId: string): string {
     const version = this.cardRenderVersions()[cardId] ?? 0;
     return `${cardId}:${version}`;
@@ -731,42 +517,7 @@ export class ResumeComponent {
   private deepClone<T>(value: T): T {
     return JSON.parse(JSON.stringify(value)) as T;
   }
-
-  private createDefaultTreeCollection(): { name: string; icon: string; items: TreeListItem[] } {
-    return {
-      name: '',
-      icon: 'pi pi-folder',
-      items: [this.createDefaultTreeGroupItem(1)],
-    };
-  }
-
-  private createDefaultTreeGroupItem(_nextIndex: number): TreeListItem {
-    return {
-      value: '',
-      icon: 'pi pi-circle',
-    };
-  }
-
-  private createDefaultBadgeValue(): string {
-    return '';
-  }
-
-  private createDefaultIconListValue(): string {
-    return '';
-  }
-
-  private createDefaultTechCategory(): {
-    label: string;
-    value: string[];
-    severity: 'info' | 'success' | 'warning' | 'danger' | 'secondary';
-  } {
-    return {
-      label: this.cardUi().newCollectionName,
-      value: [],
-      severity: 'info',
-    };
-  }
-
+  
   private updateDraftCard(cardId: string, updater: (draft: Card) => Card): void {
     const draft = this.cardDrafts()[cardId];
     if (!draft) {
@@ -777,243 +528,6 @@ export class ResumeComponent {
     this.cardDrafts.update((drafts) => ({ ...drafts, [cardId]: nextDraft }));
   }
 
-  updateTextElement(cardId: string, elementIndex: number, value: string): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'text') {
-        return draft;
-      }
-
-      element.text = value;
-      return draft;
-    });
-  }
-
-  updateCardTitle(cardId: string, value: string): void {
-    this.updateDraftCard(cardId, (draft) => {
-      draft.title = value;
-      return draft;
-    });
-  }
-
-  updateBadgeItem(
-    cardId: string,
-    elementIndex: number,
-    itemIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'badges') {
-        return draft;
-      }
-
-      element.items[itemIndex] = value;
-      return draft;
-    });
-  }
-
-  updateIconListItem(
-    cardId: string,
-    elementIndex: number,
-    itemIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'icon-list') {
-        return draft;
-      }
-
-      element.items[itemIndex] = value;
-      return draft;
-    });
-  }
-
-  updateTechCategoryValues(
-    cardId: string,
-    elementIndex: number,
-    categoryIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tech') {
-        return draft;
-      }
-
-      element.items[categoryIndex].value = value
-        .split(',')
-        .map((entry) => entry.trim())
-        .filter((entry) => entry.length > 0);
-      return draft;
-    });
-  }
-
-  updateTechCategoryLabel(
-    cardId: string,
-    elementIndex: number,
-    categoryIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tech') {
-        return draft;
-      }
-
-      element.items[categoryIndex].label = value;
-      return draft;
-    });
-  }
-
-  updateTreeGroupItemValue(
-    cardId: string,
-    elementIndex: number,
-    treeGroupIndex: number,
-    itemIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tree') {
-        return draft;
-      }
-
-      element.groups[treeGroupIndex].items[itemIndex].value = value;
-      return draft;
-    });
-  }
-
-  updateTreeGroupItemIcon(
-    cardId: string,
-    elementIndex: number,
-    treeGroupIndex: number,
-    itemIndex: number,
-    icon: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tree') {
-        return draft;
-      }
-
-      element.groups[treeGroupIndex].items[itemIndex].icon = icon;
-      return draft;
-    });
-  }
-
-  updateTreeGroupName(
-    cardId: string,
-    elementIndex: number,
-    treeGroupIndex: number,
-    value: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tree') {
-        return draft;
-      }
-
-      element.groups[treeGroupIndex].name = value;
-      return draft;
-    });
-  }
-
-  updateTreeGroupIcon(
-    cardId: string,
-    elementIndex: number,
-    treeGroupIndex: number,
-    icon: string,
-  ): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const element = draft.elements[elementIndex];
-      if (element?.type !== 'grid-tree') {
-        return draft;
-      }
-
-      element.groups[treeGroupIndex].icon = icon;
-      return draft;
-    });
-  }
-
-  addCardItem(cardId: string, path: number[]): void {
-    this.updateDraftCard(cardId, (draft) => {
-      const elementIndex = path[0];
-      const element = draft.elements[elementIndex];
-
-      if (!element) {
-        return draft;
-      }
-
-      if (path.length !== 1 && element.type !== 'grid-tree') {
-        return draft;
-      }
-
-      if (element.type === 'badges' && path.length === 1) {
-        element.items.push(this.createDefaultBadgeValue());
-        return draft;
-      }
-
-      if (element.type === 'icon-list' && path.length === 1) {
-        element.items.push(this.createDefaultIconListValue());
-        return draft;
-      }
-
-      if (element.type === 'grid-tech' && path.length === 1) {
-        element.items.push(this.createDefaultTechCategory());
-        return draft;
-      }
-
-      if (element.type === 'text') {
-        return draft;
-      }
-
-      if (element.type === 'grid-tree' && path.length === 1) {
-        element.groups.push(this.createDefaultTreeCollection());
-        return draft;
-      }
-
-      if (element.type === 'grid-tree' && path.length === 2) {
-        const treeGroupIndex = path[1];
-        const targetGroup = element.groups[treeGroupIndex];
-        if (!targetGroup) {
-          return draft;
-        }
-
-        targetGroup.items.push(this.createDefaultTreeGroupItem(targetGroup.items.length + 1));
-        return draft;
-      }
-      return draft;
-    });
-  }
-
-  deleteCardItem(
-    cardId: string,
-    elementIndex: number,
-    itemIndex?: number,
-    treeGroupIndex?: number,
-    categoryIndex?: number,
-    deleteTreeGroup?: boolean,
-  ): void {
-    this.pendingDeleteItemKeys.update((pendingDeletes) => {
-      const next = new Set(pendingDeletes[cardId] ?? []);
-      next.add(
-        this.getPendingDeleteItemKey(
-          elementIndex,
-          itemIndex,
-          treeGroupIndex,
-          categoryIndex,
-          deleteTreeGroup,
-        ),
-      );
-
-      return {
-        ...pendingDeletes,
-        [cardId]: next,
-      };
-    });
-  }
 
   isCardItemPendingDelete(
     cardId: string,
@@ -1167,26 +681,6 @@ export class ResumeComponent {
         };
       }
 
-      if (element.type === 'grid-tech') {
-        return {
-          ...element,
-          items: element.items
-            .filter((_, categoryIndex) => {
-              return !pendingDeletes.has(
-                this.getPendingDeleteItemKey(elementIndex, categoryIndex, undefined, categoryIndex),
-              );
-            })
-            .map((category, categoryIndex) => ({
-              ...category,
-              value: category.value.filter((_, itemIndex) => {
-                return !pendingDeletes.has(
-                  this.getPendingDeleteItemKey(elementIndex, itemIndex, categoryIndex),
-                );
-              }),
-            })),
-        };
-      }
-
       if (element.type === 'grid-tree') {
         return {
           ...element,
@@ -1227,136 +721,70 @@ export class ResumeComponent {
     this.isExporting.set(true);
 
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ]);
-
+      const html2pdf = (await import('html2pdf.js')).default;
       const source = this.resumeCanvas.nativeElement;
+      const shell = source.closest('.resume-shell') as HTMLElement;
+
       // 暫時儲存 A4 模式狀態
       const wasA4Mode = this.isA4Mode();
 
-      // 強制啟用 A4 模式
+      // 強制啟用 A4 模式：在 .resume-shell 上添加 a4-mode 類（這是樣式定義的地方）
       this.isA4Mode.set(true);
-
-      // 等待 DOM 更新
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const canvas = await html2canvas(source, {
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        scale: 2,
-        logging: false,
-        onclone: (clonedDocument: Document) => {
-          // 新增 PDF 模式 CSS 類別，處理所有樣式移除
-          const clonedCanvas = clonedDocument.querySelector('.resume-canvas');
-          if (clonedCanvas instanceof HTMLElement) {
-            clonedCanvas.classList.add('resume-canvas--pdf');
-            clonedCanvas.classList.add('pdf-export-mode');
-            clonedCanvas.style.setProperty('opacity', '1', 'important');
-            clonedCanvas.style.setProperty('filter', 'none', 'important');
-          }
-
-          // 強制移除動畫，避免 html2canvas 截到 reveal 淡入中的狀態。
-          clonedCanvas?.querySelectorAll<HTMLElement>('*').forEach((element) => {
-            element.style.setProperty('animation', 'none', 'important');
-            element.style.setProperty('transition', 'none', 'important');
-            element.style.setProperty('opacity', '1', 'important');
-            element.style.setProperty('filter', 'none', 'important');
-          });
-
-          // 直接在 clone 階段覆寫卡片與標籤色彩，避免元件封裝造成 PDF selector 漏命中。
-          clonedCanvas?.querySelectorAll<HTMLElement>('.card').forEach((card) => {
-            card.style.setProperty('background', '#ffffff', 'important');
-            card.style.setProperty('background-image', 'none', 'important');
-            card.style.setProperty('box-shadow', 'none', 'important');
-            card.style.setProperty('border-color', 'rgba(148, 163, 184, 0.15)', 'important');
-          });
-
-          clonedCanvas?.querySelectorAll<HTMLElement>('.badge, .chip, .tag').forEach((item) => {
-            item.style.setProperty('background-color', '#f3f4f6', 'important');
-            item.style.setProperty('color', '#374151', 'important');
-            item.style.setProperty('border-color', '#d1d5db', 'important');
-          });
-
-          clonedCanvas?.querySelectorAll<HTMLElement>('.stack-item').forEach((item) => {
-            item.style.setProperty('background', '#f9fafb', 'important');
-            item.style.setProperty('border-color', 'rgba(148, 163, 184, 0.15)', 'important');
-          });
-
-          // 明確隱藏 action-panel 元素
-          const actionPanels = clonedCanvas?.querySelectorAll('[class*="action-panel"]');
-          actionPanels?.forEach((panel) => {
-            if (panel instanceof HTMLElement) {
-              panel.style.display = 'none !important';
-            }
-          });
-
-          // 相容新版卡片元件：匯出時隱藏編輯按鈕與按鈕群組
-          const cardActionControls = clonedCanvas?.querySelectorAll(
-            '.card-button-group, .card-edit-btn, .card-cancel-btn',
-          );
-          cardActionControls?.forEach((control) => {
-            if (control instanceof HTMLElement) {
-              control.style.setProperty('display', 'none', 'important');
-            }
-          });
-
-          // 隱藏 top-bar 右側工具與行動 action panel（包含 editor chip）。
-          const topBarControls = clonedCanvas?.querySelectorAll(
-            '.desktop-toolbar, .action-panel, .action-panel--mobile, .editor-chip, .editor-menu, .lang-btn, .a4-btn, .download-btn',
-          );
-          topBarControls?.forEach((control) => {
-            if (control instanceof HTMLElement) {
-              control.style.setProperty('display', 'none', 'important');
-            }
-          });
-
-          // 備用：移除 ambient 背景裝飾元素
-          clonedCanvas?.querySelectorAll('.ambient').forEach((ambient) => {
-            ambient.parentNode?.removeChild(ambient);
-          });
-        },
-      });
-
-      // 恢復 A4 模式狀態
-      this.isA4Mode.set(wasA4Mode);
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imageData = canvas.toDataURL('image/png');
-
-      const topMargin = 5;
-      const maxWidth = pageWidth - 10;
-      const maxHeight = pageHeight - 10;
-
-      const canvasAspect = canvas.height / canvas.width;
-
-      let imgWidth = maxWidth;
-      let imgHeight = maxWidth * canvasAspect;
-
-      if (imgHeight > maxHeight) {
-        imgHeight = maxHeight;
-        imgWidth = maxHeight / canvasAspect;
+      if (shell) {
+        shell.classList.add('a4-mode');
       }
 
-      const leftMargin = (pageWidth - imgWidth) / 2;
+      // 等待 DOM 更新和樣式應用
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
-      pdf.addImage(
-        imageData,
-        'PNG',
-        leftMargin,
-        topMargin,
-        imgWidth,
-        imgHeight,
+      // 隱藏不需要的控制元素
+      const controlsToHide = source.querySelectorAll<HTMLElement>(
+        '.desktop-toolbar, .action-panel, .action-panel--mobile, .editor-chip, .editor-menu, .lang-btn, .a4-btn, .download-btn',
       );
-      pdf.save(`Resume_Haolun_Wang_${this.activeLang()}.pdf`);
+      const originalDisplays = new Map<HTMLElement, string>();
+      controlsToHide.forEach((control) => {
+        originalDisplays.set(control, control.style.display);
+        control.style.display = 'none';
+      });
+
+      // 添加 PDF 模式樣式類
+      source.classList.add('resume-canvas--pdf');
+
+      // 強制移除動畫
+      source.querySelectorAll<HTMLElement>('*').forEach((element) => {
+        element.style.setProperty('animation', 'none', 'important');
+        element.style.setProperty('transition', 'none', 'important');
+        element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('filter', 'none', 'important');
+      });
+
+      // html2pdf 會在 HTML 級別進行分頁，使用 page-break-inside 規則防止切割
+      const options = {
+        margin: 5,
+        filename: `Resume_Haolun_Wang_${this.activeLang()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#ffffff',
+          windowHeight: source.scrollHeight, // 確保完整高度被捕捉
+        },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+        pagebreak: { mode: ['avoid-all'] }, // 盡量避免在元素中間分頁
+      };
+
+      await html2pdf().set(options).from(source).save();
+
+      // 恢復樣式與狀態
+      source.classList.remove('resume-canvas--pdf');
+      if (shell) {
+        shell.classList.remove('a4-mode');
+      }
+      controlsToHide.forEach((control) => {
+        const originalDisplay = originalDisplays.get(control) || '';
+        control.style.display = originalDisplay;
+      });
+      this.isA4Mode.set(wasA4Mode);
     } finally {
       this.isExporting.set(false);
     }
@@ -1388,13 +816,14 @@ export class ResumeComponent {
       ? this.contentNormalizer.sanitizeCardElements(this.deepClone(entry.elements))
       : [];
     const type = this.resolveCardType(entry, elements);
+    const layout = this.resolveCardLayout(entry, index);
 
     return {
       id: entry.id,
       type,
       title: typeof entry.title === 'string' ? entry.title : '',
       subtitle: entry.subtitle,
-      layout: this.resolveCardLayout(entry, elements, index),
+      layout,
       elements,
     };
   }
@@ -1411,26 +840,16 @@ export class ResumeComponent {
     return elements[0]?.type ?? 'text';
   }
 
-  private resolveCardLayout(entry: CardContentEntry, elements: Card['elements'], index: number): number {
-    const firstElement = elements[0];
-    const firstType = firstElement?.type;
-
-    if (firstType === 'grid-tree') {
-      return firstElement.gridLayout === 'compact' ? 2 : 6;
+  private resolveCardLayout(entry: CardContentEntry, index: number): number {
+    // 基於卡片 ID 或類型的布局規則，不再依賴元素類型
+    const id = typeof entry.id === 'string' ? entry.id : '';
+    
+    // 特定卡片的 layout 規則
+    if (id === 'profile') {
+      return 4;
     }
 
-    if (firstType === 'grid-tech') {
-      return 6;
-    }
-
-    if (firstType === 'icon-list') {
-      return 6;
-    }
-
-    if (firstType === 'badges' || firstType === 'text') {
-      return index === 0 ? 4 : 6;
-    }
-
-    return 4;
+    // 默認規則：第一張卡片（通常是 intro）用 4 列，其他 6 列
+    return index === 0 ? 4 : 6;
   }
 }

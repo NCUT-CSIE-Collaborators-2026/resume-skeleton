@@ -17,12 +17,6 @@ export interface Profile {
   title: string;
 }
 
-/** 右側操作列文案設定。 */
-export interface BarUi {
-  exportPdfLabel: string;
-  exportingLabel: string;
-}
-
 /** 頂部工具列文案設定。 */
 export interface TopBarUi {
   editorMenuLabel: string;
@@ -54,7 +48,6 @@ export class TopBarComponent implements OnChanges {
   @Input() activeLang!: 'en' | 'zh_TW';
   @Input() isA4Mode!: boolean;
   @Input() isExporting!: boolean;
-  @Input() barUi!: BarUi;
   @Input() topBarUi!: TopBarUi;
 
   @Output() languageChange = new EventEmitter<'en' | 'zh_TW'>();
@@ -138,7 +131,7 @@ export class TopBarComponent implements OnChanges {
       styleClass: this.isA4Mode ? 'active' : '',
     });
     items.push({
-      label: this.topBarUi?.exportPdfLabel ?? this.barUi?.exportPdfLabel ?? 'Export PDF',
+      label: this.topBarUi?.exportPdfLabel ?? 'Export PDF',
       icon: this.isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download',
       command: () => this.onExportPdf(),
       disabled: this.isExporting,

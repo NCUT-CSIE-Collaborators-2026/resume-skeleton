@@ -38,10 +38,11 @@
   box-sizing: border-box;
   backdrop-filter: blur(4px);
 
-  // A4 模式：固定尺寸 (A4 寬高比例 210mm:297mm)
+  // A4 模式：固定寬度與最小高度，超過時允許換頁但維持比例
   .a4-mode & {
     width: 960px; // 960px × 80%
-    height: 1357px; // 1357px × 80%
+    min-height: 1357px; // 最小高度保持A4比例，超過時自動擴展
+    height: auto; // 內容超過時自動增高
   }
 
   // PDF 導出模式：純白背景，移除所有視覺效果
@@ -100,10 +101,23 @@
   gap: 0.8rem;
 
   > * {
-    --card-span: 12;
-    flex: var(--card-span) 1 calc((100% * var(--card-span) / 12) - 0.8rem);
+    flex: 1 1 auto;
+    width: 100%;
     max-width: 100%;
-    min-width: min(100%, 18rem);
+    min-width: min(100%, 35rem);
+  }
+}
+
+@media (min-width: 768px) {
+  .resume-grid > * {
+    min-width: 320px;
+    width: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .resume-grid > * {
+    min-width: 380px;
   }
 }
 

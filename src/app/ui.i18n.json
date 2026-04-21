@@ -6,35 +6,6 @@
       "lang": "en",
       "title": "Haolun Wang | Resume"
     },
-    "content-ui": {
-      "profileCardTitle": "Profile",
-      "introCardTitle": "Self Introduction",
-      "educationCardTitle": "Education",
-      "educationGroupTitle": "Education Info",
-      "experienceCardTitle": "Experience",
-      "experienceGroupTitle": "Experience",
-      "stackCardTitle": "Tech Stack",
-      "projectsCardTitle": "Project Achievements",
-      "verifyCardTitle": "Verify",
-      "labels": {
-        "language": "Language",
-        "frontend": "Frontend",
-        "backend": "Backend",
-        "database": "Database",
-        "devops": "DevOps"
-      }
-    },
-    "bar-ui": {
-      "exportPdfLabel": "Export PDF",
-      "exportingLabel": "Exporting"
-    },
-    "card-ui": {
-      "addLabel": "Add",
-      "addItemLabel": "Add item",
-      "addCollectionLabel": "Add collection",
-      "newCollectionName": "New collection",
-      "newItemValue": "New item"
-    },
     "topbar-ui": {
       "editorMenuLabel": "Editor menu",
       "loginLabel": "Login",
@@ -51,35 +22,6 @@
       "label": "繁",
       "lang": "zh-TW",
       "title": "王顥倫 | 簡歷"
-    },
-    "content-ui": {
-      "profileCardTitle": "基本資料",
-      "introCardTitle": "自我介紹",
-      "educationCardTitle": "學歷背景",
-      "educationGroupTitle": "學歷資訊",
-      "experienceCardTitle": "經歷概覽",
-      "experienceGroupTitle": "經歷",
-      "stackCardTitle": "技術堆疊",
-      "projectsCardTitle": "專案成就",
-      "verifyCardTitle": "認證",
-      "labels": {
-        "language": "語言",
-        "frontend": "前端",
-        "backend": "後端",
-        "database": "資料庫",
-        "devops": "DevOps"
-      }
-    },
-    "bar-ui": {
-      "exportPdfLabel": "匯出 PDF",
-      "exportingLabel": "匯出中"
-    },
-    "card-ui": {
-      "addLabel": "新增",
-      "addItemLabel": "新增項目",
-      "addCollectionLabel": "新增群組",
-      "newCollectionName": "新群組",
-      "newItemValue": "新項目"
     },
     "topbar-ui": {
       "editorMenuLabel": "編輯選單",

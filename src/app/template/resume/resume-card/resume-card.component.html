@@ -1,15 +1,6 @@
 <article class="card">
   <div class="card-header">
-    @if (isEditing) {
-      <input
-        class="card-title-input"
-        type="text"
-        [value]="card.title"
-        (input)="onTitleChange(($any($event.target).value || '').toString())"
-      />
-    } @else {
-      <h3 class="card-title">{{ card.title }}</h3>
-    }
+    <h3 class="card-title">{{ card.title }}</h3>
 
     @if (isAuthenticated) {
       <div class="card-button-group">
@@ -19,7 +10,6 @@
           class="p-button-sm p-button-rounded card-edit-btn"
           [severity]="isEditing ? 'success' : 'contrast'"
           [icon]="isEditing ? 'pi pi-save' : 'pi pi-pencil'"
-          [loading]="isSaving"
           [label]="isEditing ? 'Save' : 'Edit'"
           (click)="onEditAction()"
         ></button>
@@ -41,31 +31,17 @@
     <p class="card-subtitle">{{ card.subtitle }}</p>
   }
 
-  @for (element of card.elements; track $index; let elementIndex = $index) {
-    <app-tree-card
-      [element]="element"
-      [elementIndex]="elementIndex"
-      [path]="[elementIndex]"
-      [isEditing]="isEditing"
-      [isSaving]="isSaving"
-      [addLabel]="cardUi.addLabel"
-      [addItemLabel]="cardUi.addItemLabel"
-      [addCollectionLabel]="cardUi.addCollectionLabel"
-      [newCollectionName]="cardUi.newCollectionName"
-      [newItemValue]="cardUi.newItemValue"
-      [pendingDeleteItemKeys]="pendingDeleteItemKeys"
-      [iconOptions]="iconOptions"
-      (textElementChange)="onTextElementChange($event.elementIndex, $event.value)"
-      (badgeItemChange)="onBadgeItemChange($event.elementIndex, $event.itemIndex, $event.value)"
-      (iconListItemChange)="onIconListItemChange($event.elementIndex, $event.itemIndex, $event.value)"
-      (techCategoryChange)="onTechCategoryChange($event.elementIndex, $event.categoryIndex, $event.value)"
-      (techCategoryLabelChange)="onTechCategoryLabelChange($event.elementIndex, $event.categoryIndex, $event.value)"
-      (treeGroupItemChange)="onTreeGroupItemChange($event.elementIndex, $event.treeGroupIndex, $event.itemIndex, $event.value)"
-      (treeGroupItemIconChange)="onTreeGroupItemIconChange($event.elementIndex, $event.treeGroupIndex, $event.itemIndex, $event.icon)"
-      (treeGroupNameChange)="onTreeGroupNameChange($event.elementIndex, $event.treeGroupIndex, $event.value)"
-      (treeGroupIconChange)="onTreeGroupIconChange($event.elementIndex, $event.treeGroupIndex, $event.icon)"
-      (addItem)="onAddItem($event)"
-      (deleteItem)="onDeleteItem($event)"
-    ></app-tree-card>
+  @if (card.elements && card.elements.length > 0) {
+    <div class="card-content">
+      @for (element of card.elements; track $index) {
+        <app-element-renderer
+          [element]="element"
+          [isEditing]="isEditing"
+          (elementChange)="onElementChange($event)"
+        ></app-element-renderer>
+      }
+    </div>
+  } @else {
+    <p class="empty-message">No content</p>
   }
 </article>

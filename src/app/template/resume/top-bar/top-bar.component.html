@@ -81,7 +81,7 @@
       class="download-btn"
       [disabled]="isExporting"
       (click)="onExportPdf()"
-      [title]="isExporting ? barUi.exportingLabel : barUi.exportPdfLabel"
+      [title]="isExporting ? topBarUi.exportingLabel : topBarUi.exportPdfLabel"
     >
       <i [class]="isExporting ? 'pi pi-spinner pi-spin' : 'pi pi-download'"></i>
     </button>
