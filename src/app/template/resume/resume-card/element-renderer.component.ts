@@ -172,6 +172,15 @@ export class TreeNodeComponent {
                 </span>
               }
             </div>
+            @if (isEditing) {
+              <button
+                (click)="onAddBadge()"
+                class="add-btn add-badge-btn"
+                type="button"
+              >
+                + Add Badge
+              </button>
+            }
             @if (element.children) {
               <div class="children">
                 @for (child of element.children; track $index) {
@@ -205,6 +214,15 @@ export class TreeNodeComponent {
                 </div>
               }
             </div>
+            @if (isEditing) {
+              <button
+                (click)="onAddIconListItem()"
+                class="add-btn add-icon-btn"
+                type="button"
+              >
+                + Add Item
+              </button>
+            }
             @if (element.children) {
               <div class="children">
                 @for (child of element.children; track $index) {
@@ -252,6 +270,15 @@ export class TreeNodeComponent {
                 </div>
               }
             </div>
+            @if (isEditing) {
+              <button
+                (click)="onAddTreeGroup()"
+                class="add-btn add-group-btn"
+                type="button"
+              >
+                + Add Group
+              </button>
+            }
             @if (element.children) {
               <div class="children">
                 @for (child of element.children; track $index) {
@@ -648,6 +675,26 @@ export class TreeNodeComponent {
       background: #f57c00;
       color: white;
     }
+
+    .add-icon-btn {
+      border-color: #7b1fa2;
+      color: #7b1fa2;
+    }
+
+    .add-icon-btn:hover {
+      background: #7b1fa2;
+      color: white;
+    }
+
+    .add-group-btn {
+      border-color: #1565c0;
+      color: #1565c0;
+    }
+
+    .add-group-btn:hover {
+      background: #1565c0;
+      color: white;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -710,6 +757,34 @@ export class ElementRendererComponent {
         icon: type === 'node' ? 'pi pi-circle' : undefined,
       };
       updated.items.push(newItem);
+      this.elementChange.emit(updated as any);
+    }
+  }
+
+  onAddBadge(): void {
+    if (this.element.type === 'badges') {
+      const updated = { ...this.element };
+      updated.items.push('New Badge');
+      this.elementChange.emit(updated as any);
+    }
+  }
+
+  onAddIconListItem(): void {
+    if (this.element.type === 'icon-list') {
+      const updated = { ...this.element };
+      updated.items.push('New Item');
+      this.elementChange.emit(updated as any);
+    }
+  }
+
+  onAddTreeGroup(): void {
+    if (this.element.type === 'grid-tree') {
+      const updated = { ...this.element };
+      updated.groups.push({
+        name: 'New Group',
+        icon: 'pi pi-folder-open',
+        items: []
+      });
       this.elementChange.emit(updated as any);
     }
   }
